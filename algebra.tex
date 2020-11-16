@@ -1,0 +1,139 @@
+\documentclass[12pt]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{amscd, amssymb, mathtools, amsthm, amsmath}
+\usepackage{enumerate}
+% Palatino for main text and math
+\usepackage[osf,sc]{mathpazo}
+
+% Helvetica for sans serif
+% (scaled to match size of Palatino)
+\usepackage[scaled=0.90]{helvet}
+
+% Bera Mono for monospaced
+% (scaled to match size of Palatino)
+\usepackage[scaled=0.85]{beramono}
+
+\usepackage{hyperref}
+
+% To write appendixes
+\usepackage[page]{appendix}
+
+
+\renewcommand{\thesubsection}{\arabic{subsection}}
+%
+%
+\newenvironment{eq}{\begin{equation}}{\end{equation}}
+%
+\newenvironment{remarks}{{\bf Remarks}:\begin{enumerate}}{\end{enumerate}}
+\newenvironment{examples}{{\bf Examples}:\begin{enumerate}}{\end{enumerate}}  
+%
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}[proposition]{Lemma}
+\newtheorem{definition}[proposition]{Definition}
+\newtheorem{theorem}[proposition]{Theorem}
+\newtheorem{cor}[proposition]{Corollary}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{pretheorem}[proposition]{Pretheorem}
+\newtheorem{hypothesis}[proposition]{Hypothesis}
+\newtheorem{example}[proposition]{Example}
+\newtheorem*{rem}{Remark}
+\newtheorem{remark}[proposition]{Remark}
+\newtheorem{ex}[proposition]{Exercise}
+\newtheorem{cond}[proposition]{Conditions}
+\newtheorem{cons}[proposition]{Construction}
+%
+\newtheorem{problem}[proposition]{Problem}
+\newtheorem{construction}[proposition]{Construction}
+%
+\newtheorem*{nota}{Notation}
+\newtheorem{notation}{Notation}
+\newtheorem*{axiom}{Axiom}
+
+% For diagrams:
+\usepackage{tikz-cd}
+\usetikzlibrary{cd}
+
+% To avoid automatic identation of paragraphs:
+\usepackage[parfill]{parskip}
+
+% To create an index:
+\usepackage{makeidx}
+
+% To make the index and bibliography appear in the table of contents:
+\usepackage[nottoc]{tocbibind}
+
+\makeindex
+
+\begin{document}
+	
+\title{Blueprint}
+\author{}
+\date{\today}
+\maketitle
+
+
+Let $k$ be an algebraically closed field and $A$ denote the ring $k \left[ x_1, \dots, x_n \right]$. \\
+
+\begin{definition}[affine $n$-space] 
+	The affine $n$-space over $k$, denoted $\mathbb{A}^n_k$ or simply $\mathbb{A}^n$, is the set of all $n$-tuples of elements of $k$.  
+\end{definition}
+
+\begin{remark}
+	An element $P$ of $\mathbb{A}^n$ will be called a point. \\
+	If $P = (a_1, \dots, a_n)$ with $a_i \in k$, then $a_i$ will be called the $i$th coordinate of $P$.
+\end{remark}
+
+\begin{notation}
+	if $P = (a_1, \dots, a_n)$ (\textit{resp.} $f$) belongs to $\mathbb{A}^n$ (\textit{resp.} $A$), then $f(P)$ is $f(a_1, \dots, a_n)$.
+\end{notation}		
+
+\begin{definition}[zero set]
+	If $T$ is any subset of $A$, one defines the zero set of $T$, denoted $Z(T)$, to be the common zeros of all the elements of $T$. \\
+	In other words one has
+	\[
+	Z(T) \coloneqq \lbrace P \in \mathbb{A}^n \mid f(P) = 0 \quad \text{for all}\, f \in T \rbrace \, . 
+	\]
+\end{definition}
+
+\begin{definition}[algebraic set]
+	A subset $Y$ of $\mathbb{A}^n$ is an algebraic set if there exists a subset $T \subseteq A$ such that $Y = Z(T)$. 
+\end{definition}
+
+\begin{ex}
+	Prove the empty space $\emptyset$ and the whole space $\mathbb{A}^n$ are algebraic sets.
+\end{ex}
+
+\begin{ex}
+	Prove the intersection of any family of algebraic sets is an algebraic set.
+\end{ex}
+
+\begin{ex}
+	Prove the union of two algebraic sets is an algebraic set.
+\end{ex}		
+
+\begin{definition}[Zariski topology]
+	One defines the Zariski topology on $\mathbb{A}^n$ by taking the open sets to be the complements of the algebraic sets.
+\end{definition}
+
+\begin{ex}
+	Prove the Zariski topology is a topology. 
+\end{ex}
+
+\begin{definition}[irreducible subset]
+	A nonempty subset $Y$ of a topological space $X$ is irreducible if $Y$ cannot be expressed as the union of two proper closed subsets of $X$. 
+\end{definition}
+
+\begin{definition}[affine algebraic variety]
+	An affine algebraic variety or simply an affine variety is an irreducible closed subset of $\mathbb{A}^n$ endowed with the induced topology. 
+\end{definition}
+
+\begin{definition}[quasi-affine variety]
+	A quasi-affine variety is an open subset of an affine variety. 
+\end{definition}					
+
+		
+\end{document}
