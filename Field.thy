@@ -1,7 +1,10 @@
 theory Field (* Can't use the plural Fields because HOL.Fields *)
   imports "Jacobson_Basic_Algebra.Ring_Theory"
+          "Polynomials.MPoly_PM"
 
 begin
+no_notation plus (infixl "+" 65)
+no_notation map_scale (infixl "\<cdot>" 71)
 
 section \<open>Fields\<close>
 
@@ -27,4 +30,18 @@ locale subfield = subring S R "(+)" "(\<cdot>)" "\<zero>" "\<one>"
   assumes stable_under_inv: "\<lbrakk>a \<in> S; b \<in> R\<rbrakk> \<Longrightarrow> a \<noteq> \<zero> \<Longrightarrow> a \<cdot> b = \<one> \<Longrightarrow> b \<in> S" 
 
 
+section \<open>Algebraically Closed Fields\<close>
+
+locale alg_closed_field = field F "(+)" "(\<cdot>)" "\<zero>" "\<one>"
+  for F and addition (infix "+" 65) and multiplication (infix "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") +
+  assumes alg_closed: "true" 
+(* True above should be replaced with the appropriate condition expressed thanks to the archive "Executable Multivariate Polynomials" *)
+
+(*
+begin
+
+Possibly some equivalent formulations of the property of being algebraically closed
+ 
+end
+*)
 end
