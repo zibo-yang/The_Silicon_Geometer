@@ -1,10 +1,12 @@
 theory Field (* Can't use the plural Fields because HOL.Fields *)
   imports "Jacobson_Basic_Algebra.Ring_Theory"
-          "Polynomials.MPoly_PM"
+          (* "Polynomials.MPoly_PM" *)
+          "HOL-Computational_Algebra.Polynomial"
 
 begin
+
 no_notation plus (infixl "+" 65)
-no_notation map_scale (infixl "\<cdot>" 71)
+(* no_notation map_scale (infixl "\<cdot>" 71) *)
 
 section \<open>Fields\<close>
 
@@ -34,8 +36,11 @@ section \<open>Algebraically Closed Fields\<close>
 
 locale alg_closed_field = field F "(+)" "(\<cdot>)" "\<zero>" "\<one>"
   for F and addition (infix "+" 65) and multiplication (infix "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") +
-  assumes alg_closed: "true" 
-(* True above should be replaced with the appropriate condition expressed thanks to the archive "Executable Multivariate Polynomials" *)
+  assumes alg_closed: "\<forall>(p::'a poly). Polynomial.degree p > 0 \<longrightarrow> (\<exists>r. poly p r = 0)" 
+(* 
+The assumption alg_closed above should probably be expressed using univariate polynomials seen as 
+a special case of multivariate polynomials as defined in the archive "Executable Multivariate Polynomials" 
+*)
 
 (*
 begin
