@@ -35,7 +35,7 @@ locale subfield = subring S R "(+)" "(\<cdot>)" "\<zero>" "\<one>"
 section \<open>Algebraically Closed Fields\<close>
 
 locale alg_closed_field = field F "(+)" "(\<cdot>)" "\<zero>" "\<one>"
-  for F and addition (infix "+" 65) and multiplication (infix "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") +
+  for F::"'a::comm_semiring_0 set" and addition (infix "+" 65) and multiplication (infix "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") +
   assumes alg_closed: "\<forall>(p::'a poly). Polynomial.degree p > 0 \<longrightarrow> (\<exists>r. poly p r = 0)" 
 (* 
 The assumption alg_closed above should probably be expressed using univariate polynomials seen as 
