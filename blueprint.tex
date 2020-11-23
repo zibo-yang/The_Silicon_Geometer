@@ -4,7 +4,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{babel}
 
-\usepackage{amscd, amssymb, mathtools, amsthm, amsmath}
+\usepackage{amscd, amssymb, mathtools, amsthm, amsmath, mathrsfs}
 \usepackage{enumerate}
 % Palatino for main text and math
 \usepackage[osf,sc]{mathpazo}
@@ -133,7 +133,111 @@ Let $k$ be an algebraically closed field and $A$ denote the ring $k \left[ x_1, 
 
 \begin{definition}[quasi-affine variety]
 	A quasi-affine variety is an open subset of an affine variety. 
-\end{definition}					
+\end{definition}
+
+Let $R$ be a commutative ring. 
+
+\begin{definition}[ideal]
+	An ideal $\mathfrak{a}$ of $R$ is a subset of $R$ which is an additive subgroup such that $R\mathfrak{a} = \mathfrak{a}$.
+\end{definition}
+
+\begin{ex}
+	Prove that $\lbrace 0 \rbrace$ and $R$ are ideals of $R$.
+\end{ex}
+
+\begin{ex}
+	Let $\mathfrak{a}$ and $\mathfrak{b}$ be two ideals of $R$. Check that $\mathfrak{a} \mathfrak{b}$ is also an ideal of $R$.
+\end{ex}		
+
+\begin{definition}[zero divisor]
+	Two elements $x$ and $y$ of $R$ are zero divisors if $x \neq 0$, $y \neq 0$ and $x y = 0$.
+\end{definition}
+
+\begin{definition}[entire ring]
+	The ring $R$ is said to be entire if $1 \neq 0$ and there are no zero divisors in $R$. 
+\end{definition}
+		
+\begin{definition}[prime ideal]
+	A prime ideal $\mathfrak{p}$ of $R$ is an ideal $\mathfrak{p} \neq R$ such that $R/\mathfrak{p}$ is an entire ring. 	
+\end{definition}
+
+\begin{ex}
+	Equivalently, a prime ideal is an ideal $\mathfrak{p} \neq R$ such that $x y \in \mathfrak{p}$ implies $x \in \mathfrak{p}$ or $y \in \mathfrak{p}$ for every elements $x$ and $y$ in $R$.
+\end{ex}
+
+\begin{remark}
+	In a formal setting it is probably better to use the characterization above as the definition of prime ideals.
+\end{remark}
+
+\begin{notation}
+	If $\mathfrak{i}$ is an ideal of $R$, $V(\mathfrak{a})$ denotes the set of all prime ideals of $R$ which contain $\mathfrak{a}$. 
+\end{notation}
+
+\begin{remark}
+	On has $V(R) = \emptyset$ and $V(\lbrace 0 \rbrace)$ is the set of all prime ideals of $R$.
+\end{remark}	
+
+\begin{ex}
+Prove the equality $V(\mathfrak{a} \mathfrak{b}) = V(\mathfrak{a}) \cup V(\mathfrak{b})$.	
+\end{ex}
+
+\begin{ex}
+	Prove the equality $V(\sum \mathfrak{a}_i) = \bigcap V(\mathfrak{a}_i)$ for any familly of prime ideals.
+\end{ex}
+
+\begin{ex}
+	Prove the subsets of the form $V(\mathfrak{a})$ as the closed subsets define a topology on the set of all primes ideals of $R$. 
+\end{ex}
+
+\begin{notation}
+	Spec $R$ will denote the topological space of all prime ideals of $R$.
+\end{notation}
+
+\begin{definition}[presheaf of rings]
+	Let $X$ be a topological space. A presheaf $\mathscr{F}$ of rings on $X$ consists of the following data:
+	\begin{itemize}
+		\item for every open set $U$, a ring $\mathscr{F}(U)$
+		\item for every inclusion $V \subseteq U$ of open subsets, a morphism of rings $\rho_{UV}: \mathscr{F}(U) \rightarrow \mathscr{F}(V)$  
+	\end{itemize}
+satisfying 
+	\begin{enumerate}
+		\item $\mathscr{F}(\emptyset) = \lbrace 0 \rbrace$
+		\item $\rho_{UU}$ is the identity map for every open subset $U$
+		\item  If $W \subseteq V \subseteq U$ are three open subsets, then $\rho_{UW} = \rho_{VW} \circ \rho_{UV}$.
+	\end{enumerate}
+\end{definition}
+
+\begin{notation}
+	The elements of $\mathscr{F}(U)$ are sometimes called the sections of the presheaf $\mathscr{F}$ and given $s \in \mathscr{F}(U)$, $s\restriction V$ denotes the element $\rho_{UV}(s)$.
+\end{notation}	
+
+\begin{definition}[sheaf of rings]
+	A sheaf of rings on a topological space $X$ is a presheaf on $X$ that satisfies the following additional properties:
+	\begin{enumerate}
+	\setcounter{enumi}{3}
+		\item Given an open set $U$, $\lbrace V_i \rbrace$ an open covering of $U$ and $s \in \mathscr{F}(U)$ such that $s \restriction V_i = 0$ for all $i$, then one has $s = 0$.
+		\item Given an open set $U$, $\lbrace V_i \rbrace$ an open covering of $U$ and elements $s_i \in \mathscr{F}(V_i)$ for each $i$ satisfying $s_i \restriction V_i \cap V_j = s_j \restriction V_i \cap V_j$ for all $i$ and $j$, then there exists an element $s \in \mathscr{F}(U)$ such that $s \restriction V_i = s_i$ for all $i$.  
+	\end{enumerate}	
+\end{definition}
+
+%\begin{definition}[localization of a ring]
+
+%\end{definition}
+
+%\begin{definition}[spectrum of a ring]
+	
+%\end{definition}												
+
+\begin{appendices}
+	\addappheadtotoc
+	
+\chapter{Commutative Algebra}
+\label{chap:commalg}
+
+\section{Fields}
+\label{sec:fields}
+	
+\end{appendices}						
 
 		
 \end{document}
