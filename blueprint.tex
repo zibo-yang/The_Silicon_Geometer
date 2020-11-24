@@ -71,7 +71,7 @@
 \begin{document}
 	
 \title{Blueprint}
-\author{}
+\author{Anthony Bordg}
 \date{\today}
 \maketitle
 
@@ -135,7 +135,15 @@ Let $k$ be an algebraically closed field and $A$ denote the ring $k \left[ x_1, 
 	A quasi-affine variety is an open subset of an affine variety. 
 \end{definition}
 
-Let $R$ be a commutative ring. 
+\begin{definition}[zero divisor]
+	Two elements $x$ and $y$ of a ring are zero divisors if $x \neq 0$, $y \neq 0$ and $x y = 0$.
+\end{definition}
+
+\begin{definition}[entire ring]
+	A ring $R$ is said to be entire if $1 \neq 0$ and there are no zero divisors in $R$. 
+\end{definition}
+
+Let $R$ be an entire ring. 
 
 \begin{definition}[ideal]
 	An ideal $\mathfrak{a}$ of $R$ is a subset of $R$ which is an additive subgroup such that $R\mathfrak{a} = \mathfrak{a}$.
@@ -147,15 +155,7 @@ Let $R$ be a commutative ring.
 
 \begin{ex}
 	Let $\mathfrak{a}$ and $\mathfrak{b}$ be two ideals of $R$. Check that $\mathfrak{a} \mathfrak{b}$ is also an ideal of $R$.
-\end{ex}		
-
-\begin{definition}[zero divisor]
-	Two elements $x$ and $y$ of $R$ are zero divisors if $x \neq 0$, $y \neq 0$ and $x y = 0$.
-\end{definition}
-
-\begin{definition}[entire ring]
-	The ring $R$ is said to be entire if $1 \neq 0$ and there are no zero divisors in $R$. 
-\end{definition}
+\end{ex}
 		
 \begin{definition}[prime ideal]
 	A prime ideal $\mathfrak{p}$ of $R$ is an ideal $\mathfrak{p} \neq R$ such that $R/\mathfrak{p}$ is an entire ring. 	
@@ -168,6 +168,14 @@ Let $R$ be a commutative ring.
 \begin{remark}
 	In a formal setting it is probably better to use the characterization above as the definition of prime ideals.
 \end{remark}
+
+\begin{remark}
+	If $\mathfrak{p}$ is a prime ideal, then $1 \notin \mathfrak{p}$.
+\end{remark}
+
+\begin{ex}
+	Let $\mathfrak{p}$ be a prime ideal and $S$ be the complement of $\mathfrak{p}$ in $R$. Prove $S$ is a multiplicative submonoid of $R$. 
+\end{ex}		
 
 \begin{notation}
 	If $\mathfrak{i}$ is an ideal of $R$, $V(\mathfrak{a})$ denotes the set of all prime ideals of $R$ which contain $\mathfrak{a}$. 
@@ -220,13 +228,48 @@ satisfying
 	\end{enumerate}	
 \end{definition}
 
-%\begin{definition}[localization of a ring]
+\begin{cons}
+	Let $S$ be a multiplicative submonoid of $R$. We consider pairs $(r, s)$ with $r \in R$ and $s \in S$ and we define the following relation on them
+	\[
+	(r, s) \sim (r', s')
+	\]
+	if and only if there exists $s_1 \in S$ such that $s_1(s' r - s r') = 0$. One checks that the relation $\sim$ is an equivalence relation. The equivalence class of a pair $(r, s)$ is denoted by $r/s$ and the set of equivalence classes is denoted by $S^{-1} R$. We define the following addition on $S^{-1} R$.
+	\[
+	\frac{r}{s} + \frac{r'}{s'} = \frac{r s' + r' s}{s s'}
+	\]
+	We also define the following multiplication on $S^{-1} R$. 
+	\[
+	\frac{r}{s} \times \frac{r'}{s'} = \frac{r r'}{s s'}
+	\]
+\end{cons}
 
-%\end{definition}
+\begin{ex}
+	Prove $(S^{-1} R, 0/1, +, 1/1, \times)$ is a ring.
+\end{ex}		
 
-%\begin{definition}[spectrum of a ring]
-	
-%\end{definition}												
+\begin{definition}[quotient ring]
+	Let $S$ be a multiplicative submonoid of $R$. The quotient ring of $R$ by $S$ is $S^{-1} R$. 
+\end{definition}
+
+\begin{definition}[local ring]
+Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{p}$ in $R$. The local ring of $R$ at $\mathfrak{p}$, denoted $R_{\mathfrak{p}}$, is $S^{-1} R$. 	
+\end{definition}
+
+\begin{cons}
+	Let $U$ be an open subset of Spec $R$. We define $\mathscr{O}(U)$ to be the set of all functions 
+	\[
+	s: U \rightarrow \bigcup \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
+	\]
+	such that $s(\mathfrak{p}) \in R_{\mathfrak{p}}$ for every $\mathfrak{p} \in U$ and such that for every $\mathfrak{p} \in U$, there exist a neighborhood $V$ of $\mathfrak{p}$, contained in $U$, and elements $r, f \in R$, such that for each $\mathfrak{q} \in V$, $f \notin \mathfrak{q}$ and $s(\mathfrak{q}) = r/f$.  
+\end{cons}
+
+\begin{ex}
+	Prove $\mathscr{O}$ is a sheaf of rings on Spec $R$. 
+\end{ex}			
+
+\begin{definition}[spectrum of a ring]
+	The spectrum of the ring $R$ is the pair consisting of the topological space $Spec R$ together with the sheaf of rings $\mathscr{O}$.
+\end{definition}												
 
 \begin{appendices}
 	\addappheadtotoc
