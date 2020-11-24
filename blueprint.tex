@@ -233,7 +233,8 @@ satisfying
 	\[
 	(r, s) \sim (r', s')
 	\]
-	if and only if there exists $s_1 \in S$ such that $s_1(s' r - s r') = 0$. One checks that the relation $\sim$ is an equivalence relation. The equivalence class of a pair $(r, s)$ is denoted by $r/s$ and the set of equivalence classes is denoted by $S^{-1} R$. We define the following addition on $S^{-1} R$.
+	if and only if there exists $s_1 \in S$ such that $s_1(s' r - s r') = 0$. One checks that the relation $\sim$ is an equivalence relation. The equivalence class of a pair $(r, s)$ is denoted by $r/s$ and the set of equivalence classes is denoted by $S^{-1} R$. \\
+	We define the following addition on $S^{-1} R$.
 	\[
 	\frac{r}{s} + \frac{r'}{s'} = \frac{r s' + r' s}{s s'}
 	\]
@@ -260,7 +261,9 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 	\[
 	s: U \rightarrow \bigcup \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
 	\]
-	such that $s(\mathfrak{p}) \in R_{\mathfrak{p}}$ for every $\mathfrak{p} \in U$ and such that for every $\mathfrak{p} \in U$, there exist a neighborhood $V$ of $\mathfrak{p}$, contained in $U$, and elements $r, f \in R$, such that for each $\mathfrak{q} \in V$, $f \notin \mathfrak{q}$ and $s(\mathfrak{q}) = r/f$.  
+	such that $s(\mathfrak{p}) \in R_{\mathfrak{p}}$ for every $\mathfrak{p} \in U$ and such that for every $\mathfrak{p} \in U$, there exist a neighborhood $V$ of $\mathfrak{p}$, contained in $U$, and elements $r, f \in R$, such that for each $\mathfrak{q} \in V$, $f \notin \mathfrak{q}$ and $s(\mathfrak{q}) = r/f$. \\
+	We endow $\mathscr{O}(U)$ with the sum and product of such functions and we take for the multiplicative unit the function that maps each $\mathfrak{p}$ on the multiplicative unit of $R_{\mathfrak{p}}$. \\
+	Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}(U) \rightarrow \mathscr{O}(V)$ maps each $s \in \mathscr{O}(u)$ on its restriction $s \restriction V$. 
 \end{cons}
 
 \begin{ex}
