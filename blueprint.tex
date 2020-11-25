@@ -245,7 +245,11 @@ satisfying
 
 \begin{definition}[morphism of sheaves of rings]
 	A morphism of sheaves of rings is a morphism of presheaves of rings.
-\end{definition}	
+\end{definition}
+
+\begin{ex}
+	Let $X$ be a topological space, $\mathscr{F}$ a sheaf of rings on $X$ and $U$ an open subset of $X$. \\ Prove that $\mathscr{F}|_U$, defined by $\mathscr{F}|_U(V) \coloneqq \mathscr{F}(U \cap V)$, is a sheaf of rings on $U$ for the induced topology.
+\end{ex}		
 
 \begin{cons}
 	Let $f: X \rightarrow Y$ be a continuous map between topological spaces and $\mathscr{F}$ a sheaf of rings on $X$. Given an open subset $V$ of $Y$, define $(f_{*} \mathscr{F})(V)$ to be $\mathscr{F} (f^{-1}(Y))$.  
@@ -313,14 +317,39 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 	A morphism of ringed spaces from $(X, \mathscr{O}(X))$ to $(Y, \mathscr{O}(Y))$ is a pair $(f, \phi_f)$ consisting of a continuous map $f: X \rightarrow Y$ between topological spaces and a morphism $\phi_f: \mathscr{O}_Y \rightarrow f_{*} \mathscr{O}_X$ of sheaves of rings.   
 \end{definition}
 
+\begin{construction}
+	Let $X$ be a topological space and $\mathscr{F}$ a sheaf of rings on $X$. The set $I$ will denote a subset of the set of all open subsets of $X$. \\
+	Given $U, V \in I$, $s \in \mathscr{F}(U)$ and $t \in \mathscr{F}(V)$,  we says that 
+	$s \sim t$ if and only if there exists $W \in I$ such that $W \subseteq U \cap V$ and $s \restriction W = t \restriction W$. One checks that $\sim$ is an equivalence relation. \\
+	Now, we consider the quotient of the disjoint union of the $\mathscr{F}(U)$'s.
+	\[
+	\varinjlim \mathscr{F}(U) \coloneqq \coprod_{U \in I} \mathscr{F}(U) \bigg/ \sim 
+	\]
+	Note that for any two elements $U, V \in I$, one has $[0_U] = [0_V]$ and $[1_U] = [1_V]$, where $[0_U]$ (\textit{resp.} $[1_U]$) denotes the class of the zero element (\textit{resp.} the multiplicative unit) of the ring $\mathscr{F}(U)$. \\
+	Last, on each component $\mathscr{F}(U)$ the ring operations of $\varinjlim \mathscr{F}(U)$ are those of $\mathscr{F}(U)$. 
+\end{construction}
+
+\begin{ex}
+	Prove $(\varinjlim \mathscr{F}(U), 0, +, 1, \times)$ is a ring. 
+\end{ex}
+
+\begin{definition}[direct limit]
+	Let $X$ be a topological space, $\mathscr{F}$ a sheaf of rings on $X$ and $I$ a set of open subsets of $X$. The direct limit over $I$ is the ring $\varinjlim \mathscr{F}(U)$.
+\end{definition}
+
+\begin{definition}[stalks of a presheaf]
+	Let $X$ be a topological space, $\mathscr{F}$ a sheaf of rings on $X$ and $x$ an element of $X$. \\
+	The stalk $\mathscr{F}_x$ of $\mathscr{F}$ at $x$ is the direct limit over the set of all the open neighborhoods of $x$.   
+\end{definition}
+
 \begin{definition}[locally ringed space]
-		
+	A locally ringed space is a ringed space $(X, \mathscr{O}_X)$ such that the stalk $(\mathscr{O}_X)_x$ is a local ring for every $x \in X$.
 \end{definition}
 
 \begin{ex}
 	Prove $(Spec R, \mathscr{O}_R)$ is a locally ringed space.
-\end{ex}	
-
+\end{ex}		
+			
 \begin{definition}[morphism of locally ringed spaces]
 	
 \end{definition}	
@@ -330,7 +359,7 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 \end{definition}
 
 \begin{definition}[scheme]
-	
+	A scheme is a locally ringed space $(X, \mathscr{O}_X)$ in which every point has an open neighborhood $U$ such that the topological space $U$, together with the sheaf $\mathscr{O}_X | _U$, is an affine scheme.
 \end{definition}	
 																	
 
