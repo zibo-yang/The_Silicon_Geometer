@@ -143,7 +143,7 @@ Let $k$ be an algebraically closed field and $A$ denote the ring $k \left[ x_1, 
 \end{definition}
 
 \begin{definition}[entire ring]
-	A ring $R$ is said to be entire if $1 \neq 0$ and there are no zero divisors in $R$. 
+	A ring $R$ is said to be entire if it is commutative, $1 \neq 0$ and there are no zero divisors in $R$. 
 \end{definition}
 
 Let $R$ be an entire ring. 
@@ -181,7 +181,7 @@ Let $R$ be an entire ring.
 \end{ex}		
 
 \begin{notation}
-	If $\mathfrak{i}$ is an ideal of $R$, $V(\mathfrak{a})$ denotes the set of all prime ideals of $R$ which contain $\mathfrak{a}$. 
+	If $\mathfrak{a}$ is an ideal of $R$, $V(\mathfrak{a})$ denotes the set of all prime ideals of $R$ which contain $\mathfrak{a}$. 
 \end{notation}
 
 \begin{remark}
@@ -193,7 +193,7 @@ Prove the equality $V(\mathfrak{a} \mathfrak{b}) = V(\mathfrak{a}) \cup V(\mathf
 \end{ex}
 
 \begin{ex}
-	Prove the equality $V(\sum \mathfrak{a}_i) = \bigcap V(\mathfrak{a}_i)$ for any familly of prime ideals.
+	Prove the equality $V(\sum \mathfrak{a}_i) = \bigcap V(\mathfrak{a}_i)$ for any family of prime ideals.
 \end{ex}
 
 \begin{ex}
@@ -288,21 +288,21 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 \end{definition}
 
 \begin{cons}
-	Let $U$ be an open subset of Spec $R$. We define $\mathscr{O}(U)$ to be the set of all functions 
+	Let $U$ be an open subset of Spec $R$. We define $\mathscr{O}_R(U)$ to be the set of all functions 
 	\[
 	s: U \rightarrow \bigcup \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
 	\]
 	such that $s(\mathfrak{p}) \in R_{\mathfrak{p}}$ for every $\mathfrak{p} \in U$ and such that for every $\mathfrak{p} \in U$, there exist a neighborhood $V$ of $\mathfrak{p}$, contained in $U$, and elements $r, f \in R$, such that for each $\mathfrak{q} \in V$, $f \notin \mathfrak{q}$ and $s(\mathfrak{q}) = r/f$. \\
-	We endow $\mathscr{O}(U)$ with the sum and product of such functions and we take for the multiplicative unit the function that maps each $\mathfrak{p}$ on the multiplicative unit of $R_{\mathfrak{p}}$. \\
-	Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}(U) \rightarrow \mathscr{O}(V)$ maps each $s \in \mathscr{O}(u)$ on its restriction $s \restriction V$. 
+	We endow $\mathscr{O}_R(U)$ with the sum and product of such functions and we take for the multiplicative unit the function that maps each $\mathfrak{p}$ on the multiplicative unit of $R_{\mathfrak{p}}$. \\
+	Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}_R(U) \rightarrow \mathscr{O}_R(V)$ maps each $s \in \mathscr{O}_R(U)$ on its restriction to $V$. 
 \end{cons}
 
 \begin{ex}
-	Prove $\mathscr{O}$ is a sheaf of rings on Spec $R$. 
+	Prove $\mathscr{O}_R$ is a sheaf of rings on Spec $R$. 
 \end{ex}			
 
 \begin{definition}[spectrum of a ring]
-	The spectrum of the ring $R$ is the pair consisting of the topological space $Spec R$ together with the sheaf of rings $\mathscr{O}$.
+	The spectrum of the ring $R$ is the pair consisting of the topological space $Spec R$ together with the sheaf of rings $\mathscr{O}_R$.
 \end{definition}
 
 \begin{definition}[ringed space]
@@ -310,7 +310,7 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 \end{definition}
 
 \begin{definition}[morphism of ringed spaces]
-	A morphism of ringed spaces from $(X, \mathscr{O}(X))$ to $(Y, \mathscr{O}(Y))$ is a pair $(f, f^{\sharp})$ consisting of a continuous map $f: X \rightarrow Y$ between topological spaces and a morphism $f^{\sharp}: \mathscr{O}_Y \rightarrow f_{*} \mathscr{O}_X$ of sheaves of rings.   
+	A morphism of ringed spaces from $(X, \mathscr{O}(X))$ to $(Y, \mathscr{O}(Y))$ is a pair $(f, \phi_f)$ consisting of a continuous map $f: X \rightarrow Y$ between topological spaces and a morphism $\phi_f: \mathscr{O}_Y \rightarrow f_{*} \mathscr{O}_X$ of sheaves of rings.   
 \end{definition}
 
 \begin{definition}[locally ringed space]
@@ -318,7 +318,7 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 \end{definition}
 
 \begin{ex}
-	Prove $(Spec R, \mathscr{O})$ is a locally ringed space.
+	Prove $(Spec R, \mathscr{O}_R)$ is a locally ringed space.
 \end{ex}	
 
 \begin{definition}[morphism of locally ringed spaces]
@@ -326,7 +326,7 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 \end{definition}	
 
 \begin{definition}[affine scheme]
-	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic to the spectrum $(Spec R, \mathscr{O})$ for some ring $R$. 
+	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic to the spectrum $(Spec R, \mathscr{O}_R)$ for some ring $R$. 
 \end{definition}
 
 \begin{definition}[scheme]
