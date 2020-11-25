@@ -1,4 +1,4 @@
-\documentclass[12pt]{report}
+\documentclass[12pt]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -70,12 +70,15 @@
 
 \begin{document}
 	
-\title{Blueprint}
+\title{What is a Scheme in Algebraic Geometry?}
 \author{Anthony Bordg}
 \date{\today}
 \maketitle
 
-
+\begin{abstract}
+% To be completed	
+\end{abstract}
+	
 Let $k$ be an algebraically closed field and $A$ denote the ring $k \left[ x_1, \dots, x_n \right]$. \\
 
 \begin{definition}[affine $n$-space] 
@@ -217,7 +220,19 @@ satisfying
 
 \begin{notation}
 	The elements of $\mathscr{F}(U)$ are sometimes called the sections of the presheaf $\mathscr{F}$ and given $s \in \mathscr{F}(U)$, $s\restriction V$ denotes the element $\rho_{UV}(s)$.
-\end{notation}	
+\end{notation}
+
+\begin{definition}[morphism of presheaves of rings]
+	A morphism $\phi: \mathscr{F} \rightarrow \mathscr{F}'$ of sheaves of rings on a topological space $X$ is given by a morphism $\phi_U: \mathscr{F}(U) \rightarrow \mathscr{F}'(U)$ for each open subset $U$ of $X$ such that  the following diagram commutes
+	\[
+	\begin{tikzcd}
+	\mathscr{F}(U) \arrow[r, "\phi_U"] \arrow[d, "\rho_{UV}"] & \mathscr{F}'(U) \arrow[d, "\rho'_{UV}"] \\
+	\mathscr{F}(V) \arrow[r, "\phi_V"] & \mathscr{F}'(V) 
+	\end{tikzcd}
+	\]
+	for every inclusion $V \subseteq U$. \\
+	An isomorphism of presheaves is a morphism which has a two-sided inverse.
+\end{definition}		
 
 \begin{definition}[sheaf of rings]
 	A sheaf of rings on a topological space $X$ is a presheaf on $X$ that satisfies the following additional properties:
@@ -227,6 +242,22 @@ satisfying
 		\item Given an open set $U$, $\lbrace V_i \rbrace$ an open covering of $U$ and elements $s_i \in \mathscr{F}(V_i)$ for each $i$ satisfying $s_i \restriction V_i \cap V_j = s_j \restriction V_i \cap V_j$ for all $i$ and $j$, then there exists an element $s \in \mathscr{F}(U)$ such that $s \restriction V_i = s_i$ for all $i$.  
 	\end{enumerate}	
 \end{definition}
+
+\begin{definition}[morphism of sheaves of rings]
+	A morphism of sheaves of rings is a morphism of presheaves of rings.
+\end{definition}	
+
+\begin{cons}
+	Let $f: X \rightarrow Y$ be a continuous map between topological spaces and $\mathscr{F}$ a sheaf of rings on $X$. Given an open subset $V$ of $Y$, define $(f_{*} \mathscr{F})(V)$ to be $\mathscr{F} (f^{-1}(Y))$.  
+\end{cons}
+
+\begin{ex}
+	Prove $f_{*} \mathscr{F}$ above is a sheaf of rings on the topological space $Y$.  
+\end{ex}
+
+\begin{definition}[direct image sheaf]
+	Let $f: X \rightarrow Y$ be a continuous map between topological spaces and $\mathscr{F}$ a sheaf of rings on $X$. The sheaf $f_{*} \mathscr{F}$ is the direct image of $\mathscr{F}$. 
+\end{definition}		
 
 \begin{cons}
 	Let $S$ be a multiplicative submonoid of $R$. We consider pairs $(r, s)$ with $r \in R$ and $s \in S$ and we define the following relation on them
@@ -272,16 +303,49 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 
 \begin{definition}[spectrum of a ring]
 	The spectrum of the ring $R$ is the pair consisting of the topological space $Spec R$ together with the sheaf of rings $\mathscr{O}$.
-\end{definition}												
+\end{definition}
+
+\begin{definition}[ringed space]
+	A ringed space is a pair $(X, \mathscr{O}(X))$, where $X$ is a topological space and $\mathscr{O}(X)$ is a sheaf of rings on $X$.
+\end{definition}
+
+\begin{definition}[morphism of ringed spaces]
+	A morphism of ringed spaces from $(X, \mathscr{O}(X))$ to $(Y, \mathscr{O}(Y))$ is a pair $(f, f^{\sharp})$ consisting of a continuous map $f: X \rightarrow Y$ between topological spaces and a morphism $f^{\sharp}: \mathscr{O}_Y \rightarrow f_{*} \mathscr{O}_X$ of sheaves of rings.   
+\end{definition}
+
+\begin{definition}[locally ringed space]
+		
+\end{definition}
+
+\begin{ex}
+	Prove $(Spec R, \mathscr{O})$ is a locally ringed space.
+\end{ex}	
+
+\begin{definition}[morphism of locally ringed spaces]
+	
+\end{definition}	
+
+\begin{definition}[affine scheme]
+	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic to the spectrum $(Spec R, \mathscr{O})$ for some ring $R$. 
+\end{definition}
+
+\begin{definition}[scheme]
+	
+\end{definition}	
+																	
 
 \begin{appendices}
 	\addappheadtotoc
-	
-\chapter{Commutative Algebra}
-\label{chap:commalg}
 
-\section{Fields}
-\label{sec:fields}
+\section{Solutions of exercises}
+
+% To be completed
+	
+%\section{Commutative Algebra}
+%\label{chap:commalg}
+
+%\subsection{Fields}
+%\label{sec:fields}
 	
 \end{appendices}						
 
