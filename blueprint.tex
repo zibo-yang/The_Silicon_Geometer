@@ -70,15 +70,10 @@
 
 \begin{document}
 
-\title{Blueprint}	
-%\title{What is a Scheme in Algebraic Geometry?}
+\title{Blueprint}
 \author{Anthony Bordg}
 \date{\today}
 \maketitle
-
-\begin{abstract}
-% To be completed	
-\end{abstract}
 	
 Let $k$ be an algebraically closed field and $A$ denote the ring $k \left[ x_1, \dots, x_n \right]$. \\
 
@@ -324,18 +319,18 @@ satisfying
 	$s \sim t$ if and only if there exists $W \in I$ such that $W \subseteq U \cap V$ and $s \restriction W = t \restriction W$. One checks that $\sim$ is an equivalence relation. \\
 	Now, we consider the quotient of the disjoint union of the $\mathscr{F}(U)$'s.
 	\[
-	\varinjlim \mathscr{F}(U) \coloneqq \coprod_{U \in I} \mathscr{F}(U) \bigg/ \sim 
+	\varinjlim_I \mathscr{F}(U) \coloneqq \coprod_{U \in I} \mathscr{F}(U) \bigg/ \sim 
 	\]
 	Note that for any two elements $U, V \in I$, one has $[0_U] = [0_V]$ and $[1_U] = [1_V]$, where $[0_U]$ (\textit{resp.} $[1_U]$) denotes the class of the zero element (\textit{resp.} the multiplicative unit) of the ring $\mathscr{F}(U)$. \\
-	Last, on each component $\mathscr{F}(U)$ the ring operations of $\varinjlim \mathscr{F}(U)$ are those of $\mathscr{F}(U)$. 
+	Last, on each component $\mathscr{F}(U)$ the ring operations of $\displaystyle \varinjlim_{I} \mathscr{F}(U)$ are those of $\mathscr{F}(U)$. 
 \end{construction}
 
 \begin{ex}
-	Prove $(\varinjlim \mathscr{F}(U), 0, +, 1, \times)$ is a ring. 
+	Prove $(\displaystyle \varinjlim_I \mathscr{F}(U), 0, +, 1, \times)$ is a ring. 
 \end{ex}
 
 \begin{definition}[direct limit]
-	Let $X$ be a topological space, $\mathscr{F}$ a sheaf of rings on $X$ and $I$ a set of open subsets of $X$. The direct limit over $I$ is the ring $\varinjlim \mathscr{F}(U)$.
+	Let $X$ be a topological space, $\mathscr{F}$ a sheaf of rings on $X$ and $I$ a set of open subsets of $X$. The direct limit over $I$ is the ring $\displaystyle \varinjlim_I \mathscr{F}(U)$ or simply $\varinjlim \mathscr{F}(U)$.
 \end{definition}
 
 \begin{definition}[stalks of a presheaf]
@@ -369,7 +364,15 @@ satisfying
 \end{ex}
 
 \begin{cons}
-	
+	Let $(X, \mathscr{O}_X)$, $(Y, \mathscr{O}_Y)$ be two ringed spaces and $(f, \phi_f)$ a morphism between them. Given $x \in X$, consider 
+	\[
+	I \coloneqq \lbrace V \mid V \, \text{is an open neighborhhood of}\, f(x) \rbrace .
+	\]
+	Since we have a morphism $\phi_f: \mathscr{O}_Y \rightarrow f_* \mathscr{O}_X $ of sheaves on $Y$, we get a map between the direct limits over $I$. 
+	\[
+	(\mathscr{O}_Y)_{f(x)} \rightarrow \displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)
+	\]
+	Last, there is a natural inclusion from $\displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)$ to $(\mathscr{O}_X)_x$, so eventually we get an induced morphism of rings from $(\mathscr{O}_Y)_{f(x)}$ to $(\mathscr{O}_X)_x$ which we will denote $\phi_{f, x}$. 
 \end{cons}	
 				
 \begin{definition}[morphism of locally ringed spaces]
