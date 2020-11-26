@@ -69,8 +69,9 @@
 \makeindex
 
 \begin{document}
-	
-\title{What is a Scheme in Algebraic Geometry?}
+
+\title{Blueprint}	
+%\title{What is a Scheme in Algebraic Geometry?}
 \author{Anthony Bordg}
 \date{\today}
 \maketitle
@@ -287,9 +288,9 @@ satisfying
 	Let $S$ be a multiplicative submonoid of $R$. The quotient ring of $R$ by $S$ is $S^{-1} R$. 
 \end{definition}
 
-\begin{definition}[local ring]
-Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{p}$ in $R$. The local ring of $R$ at $\mathfrak{p}$, denoted $R_{\mathfrak{p}}$, is $S^{-1} R$. 	
-\end{definition}
+\begin{definition}[local ring at a prime ideal] \label{localringat}
+	Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{p}$ in $R$. The local ring of $R$ at $\mathfrak{p}$, denoted $R_{\mathfrak{p}}$, is $S^{-1} R$. 
+\end{definition}	
 
 \begin{cons}
 	Let $U$ be an open subset of Spec $R$. We define $\mathscr{O}_R(U)$ to be the set of all functions 
@@ -342,20 +343,41 @@ Let $\mathfrak{p}$ be a prime ideal of $R$ and $S$ the complement of $\mathfrak{
 	The stalk $\mathscr{F}_x$ of $\mathscr{F}$ at $x$ is the direct limit over the set of all the open neighborhoods of $x$.   
 \end{definition}
 
+\begin{definition}[maximal ideal]
+	Let $\mathfrak{m}$ be an ideal of $R$. The ideal $\mathfrak{m}$ is maximal if $\mathfrak{m} \neq R$ and there is no ideal $\mathfrak{a} \neq R$ such that $\mathfrak{m} \subset \mathfrak{a}$.
+\end{definition}
+
+\begin{definition}[local ring]
+	A ring is a local ring if it is commutative and it has a unique maximal ideal. 	
+\end{definition}
+
+\begin{ex}
+	Prove $R_{\mathfrak{p}}$ \ref{localringat} is a local ring.
+\end{ex}
+
+\begin{definition}[local homomorphism]
+	Let $A$ and $B$ be two local rings and $\mathfrak{m}_A$, $\mathfrak{m}_B$ their respective maximal ideals. \\
+	A local homomorphism $f: A \rightarrow B$ is a morphism of rings such that $f^{-1} (\mathfrak{m}_B) = \mathfrak{m}_A$. 
+\end{definition}		
+
 \begin{definition}[locally ringed space]
 	A locally ringed space is a ringed space $(X, \mathscr{O}_X)$ such that the stalk $(\mathscr{O}_X)_x$ is a local ring for every $x \in X$.
 \end{definition}
 
 \begin{ex}
 	Prove $(Spec R, \mathscr{O}_R)$ is a locally ringed space.
-\end{ex}		
-			
-\begin{definition}[morphism of locally ringed spaces]
+\end{ex}
+
+\begin{cons}
 	
+\end{cons}	
+				
+\begin{definition}[morphism of locally ringed spaces]
+	A morphism of locally ringed spaces from $(X, \mathscr{O}_X)$ to $(Y, \mathscr{O}_Y)$ is a morphism $(f, \phi_f)$ between ringed spaces such that the induced map of local rings $\phi_{f, x}: (\mathscr{O}_Y)_{f(x)} \rightarrow (\mathscr{O}_X)_x$ is a local homomorphism for every $x \in X$.  
 \end{definition}	
 
 \begin{definition}[affine scheme]
-	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic to the spectrum $(Spec R, \mathscr{O}_R)$ for some ring $R$. 
+	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic (as a locally ringed space) to the spectrum $(Spec R, \mathscr{O}_R)$ for some ring $R$. 
 \end{definition}
 
 \begin{definition}[scheme]
