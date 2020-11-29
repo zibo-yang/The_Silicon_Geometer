@@ -1,9 +1,12 @@
 theory Comm_Ring_Theory
   imports "Jacobson_Basic_Algebra.Ring_Theory"
+          "Group_Further_Theory"
 
 begin
 
 section \<open>Commutative Rings\<close>
+
+no_notation plus (infixl "+" 65)
 
 locale comm_ring = ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
   for R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") +
@@ -25,7 +28,7 @@ lemma shows "ideal R R (+) (\<cdot>) \<zero> \<one>" sorry
 lemma shows "ideal {\<zero>} R (+) (\<cdot>) \<zero> \<one>" sorry
 
 definition comp_ideal :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
-  where "comp_ideal \<aa> \<bb> \<equiv> {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>}"
+  where "comp_ideal \<aa> \<bb> \<equiv> subgroup_generated {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>}"
 (* A better name for comp_ideal? Introduce a notation? *)
 
 lemma 
@@ -64,7 +67,7 @@ definition spectrum :: "('a set) set" ("Spec")
   where "Spec \<equiv> {I. ideal I R (+) (\<cdot>) \<zero> \<one>}"
 
 (* Notation 1 *)
-definition all_prime_ideals_containing :: "'a set \<Rightarrow> ('a set) set" ("\<V> _")
+definition closed_subsets :: "'a set \<Rightarrow> ('a set) set" ("\<V> _")
   where "\<V> \<aa> \<equiv> {I. prime_ideal I R (+) (\<cdot>) \<zero> \<one> \<and> \<aa> \<subseteq> I}"
 
 (* remark 0.11 *)
