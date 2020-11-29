@@ -71,7 +71,6 @@ end
 section \<open>Algebraically Closed Fields\<close>
 
 locale alg_closed_field = field +
-     (*I don't think 'degree f > 0' is really necessary here*)
   assumes alg_closed: "\<forall>f \<in> upoly_with_coeff_in R. degree f > 0 \<longrightarrow> (\<exists>r\<in>R. eval_poly f r = \<zero>)" 
 
 (* Possibly some equivalent formulations of the property of being algebraically closed *)
