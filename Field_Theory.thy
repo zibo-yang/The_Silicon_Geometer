@@ -59,11 +59,11 @@ definition fold_coeffs :: "('a \<Rightarrow> 'b \<Rightarrow> 'b) \<Rightarrow> 
 definition eval_poly :: "'a upoly \<Rightarrow> 'a \<Rightarrow> 'a"
   where "eval_poly p = fold_coeffs (\<lambda>a f x. a + x \<cdot> f x) p (\<lambda>x. \<zero>)" \<comment> \<open>The Horner Schema\<close>
 
-definition is_upoly :: "'a set \<Rightarrow> 'a upoly \<Rightarrow> bool" where
-  "is_upoly carrier f \<equiv>  ((\<forall>\<^sub>\<infinity> n. f n = \<zero>) \<and> (\<forall>n. f n \<in> carrier))"
+definition is_upoly :: "'a set \<Rightarrow> 'a upoly \<Rightarrow> bool" 
+  where "is_upoly carrier f \<equiv>  ((\<forall>\<^sub>\<infinity> n. f n = \<zero>) \<and> (\<forall>n. f n \<in> carrier))"
 
-definition from_carrier_set :: "'a set \<Rightarrow> ('a upoly) set" where
-  "from_carrier_set carrier = {f. is_upoly carrier f}"
+definition upoly_with_coeff_in :: "'a set \<Rightarrow> ('a upoly) set" 
+  where "upoly_with_coeff_in carrier = {f. is_upoly carrier f}"
 
 end
 
@@ -72,7 +72,7 @@ section \<open>Algebraically Closed Fields\<close>
 
 locale alg_closed_field = field +
      (*I don't think 'degree f > 0' is really necessary here*)
-  assumes alg_closed: "\<forall>f \<in> from_carrier_set R. degree f > 0 \<longrightarrow> (\<exists>r\<in>R. eval_poly f r = \<zero>)" 
+  assumes alg_closed: "\<forall>f \<in> upoly_with_coeff_in R. degree f > 0 \<longrightarrow> (\<exists>r\<in>R. eval_poly f r = \<zero>)" 
 
 (* Possibly some equivalent formulations of the property of being algebraically closed *)
 
