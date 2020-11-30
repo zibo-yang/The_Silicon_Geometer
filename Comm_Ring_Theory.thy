@@ -27,18 +27,13 @@ lemma shows "ideal R R (+) (\<cdot>) \<zero> \<one>" sorry
 
 lemma shows "ideal {\<zero>} R (+) (\<cdot>) \<zero> \<one>" sorry
 
-definition comp_ideal :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
-  where "comp_ideal \<aa> \<bb> \<equiv> subgroup_generated {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>}"
-(* A better name for comp_ideal? Introduce a notation? *)
+definition ideal_gen_by_prod :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
+  where "ideal_gen_by_prod \<aa> \<bb> \<equiv> additive.subgroup_generated {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>}"
 
+(* ex. 0.12 *)
 lemma 
   assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
-  shows "ideal (comp_ideal \<aa> \<bb>) R (+) (\<cdot>) \<zero> \<one>" sorry
-
-(* ex. 0.17 *)
-lemma 
-  assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
-  shows "ideal (comp_ideal \<aa> \<bb>) R (+) (\<cdot>) \<zero> \<one>" sorry
+  shows "ideal (ideal_gen_by_prod \<aa> \<bb>) R (+) (\<cdot>) \<zero> \<one>" sorry
 
 end (* entire_ring *)
 
@@ -77,10 +72,10 @@ lemma
 lemma
   shows "\<V> {} = Spec" sorry
 
-(* ex. 0.12 *)
+(* ex. 0.13 *)
 lemma
   assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
-  shows "\<V> (comp_ideal \<aa> \<bb>) = (\<V> \<aa>) \<union> (\<V> \<bb>)" sorry
+  shows "\<V> (ideal_gen_by_prod \<aa> \<bb>) = (\<V> \<aa>) \<union> (\<V> \<bb>)" sorry
 
 end (* entire_ring *)
 
