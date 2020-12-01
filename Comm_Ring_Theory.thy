@@ -30,6 +30,9 @@ lemma shows "ideal {\<zero>} R (+) (\<cdot>) \<zero> \<one>" sorry
 definition ideal_gen_by_prod :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
   where "ideal_gen_by_prod \<aa> \<bb> \<equiv> additive.subgroup_generated {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>}"
 
+(* I don't know if this could be useful, but the ideal defined above is also the intersection of 
+all ideals containing {a\<cdot>b | a \<in> \<aa>, b \<in> \<bb>}. *)
+
 (* ex. 0.12 *)
 lemma 
   assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
@@ -59,7 +62,7 @@ context entire_ring
 begin
 
 definition spectrum :: "('a set) set" ("Spec")
-  where "Spec \<equiv> {I. ideal I R (+) (\<cdot>) \<zero> \<one>}"
+  where "Spec \<equiv> {I. prime_ideal I R (+) (\<cdot>) \<zero> \<one>}"
 
 (* Notation 1 *)
 definition closed_subsets :: "'a set \<Rightarrow> ('a set) set" ("\<V> _")
