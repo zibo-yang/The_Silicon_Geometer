@@ -31,7 +31,11 @@ definition ideal_gen_by_prod :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a se
   where "ideal_gen_by_prod \<aa> \<bb> \<equiv> additive.subgroup_generated {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>}"
 
 (* I don't know if this could be useful, but the ideal defined above is also the intersection of 
-all ideals containing {a\<cdot>b | a \<in> \<aa>, b \<in> \<bb>}. *)
+all ideals containing {a\<cdot>b | a \<in> \<aa>, b \<in> \<bb>}. So, we have the following lemma: *)
+
+lemma
+  assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
+  shows "ideal_gen_by_prod \<aa> \<bb> = (\<Inter>I\<in>{I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>} \<subseteq> I}. I)" sorry
 
 (* ex. 0.12 *)
 lemma 
@@ -79,6 +83,13 @@ lemma
 lemma
   assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
   shows "\<V> (ideal_gen_by_prod \<aa> \<bb>) = (\<V> \<aa>) \<union> (\<V> \<bb>)" sorry
+
+(* The ideal defined in ex. 0.14 is also the intersection of all ideals containing \<Union>i\<in>I. \<aa>\<^sub>i *)
+(* ex. 0.15 *)
+lemma
+  fixes J :: "'b set" and \<aa> :: "'b \<Rightarrow> 'a set"
+  assumes "ideal (\<aa> j) R (+) (\<cdot>) \<zero> \<one>"
+  shows "\<V> (\<Inter>I\<in>{I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> (\<Union>j\<in>J. \<aa> j) \<subseteq> I}. I) = (\<Inter>j\<in>J. \<V> (\<aa> j))" sorry
 
 end (* entire_ring *)
 
