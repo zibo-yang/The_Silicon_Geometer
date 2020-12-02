@@ -5,7 +5,7 @@ theory Comm_Ring_Theory
 
 begin
 
-section \<open>Commutative Rings\<close>
+section \<open>Commutative Rings\<close> 
 
 subsection \<open>Commutative Rings\<close>
 
@@ -108,9 +108,27 @@ lemma zarisky_is_topological_space:
 end (* entire_ring *)
 
 subsection \<open>Presheaves of Rings\<close>
-(*
-locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a set" and 
-\<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a set \<Rightarrow> 'a set)" assumes is_ring: "\<forall>U. is_open U \<Longrightarrow> ring \<FF> U "
-*)
+
+record 'a ring = 
+  carrier:: "'a set"
+  add:: "'a \<Rightarrow> 'a \<Rightarrow> 'a"
+  mult:: "'a \<Rightarrow> 'a \<Rightarrow> 'a"
+  zero:: "'a"
+  one:: "'a"
+
+definition trivial_ring :: "'a \<Rightarrow> 'a ring"
+  where "trivial_ring a \<equiv> \<lparr>carrier = {a}, add = \<lambda>x y. a, mult = \<lambda>x y. a,zero = a, one = a\<rparr>"
+
+(* def. 0.17 *)
+locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a ring" and 
+\<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a)" and a:: "'a" 
+assumes is_ring: "\<forall>U. is_open U \<Longrightarrow> ring (carrier (\<FF> U)) (add (\<FF> U)) (mult (\<FF> U)) (zero (\<FF> U)) (one (\<FF> U))"
+and is_homomorphism: 
+"\<forall>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
+                                   (carrier (\<FF> U)) (add (\<FF> U)) (mult (\<FF> U)) (zero (\<FF> U)) (one (\<FF> U)) 
+                                   (carrier (\<FF> V)) (add (\<FF> V)) (mult (\<FF> V)) (zero (\<FF> V)) (one (\<FF> V))"
+and ring_of_empty: "\<FF> {} = trivial_ring a"
+and assoc_comp: "\<forall>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
+
 
 end
