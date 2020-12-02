@@ -1,10 +1,13 @@
 theory Comm_Ring_Theory
   imports "Jacobson_Basic_Algebra.Ring_Theory"
           "Group_Further_Theory"
+          "Topological_Space_Theory"
 
 begin
 
 section \<open>Commutative Rings\<close>
+
+subsection \<open>Commutative Rings\<close>
 
 no_notation plus (infixl "+" 65)
 
@@ -16,11 +19,15 @@ locale comm_ring = ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>"
 definition (in ring) zero_divisor :: "'a \<Rightarrow> 'a \<Rightarrow> bool" 
   where "zero_divisor x y \<equiv> (x \<noteq> \<zero>) \<and> (y \<noteq> \<zero>) \<and> (x \<cdot> y = \<zero>)"
 
+subsection \<open>Entire Rings\<close>
+
 (* def 0.14 *)
 locale entire_ring = comm_ring + assumes units_neq: "\<one> \<noteq> \<zero>" and 
 no_zero_divisors: "\<lbrakk> x \<in> R; y \<in> R\<rbrakk> \<Longrightarrow> \<not>(zero_divisor x y)"
 
-begin
+subsection \<open>Ideals\<close>
+
+context entire_ring begin
 
 (* ex. 0.16 *)
 lemma shows "ideal R R (+) (\<cdot>) \<zero> \<one>" sorry 
@@ -62,9 +69,11 @@ lemma
 
 end (* prime_ideal *)
 
-context entire_ring
-begin
+subsection \<open>Spectrum of a ring\<close>
 
+context entire_ring begin
+
+(* notation 2 *)
 definition spectrum :: "('a set) set" ("Spec")
   where "Spec \<equiv> {I. prime_ideal I R (+) (\<cdot>) \<zero> \<one>}"
 
@@ -91,7 +100,17 @@ lemma
   assumes "ideal (\<aa> j) R (+) (\<cdot>) \<zero> \<one>"
   shows "\<V> (\<Inter>I\<in>{I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> (\<Union>j\<in>J. \<aa> j) \<subseteq> I}. I) = (\<Inter>j\<in>J. \<V> (\<aa> j))" sorry
 
+(* ex 0.16 *)
+lemma zarisky_is_topological_space:
+  shows "topological_space Spec (generated_topology {U. \<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>})"
+  sorry
+
 end (* entire_ring *)
 
+subsection \<open>Presheaves of Rings\<close>
+(*
+locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a set" and 
+\<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a set \<Rightarrow> 'a set)" assumes is_ring: "\<forall>U. is_open U \<Longrightarrow> ring \<FF> U "
+*)
 
 end
