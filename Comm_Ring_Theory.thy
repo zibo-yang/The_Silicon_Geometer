@@ -128,6 +128,7 @@ and is_homomorphism:
                                    (carrier (\<FF> U)) (add (\<FF> U)) (mult (\<FF> U)) (zero (\<FF> U)) (one (\<FF> U)) 
                                    (carrier (\<FF> V)) (add (\<FF> V)) (mult (\<FF> V)) (zero (\<FF> V)) (one (\<FF> V))"
 and ring_of_empty: "\<FF> {} = trivial_ring a"
+and identity_map: "\<forall>U. is_open U \<Longrightarrow> \<rho> U U = id"
 and assoc_comp: "\<forall>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
 
 
