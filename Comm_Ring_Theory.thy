@@ -136,8 +136,10 @@ and assoc_comp:
 *)
 
 (* Second version of def 0.17 without records: *)
-locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a set" and 
-\<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a)" and a:: "'a" 
+locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a set"
+(* Is it possible to express in some way that the type 'a depends on the argument U of \<FF>? 
+If no, then the \<FF> U 's are forced to be sets of elements of the same type 'a. *)
+and \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a)" and a:: "'a" 
 assumes is_homomorphism: 
 "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
   (\<exists>add mult zero one add' mult' zero' one'. ring_homomorphism (\<rho> U V) 
@@ -155,5 +157,28 @@ lemma is_ring_from_is_homomorphism:
 
 end (* presheaf_of_rings *)
 
+(* 
+locale ring_homomorphism =
+  map \<eta> R R' + source: ring R "(+)" "(\<cdot>)" \<zero> \<one> + target: ring R' "(+')" "(\<cdot>')" "\<zero>'" "\<one>'" +
+  additive: group_homomorphism \<eta> R "(+)" \<zero> R' "(+')" "\<zero>'" +
+  multiplicative: monoid_homomorphism \<eta> R "(\<cdot>)" \<one> R' "(\<cdot>')" "\<one>'"
+  for \<eta>
+    and R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>")
+    and R' and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) and zero' ("\<zero>''") and unit' ("\<one>''")
+*)
+
+locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> a + 
+target: presheaf_of_rings X is_open \<FF>' \<rho>' a'
+for X and is_open and \<FF> and \<rho> and a and \<FF>' and \<rho>' and a' + 
+fixes fam_morphisms:: "'a set \<Rightarrow> ('a \<Rightarrow> 'a)"
+(* Is it possible to express that we require a morphism "fam_morphisms U" only if U is open? 
+If no, it's not a problem since for U not open one can still define "fam_morphisms U" to be the 
+morphism constant equal to a *)
+assumes is_ring_homomorphism: "\<And>U. is_open U \<Longrightarrow> (\<exists>add mult zero one add' mult' zero' one'. 
+                                                    ring_homomorphism (fam_morphisms U) 
+                                                                      (\<FF> U) add mult zero one 
+                                                                      (\<FF>' U) add' mult' zero' one')"
+and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
+                      (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)" 
 
 end
