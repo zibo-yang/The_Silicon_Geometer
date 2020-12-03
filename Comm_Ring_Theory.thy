@@ -109,6 +109,9 @@ end (* entire_ring *)
 
 subsection \<open>Presheaves of Rings\<close>
 
+(* def. 0.17 *)
+(* First version using a record:
+
 record 'a ring = 
   carrier:: "'a set"
   add:: "'a \<Rightarrow> 'a \<Rightarrow> 'a"
@@ -119,17 +122,38 @@ record 'a ring =
 definition trivial_ring :: "'a \<Rightarrow> 'a ring"
   where "trivial_ring a \<equiv> \<lparr>carrier = {a}, add = \<lambda>x y. a, mult = \<lambda>x y. a,zero = a, one = a\<rparr>"
 
-(* def. 0.17 *)
 locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a ring" and 
 \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a)" and a:: "'a" 
-assumes is_ring: "\<forall>U. is_open U \<Longrightarrow> ring (carrier (\<FF> U)) (add (\<FF> U)) (mult (\<FF> U)) (zero (\<FF> U)) (one (\<FF> U))"
+assumes is_ring: "\<And>U. is_open U \<Longrightarrow> ring (carrier (\<FF> U)) (add (\<FF> U)) (mult (\<FF> U)) (zero (\<FF> U)) (one (\<FF> U))"
 and is_homomorphism: 
-"\<forall>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
+"\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
                                    (carrier (\<FF> U)) (add (\<FF> U)) (mult (\<FF> U)) (zero (\<FF> U)) (one (\<FF> U)) 
                                    (carrier (\<FF> V)) (add (\<FF> V)) (mult (\<FF> V)) (zero (\<FF> V)) (one (\<FF> V))"
 and ring_of_empty: "\<FF> {} = trivial_ring a"
-and identity_map: "\<forall>U. is_open U \<Longrightarrow> \<rho> U U = id"
-and assoc_comp: "\<forall>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
+and identity_map: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
+and assoc_comp: 
+"\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
+*)
+
+(* Second version of def 0.17 without records: *)
+locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a set" and 
+\<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a)" and a:: "'a" 
+assumes is_homomorphism: 
+"\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
+  (\<exists>add mult zero one add' mult' zero' one'. ring_homomorphism (\<rho> U V) 
+                                              (\<FF> U) add mult zero one (\<FF> V) add' mult' zero' one')"
+and ring_of_empty: "\<FF> {} = {a}"
+and identity_map: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
+and assoc_comp: 
+"\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
+
+begin
+
+lemma is_ring_from_is_homomorphism:
+  shows "\<And>U. is_open U \<Longrightarrow> (\<exists>add mult zero one. ring (\<FF> U) add mult zero one)"
+  using is_homomorphism ring_homomorphism.axioms(2) by fastforce
+
+end (* presheaf_of_rings *)
 
 
 end
