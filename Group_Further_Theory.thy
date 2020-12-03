@@ -1,5 +1,5 @@
 theory Group_Further_Theory
-  imports Main "Jacobson_Basic_Algebra.Group_Theory" Sketch_and_Explore
+  imports Main "Jacobson_Basic_Algebra.Group_Theory"
 
 begin
 
