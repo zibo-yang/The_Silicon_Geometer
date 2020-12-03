@@ -157,16 +157,6 @@ lemma is_ring_from_is_homomorphism:
 
 end (* presheaf_of_rings *)
 
-(* 
-locale ring_homomorphism =
-  map \<eta> R R' + source: ring R "(+)" "(\<cdot>)" \<zero> \<one> + target: ring R' "(+')" "(\<cdot>')" "\<zero>'" "\<one>'" +
-  additive: group_homomorphism \<eta> R "(+)" \<zero> R' "(+')" "\<zero>'" +
-  multiplicative: monoid_homomorphism \<eta> R "(\<cdot>)" \<one> R' "(\<cdot>')" "\<one>'"
-  for \<eta>
-    and R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>")
-    and R' and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) and zero' ("\<zero>''") and unit' ("\<one>''")
-*)
-
 locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> a + 
 target: presheaf_of_rings X is_open \<FF>' \<rho>' a'
 for X and is_open and \<FF> and \<rho> and a and \<FF>' and \<rho>' and a' + 
