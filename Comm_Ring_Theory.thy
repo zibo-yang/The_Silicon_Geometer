@@ -1,7 +1,7 @@
 theory Comm_Ring_Theory
   imports "Jacobson_Basic_Algebra.Ring_Theory"
           "Group_Further_Theory"
-          "Topological_Space_Theory"
+          "Topological_Space_Theory" 
 
 begin
 
@@ -30,19 +30,143 @@ subsection \<open>Ideals\<close>
 context entire_ring begin
 
 (* ex. 0.16 *)
-lemma shows "ideal R R (+) (\<cdot>) \<zero> \<one>" sorry 
+lemma ideal_R_R: "ideal R R (+) (\<cdot>) \<zero> \<one>"
+proof qed auto
 
-lemma shows "ideal {\<zero>} R (+) (\<cdot>) \<zero> \<one>" sorry
+lemma ideal_0_R: "ideal {\<zero>} R (+) (\<cdot>) \<zero> \<one>"
+proof
+  show "monoid.invertible {\<zero>} (+) \<zero> u"
+    if "u \<in> {\<zero>}"
+    for u :: 'a
+  proof (rule monoid.invertibleI)
+    show "Group_Theory.monoid {\<zero>} (+) \<zero>"
+    proof qed (use that in auto)
+  qed (use that in auto)
+qed auto
 
 definition ideal_gen_by_prod :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set"
   where "ideal_gen_by_prod \<aa> \<bb> \<equiv> additive.subgroup_generated {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>}"
 
+lemma ideal_zero: "ideal A R add mult zero unit \<Longrightarrow> zero \<in> A"
+  by (simp add: ideal_def subgroup_of_additive_group_of_ring_def subgroup_def submonoid_def submonoid_axioms_def)
+
+lemma ideal_implies_subset:
+  assumes "ideal A R add mult zero unit"
+  shows "A \<subseteq> R"
+  by (meson assms ideal_def subgroup_def subgroup_of_additive_group_of_ring_def submonoid_axioms_def submonoid_def)
+
+lemma ideal_inverse:
+  assumes "a \<in> A" "ideal A R (+) mult zero unit"
+  shows "additive.inverse a \<in> A"
+  by (meson additive.invertible assms entire_ring.ideal_implies_subset entire_ring_axioms ideal_def subgroup.subgroup_inverse_iff subgroup_of_additive_group_of_ring_def subsetD)
+
+lemma ideal_add:
+  assumes "a \<in> A"  "b \<in> A" "ideal A R add mult zero unit"
+  shows "add a b \<in> A"
+  by (meson Group_Theory.group_def assms ideal_def monoid.composition_closed subgroup_def subgroup_of_additive_group_of_ring_def)
+
+lemma ideal_mult_in_subgroup_generated:
+  assumes \<aa>: "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and \<bb>: "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>" and "a \<in> \<aa>" "b \<in> \<bb>"
+  shows "a \<cdot> b \<in> ideal_gen_by_prod \<aa> \<bb>"
+  proof -
+  have "\<exists>x y. a \<cdot> b = x \<cdot> y \<and> x \<in> \<aa> \<and> y \<in> \<bb>"
+    using assms ideal_implies_subset by blast
+  with ideal_implies_subset show ?thesis
+    unfolding additive.subgroup_generated_def ideal_gen_by_prod_def
+    using assms ideal_implies_subset by (blast intro: additive.generate.incl)    
+qed
+
+subsection \<open>Exercises\<close>
+
 (* I don't know if this could be useful, but the ideal defined above is also the intersection of 
 all ideals containing {a\<cdot>b | a \<in> \<aa>, b \<in> \<bb>}. So, we have the following lemma: *)
 
-lemma
+lemma ideal_gen_by_prod_aux:
+  assumes \<aa>: "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and \<bb>: "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
+    and "a \<in> R" and b: "b \<in> ideal_gen_by_prod \<aa> \<bb>"
+  shows "a \<cdot> b \<in> ideal_gen_by_prod \<aa> \<bb>"
+  using b \<open>a \<in> R\<close>
+  unfolding additive.subgroup_generated_def ideal_gen_by_prod_def
+proof (induction arbitrary: a)
+  case unit
+  then show ?case
+    by (simp add: additive.generate.unit)
+next
+  case (incl x u)
+  with \<aa> \<bb> have "\<And>a b. \<lbrakk>a \<cdot> b \<in> R; a \<in> \<aa>; b \<in> \<bb>\<rbrakk> \<Longrightarrow> \<exists>x y. u \<cdot> (a \<cdot> b) = x \<cdot> y \<and> x \<in> \<aa> \<and> y \<in> \<bb>"
+    by simp (metis ideal.ideal(1) ideal_implies_subset multiplicative.associative subset_iff)
+  then show ?case
+    using additive.generate.incl incl.hyps incl.prems by force 
+next
+  case (inv u v)
+  then show ?case 
+  proof clarsimp
+    fix a b
+    assume "v \<in> R" "a \<cdot> b \<in> R" "a \<in> \<aa>" "b \<in> \<bb>"
+    then have "v \<cdot> (- a \<cdot> b) = v \<cdot> a \<cdot> (- b) \<and> v \<cdot> a \<in> \<aa> \<and> - b \<in> \<bb>"
+      by (metis \<aa> \<bb> ideal.ideal(1) ideal_implies_subset ideal_inverse in_mono local.right_minus multiplicative.associative)
+    then show "v \<cdot> (- a \<cdot> b) \<in> additive.generate (R \<inter> {a \<cdot> b |a b. a \<in> \<aa> \<and> b \<in> \<bb>})"
+      using \<aa> \<bb> additive.subgroup_generated_def ideal_mult_in_subgroup_generated 
+      unfolding ideal_gen_by_prod_def
+      by presburger
+  qed
+next
+  case (mult u v)
+  then show ?case
+    using additive.generate.mult additive.generate_into_G distributive(1) by force
+qed
+
+
+lemma ideal_subgroup_generated:
   assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
-  shows "ideal_gen_by_prod \<aa> \<bb> = (\<Inter>I\<in>{I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> {x. \<exists>a b. x = a \<cdot> b \<and> a \<in> \<aa> \<and> b \<in> \<bb>} \<subseteq> I}. I)" sorry
+  shows "ideal (ideal_gen_by_prod \<aa> \<bb>) R (+) (\<cdot>) \<zero> \<one>"
+  proof
+  show "ideal_gen_by_prod \<aa> \<bb> \<subseteq> R"
+    by (simp add: additive.subgroup_generated_is_subset ideal_gen_by_prod_def)
+  show "a + b \<in> ideal_gen_by_prod \<aa> \<bb>"
+    if "a \<in> ideal_gen_by_prod \<aa> \<bb>" "b \<in> ideal_gen_by_prod \<aa> \<bb>"
+    for a b
+    using that additive.subgroup_generated_is_monoid monoid.composition_closed 
+    by (fastforce simp: ideal_gen_by_prod_def)
+  show "\<zero> \<in> ideal_gen_by_prod \<aa> \<bb>"
+    using additive.generate.unit additive.subgroup_generated_def ideal_gen_by_prod_def by presburger
+  show "a + b + c = a + (b + c)"
+    if "a \<in> ideal_gen_by_prod \<aa> \<bb>" "b \<in> ideal_gen_by_prod \<aa> \<bb>" "c \<in> ideal_gen_by_prod \<aa> \<bb>"
+    for a b c
+    using that additive.subgroup_generated_is_subset 
+    unfolding ideal_gen_by_prod_def
+    by blast
+  show "\<zero> + a = a" "a + \<zero> = a"
+    if "a \<in> ideal_gen_by_prod \<aa> \<bb>" for a
+    using that additive.subgroup_generated_is_subset unfolding ideal_gen_by_prod_def    
+    by blast+
+  show "monoid.invertible (ideal_gen_by_prod \<aa> \<bb>) (+) \<zero> u"
+    if "u \<in> ideal_gen_by_prod \<aa> \<bb>" for u 
+    using that additive.subgroup_generated_is_subgroup group.invertible 
+    unfolding ideal_gen_by_prod_def subgroup_def
+    by fastforce
+  show "a \<cdot> b \<in> ideal_gen_by_prod \<aa> \<bb>"
+    if "a \<in> R" "b \<in> ideal_gen_by_prod \<aa> \<bb>" for a b
+    using that by (simp add: assms ideal_gen_by_prod_aux)
+  then show "b \<cdot> a \<in> ideal_gen_by_prod \<aa> \<bb>"
+    if "a \<in> R" "b \<in> ideal_gen_by_prod \<aa> \<bb>" for a b
+    using that
+    by (metis \<open>ideal_gen_by_prod \<aa> \<bb> \<subseteq> R\<close> commutative_mult in_mono)
+qed
+
+lemma ideal_gen_by_prod_is_Inter:
+  assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
+  shows "ideal_gen_by_prod \<aa> \<bb> = \<Inter> {I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> {a \<cdot> b |a b. a \<in> \<aa> \<and> b \<in> \<bb>} \<subseteq> I}" 
+    (is "?lhs = ?rhs")
+proof
+  have "x \<in> ?rhs" if "x \<in> ?lhs" for x
+    using that
+    unfolding ideal_gen_by_prod_def additive.subgroup_generated_def
+    by induction (force simp: ideal_zero ideal_inverse ideal_add)+
+  then show "?lhs \<subseteq> ?rhs" by blast
+  show "?rhs \<subseteq> ?lhs" 
+    using assms ideal_subgroup_generated by (force simp: ideal_mult_in_subgroup_generated)
+qed
 
 (* ex. 0.12 *)
 lemma 
