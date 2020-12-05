@@ -295,4 +295,14 @@ assumes is_ring_homomorphism: "\<And>U. is_open U \<Longrightarrow> (\<exists>ad
 and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
                       (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)" 
 
+(* def 0.19 *)
+locale sheaf_of_rings = presheaf_of_rings X is_open \<FF> \<rho> a 
+  for X and is_open and \<FF> and \<rho> and a + 
+  assumes cond1: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U) \<longrightarrow> 
+s \<in> \<FF> U \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> (\<exists>add mult zero one addi multi zeroi onei. ring (\<FF> U) add mult zero one \<longrightarrow> 
+ring (\<FF> (V i)) addi multi zeroi onei \<longrightarrow> \<rho> U (V i) s = zeroi \<longrightarrow> s = zero))" and
+cond2: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<FF> (V i)) \<longrightarrow> 
+(\<forall>i j. i\<in>I \<longrightarrow> j\<in>I \<longrightarrow> \<rho> (V i) (V i \<inter> V j) (s i) = \<rho> (V j) (V i \<inter> V j) (s j)) \<longrightarrow> 
+(\<exists>t. t \<in> \<FF> U \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> U (V i) t = s i))"
+
 end
