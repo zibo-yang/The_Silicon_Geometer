@@ -26,4 +26,19 @@ inductive generated_topology :: "'a set set \<Rightarrow> 'a set \<Rightarrow> b
 
 end (* topological_space *)
 
+subsection \<open>Covers\<close>
+
+locale cover_of_subset =
+  fixes X:: "'a set" and U:: "'a set" and index:: "'b set" and cover:: "'b \<Rightarrow> 'a set" 
+  assumes is_subset: "U \<subseteq> X" and are_subsets: "\<And>i. i \<in> index \<Longrightarrow> cover i \<subseteq> X"
+and covering: "U \<subseteq> (\<Union>i\<in>index. cover i)"
+
+locale open_cover_of_subset = topological_space X is_open + cover_of_subset X U I C 
+  for X and is_open and U and I and C +
+  assumes are_open_subspaces: "\<And>i. i\<in>I \<Longrightarrow> is_open (C i)"
+
+locale open_cover_of_open_subset = open_cover_of_subset X is_open U I C 
+  for X and is_open and U and I and C +
+  assumes is_open_subset: "is_open U"
+
 end
