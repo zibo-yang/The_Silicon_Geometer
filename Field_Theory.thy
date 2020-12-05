@@ -23,8 +23,9 @@ lemma left_inv_mult_is_right_inv:
   using assms commutative_mult by simp
 
 lemma uniqueness_of_inv: 
-  assumes "a \<in> R" and "a \<noteq> \<zero>" and "b \<in> R" and "c \<in> R" and "a \<cdot> b = \<one>" and "a \<cdot> c = \<one>"
-  shows "b = c" sorry
+  assumes "a \<cdot> b = \<one>" "a \<cdot> c = \<one>" "a \<in> R" "b \<in> R" "c \<in> R"
+  shows "b = c"
+  using assms commutative_mult multiplicative.inverse_unique by presburger
 
 end
 
