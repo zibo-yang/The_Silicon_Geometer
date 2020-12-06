@@ -1,7 +1,7 @@
 theory Comm_Ring_Theory
   imports "Jacobson_Basic_Algebra.Ring_Theory"
           "Group_Further_Theory"
-          "Topological_Space_Theory"
+          "Topological_Space_Theory" Sketch_and_Explore
 
 begin
 
@@ -234,11 +234,53 @@ lemma closed_subsets_empty [simp]:
   shows "\<V> {} = Spec"
   using closed_subsets_def spectrum_def by force 
 
-(* ex. 0.13 *)
-lemma
+lemma closed_subsets_ideal_aux:
+  assumes \<aa>: "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and \<bb>: "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
+      and prime: "prime_ideal x R (+) (\<cdot>) \<zero> \<one>" and disj: "\<aa> \<subseteq> x \<or> \<bb> \<subseteq> x" 
+  shows "ideal_gen_by_prod \<aa> \<bb> \<subseteq> x"
+  unfolding ideal_gen_by_prod_def additive.subgroup_generated_def
+proof
+  fix u
+  assume u: "u \<in> additive.generate (R \<inter> {a \<cdot> b |a b. a \<in> \<aa> \<and> b \<in> \<bb>})"
+  have "\<aa> \<subseteq> R" "\<bb> \<subseteq> R"
+    using \<aa> \<bb> ideal_implies_subset by auto
+  show "u \<in> x" using u
+  proof induction
+    case unit
+    then show ?case
+      by (meson entire_ring.ideal_zero prime prime_ideal_def)
+  next
+    case (incl a)
+    then have "a \<in> R"
+      by blast
+    with incl prime_ideal.axioms [OF prime] show ?case
+      by clarsimp (metis \<open>\<aa> \<subseteq> R\<close> \<open>\<bb> \<subseteq> R\<close> disj ideal.ideal subset_iff)
+  next
+    case (inv a)
+    then have "a \<in> R"
+      by blast
+    with inv prime_ideal.axioms [OF prime] show ?case
+      by clarsimp (metis \<open>\<aa> \<subseteq> R\<close> \<open>\<bb> \<subseteq> R\<close> disj ideal.ideal ideal_inverse subset_iff)
+  next
+    case (mult a b)
+    then show ?case
+      by (meson prime entire_ring.ideal_add prime_ideal_def)
+  qed
+qed
+
+
+text \<open>ex. 0.13\<close>
+lemma closed_subsets_ideal_iff:
   assumes "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
-  shows "\<V> (ideal_gen_by_prod \<aa> \<bb>) = (\<V> \<aa>) \<union> (\<V> \<bb>)"
-  sorry
+  shows "\<V> (ideal_gen_by_prod \<aa> \<bb>) = (\<V> \<aa>) \<union> (\<V> \<bb>)" (is "?lhs = ?rhs")
+proof
+  show "?lhs \<subseteq> ?rhs"
+    unfolding closed_subsets_def
+    by clarsimp (meson assms ideal_implies_subset ideal_mult_in_subgroup_generated in_mono prime_ideal.absorbent)
+  show "?rhs \<subseteq> ?lhs"
+    unfolding closed_subsets_def
+    using closed_subsets_ideal_aux [OF assms] by auto
+qed
 
 (* The ideal defined in ex. 0.14 is also the intersection of all ideals containing \<Union>i\<in>I. \<aa>\<^sub>i *)
 (* ex. 0.15 *)
