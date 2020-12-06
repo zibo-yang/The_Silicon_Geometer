@@ -286,8 +286,10 @@ qed
 (* ex. 0.15 *)
 lemma
   fixes J :: "'b set" and \<aa> :: "'b \<Rightarrow> 'a set"
-  assumes "ideal (\<aa> j) R (+) (\<cdot>) \<zero> \<one>"
-  shows "\<V> (\<Inter>I\<in>{I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> (\<Union>j\<in>J. \<aa> j) \<subseteq> I}. I) = (\<Inter>j\<in>J. \<V> (\<aa> j))" sorry
+  assumes "J \<noteq> {}"
+  shows "\<V> (\<Inter>I\<in>{I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> (\<Union>j\<in>J. \<aa> j) \<subseteq> I}. I) = (\<Inter>j\<in>J. \<V> (\<aa> j))" (is "?lhs = ?rhs")
+  unfolding closed_subsets_def
+  using \<open>J \<noteq> {}\<close> by (force simp: prime_ideal_def)
 
 (* ex 0.16 *)
 lemma zarisky_is_topological_space:
