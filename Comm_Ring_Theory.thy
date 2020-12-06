@@ -325,15 +325,13 @@ and assoc_comp:
 *)
 
 (* Second version of def 0.17 without records: *)
-locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'a set"
-(* Is it possible to express in some way that the type 'a depends on the argument U of \<FF>? 
-If no, then the \<FF> U 's are forced to be sets of elements of the same type 'a. *)
-and \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a)" and a:: "'a" 
+locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'b set"
+and \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)" and b:: "'b" 
 assumes is_homomorphism: 
 "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
   (\<exists>add mult zero one add' mult' zero' one'. ring_homomorphism (\<rho> U V) 
                                               (\<FF> U) add mult zero one (\<FF> V) add' mult' zero' one')"
-and ring_of_empty: "\<FF> {} = {a}"
+and ring_of_empty: "\<FF> {} = {b}"
 and identity_map: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
 and assoc_comp: 
 "\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
@@ -346,13 +344,13 @@ lemma is_ring_from_is_homomorphism:
 
 end (* presheaf_of_rings *)
 
-locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> a + 
-target: presheaf_of_rings X is_open \<FF>' \<rho>' a'
-for X and is_open and \<FF> and \<rho> and a and \<FF>' and \<rho>' and a' + 
-fixes fam_morphisms:: "'a set \<Rightarrow> ('a \<Rightarrow> 'a)"
+locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> b + 
+target: presheaf_of_rings X is_open \<FF>' \<rho>' c
+for X and is_open and \<FF> and \<rho> and b and \<FF>' and \<rho>' and c + 
+fixes fam_morphisms:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
 (* Is it possible to express that we require a morphism "fam_morphisms U" only if U is open? 
 If no, it's not a problem since for U not open one can still define "fam_morphisms U" to be the 
-morphism constant equal to a *)
+morphism constant equal to c *)
 assumes is_ring_homomorphism: "\<And>U. is_open U \<Longrightarrow> (\<exists>add mult zero one add' mult' zero' one'. 
                                                     ring_homomorphism (fam_morphisms U) 
                                                                       (\<FF> U) add mult zero one 
@@ -361,13 +359,15 @@ and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longright
                       (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)" 
 
 (* def 0.19 *)
-locale sheaf_of_rings = presheaf_of_rings X is_open \<FF> \<rho> a 
-  for X and is_open and \<FF> and \<rho> and a + 
-  assumes cond1: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U) \<longrightarrow> 
+locale sheaf_of_rings = presheaf_of_rings X is_open \<FF> \<rho> b 
+  for X and is_open and \<FF> and \<rho> and b + 
+  assumes locality: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U) \<longrightarrow> 
 s \<in> \<FF> U \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> (\<exists>add mult zero one addi multi zeroi onei. ring (\<FF> U) add mult zero one \<longrightarrow> 
 ring (\<FF> (V i)) addi multi zeroi onei \<longrightarrow> \<rho> U (V i) s = zeroi \<longrightarrow> s = zero))" and
-cond2: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<FF> (V i)) \<longrightarrow> 
+glueing: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<FF> (V i)) \<longrightarrow> 
 (\<forall>i j. i\<in>I \<longrightarrow> j\<in>I \<longrightarrow> \<rho> (V i) (V i \<inter> V j) (s i) = \<rho> (V j) (V i \<inter> V j) (s j)) \<longrightarrow> 
 (\<exists>t. t \<in> \<FF> U \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> U (V i) t = s i))"
+
+locale morphism_sheaves_of_rings = morphism_presheaves_of_rings
 
 end
