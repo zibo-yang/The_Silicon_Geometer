@@ -59,8 +59,8 @@ end (* induced topology *)
 
 subsection \<open>Continuous Maps\<close>
 
-(* Why does Isabelle complain about duplicated constant declarations below *)
-locale continuous_map = topological_space X is_open + topological_space X' is_open' + map f X X'
+locale continuous_map = source: topological_space X is_open + target: topological_space X' is_open' 
++ map f X X'
   for X and is_open and X' and is_open' and f +
   assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open {x. f x \<in> U}"
 
