@@ -41,4 +41,19 @@ locale open_cover_of_open_subset = open_cover_of_subset X is_open U I C
   for X and is_open and U and I and C +
   assumes is_open_subset: "is_open U"
 
+subsection \<open>Induced Topology\<close>
+
+locale induced_topology = topological_space X is_open for X and is_open +
+  fixes S:: "'a set"
+  assumes is_subset: "S \<subseteq> X"
+begin
+
+definition is_open_wrt_induced_top:: "'a set \<Rightarrow> bool"
+  where "is_open_wrt_induced_top U \<equiv> U \<subseteq> S \<and> (\<exists>V. is_open V \<and> U = S \<inter> V)"
+
+lemma 
+  shows "topological_space S (is_open_wrt_induced_top)" sorry
+
+end (* induced topology *)
+
 end
