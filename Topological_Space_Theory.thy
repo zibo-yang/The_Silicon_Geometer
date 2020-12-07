@@ -1,6 +1,7 @@
 theory Topological_Space_Theory
   imports Main 
           "Jacobson_Basic_Algebra.Set_Theory"
+          HOL.Real
 
 begin
 
@@ -30,7 +31,7 @@ end (* topological_space *)
 subsection \<open>Covers\<close>
 
 locale cover_of_subset =
-  fixes X:: "'a set" and U:: "'a set" and index:: "'b set" and cover:: "'b \<Rightarrow> 'a set" 
+  fixes X:: "'a set" and U:: "'a set" and index:: "real set" and cover:: "real \<Rightarrow> 'a set" 
   assumes is_subset: "U \<subseteq> X" and are_subsets: "\<And>i. i \<in> index \<Longrightarrow> cover i \<subseteq> X"
 and covering: "U \<subseteq> (\<Union>i\<in>index. cover i)"
 
