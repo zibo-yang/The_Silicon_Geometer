@@ -392,4 +392,22 @@ lemma induced_sheaf_is_sheaf:
 
 end (* induced_sheaf*)
 
+(* context for construction 0.22 *) 
+locale cxt_direct_image_sheaf = continuous_map X is_open X' is_open' f + 
+sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and X' and is_open' and f and \<FF> and \<rho> and b
+begin
+
+(* def 0.24 *)
+definition direct_image_sheaf:: "'a set => 'b set"
+  where "direct_image_sheaf V \<equiv> \<FF> ({x. f x \<in> V})"
+
+definition direct_image_sheaf_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('c \<Rightarrow> 'c)"
+  where "direct_image_sheaf_ring_morphisms U V \<equiv> \<rho> {x. f x \<in> U} {x. f x \<in> V}"
+
+(* ex 0.23 *)
+lemma 
+  shows "sheaf_of_rings X' (is_open') direct_image_sheaf direct_image_sheaf_ring_morphisms b"
+
+end (* cxt_direct_image_sheaf *)
+
 end
