@@ -31,7 +31,9 @@ end (* topological_space *)
 subsection \<open>Covers\<close>
 
 locale cover_of_subset =
-  fixes X:: "'a set" and U:: "'a set" and index:: "real set" and cover:: "real \<Rightarrow> 'a set" 
+  fixes X:: "'a set" and U:: "'a set" and index:: "real set" and cover:: "real \<Rightarrow> 'a set"
+(* We use real instead of index::"'b set" otherwise we get some troubles with locale sheaf_of_rings
+in Comm_Ring_Theory.thy *)
   assumes is_subset: "U \<subseteq> X" and are_subsets: "\<And>i. i \<in> index \<Longrightarrow> cover i \<subseteq> X"
 and covering: "U \<subseteq> (\<Union>i\<in>index. cover i)"
 
