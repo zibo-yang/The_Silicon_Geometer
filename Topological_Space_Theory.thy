@@ -1,5 +1,6 @@
 theory Topological_Space_Theory
-imports Main
+  imports Main 
+          "Jacobson_Basic_Algebra.Set_Theory"
 
 begin
 
@@ -55,5 +56,12 @@ lemma
   shows "topological_space S (is_open_wrt_induced_top)" sorry
 
 end (* induced topology *)
+
+subsection \<open>Continuous Maps\<close>
+
+(* Why does Isabelle complain about duplicated constant declarations below *)
+locale continuous_map = topological_space X is_open + topological_space X' is_open' + map f X X'
+  for X and is_open and X' and is_open' and f +
+  assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open {x. f x \<in> U}"
 
 end
