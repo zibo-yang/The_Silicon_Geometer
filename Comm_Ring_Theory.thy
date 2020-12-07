@@ -369,7 +369,27 @@ ring (\<FF> (V i)) addi multi zeroi onei \<longrightarrow> \<rho> U (V i) s = ze
 glueing: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<FF> (V i)) \<longrightarrow> 
 (\<forall>i j. i\<in>I \<longrightarrow> j\<in>I \<longrightarrow> \<rho> (V i) (V i \<inter> V j) (s i) = \<rho> (V j) (V i \<inter> V j) (s j)) \<longrightarrow> 
 (\<exists>t. t \<in> \<FF> U \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> U (V i) t = s i))"
+(* Why do we have these additional type variables? *)
 
+(* def. 0.20 *)
 locale morphism_sheaves_of_rings = morphism_presheaves_of_rings
+
+(* ex. 0.21 *)
+locale cxt_induced_sheaf = sheaf_of_rings X is_open \<FF> \<rho> b + induced_topology X is_open U
+  for X and is_open and \<FF> and \<rho> and b and U +
+  assumes is_open_subset: "is_open U"
+begin
+
+definition induced_sheaf:: "'a set \<Rightarrow> 'b set"
+  where "induced_sheaf V \<equiv> \<FF> (U \<inter> V)"
+
+definition induced_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)"
+  where "induced_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
+
+(* Below we have an error certainly due to the additional type variables in the locale sheaf_of_rings *)
+lemma induced_sheaf_is_sheaf:
+  shows "sheaf_of_rings U (is_open_wrt_induced_top) induced_sheaf induced_ring_morphisms b" sorry
+
+end (* induced_sheaf*)
 
 end
