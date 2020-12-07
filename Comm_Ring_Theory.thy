@@ -398,15 +398,15 @@ sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and X' and is_open' an
 begin
 
 (* def 0.24 *)
-definition direct_image_sheaf:: "'a set => 'b set"
+definition direct_image_sheaf:: "'b set => 'c set"
   where "direct_image_sheaf V \<equiv> \<FF> ({x. f x \<in> V})"
 
-definition direct_image_sheaf_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('c \<Rightarrow> 'c)"
+definition direct_image_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Rightarrow> ('c \<Rightarrow> 'c)"
   where "direct_image_sheaf_ring_morphisms U V \<equiv> \<rho> {x. f x \<in> U} {x. f x \<in> V}"
 
 (* ex 0.23 *)
 lemma 
-  shows "sheaf_of_rings X' (is_open') direct_image_sheaf direct_image_sheaf_ring_morphisms b"
+  shows "sheaf_of_rings X' (is_open') direct_image_sheaf direct_image_sheaf_ring_morphisms b" sorry
 
 end (* cxt_direct_image_sheaf *)
 
