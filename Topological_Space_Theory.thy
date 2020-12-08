@@ -17,6 +17,8 @@ begin
 definition is_closed :: "'a set \<Rightarrow> bool"
   where "is_closed U \<equiv> U \<subseteq> S \<and> is_open (S - U)"
 
+end (* topological_space *)
+
 subsection \<open>Topological Basis\<close>
 
 inductive generated_topology :: "'a set set \<Rightarrow> 'a set \<Rightarrow> bool" for B :: "'a set set"
@@ -25,8 +27,6 @@ inductive generated_topology :: "'a set set \<Rightarrow> 'a set \<Rightarrow> b
   | Int: "generated_topology B (U \<inter> V)" if "generated_topology B U" and "generated_topology B V"
   | UN: "generated_topology B (\<Union>K)" if "(\<And>U. U \<in> K \<Longrightarrow> generated_topology B U)"
   | Basis: "generated_topology B b" if "b \<in> B \<and> b \<subseteq> S"
-
-end (* topological_space *)
 
 subsection \<open>Covers\<close>
 
