@@ -1,7 +1,8 @@
 theory Comm_Ring_Theory
-  imports "Jacobson_Basic_Algebra.Ring_Theory"
+  imports 
           "Group_Further_Theory"
           "Topological_Space_Theory" Sketch_and_Explore
+          "Jacobson_Basic_Algebra.Ring_Theory"
 
 begin
 
@@ -282,14 +283,15 @@ proof
     using closed_subsets_ideal_aux [OF assms] by auto
 qed
 
-(* The ideal defined in ex. 0.14 is also the intersection of all ideals containing \<Union>i\<in>I. \<aa>\<^sub>i *)
+definition finsum:: "'b set \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a"
+  where "finsum I f \<equiv> additive.finprod I f"
+
 (* ex. 0.15 *)
 lemma
   fixes J :: "'b set" and \<aa> :: "'b \<Rightarrow> 'a set"
-  assumes "J \<noteq> {}"
-  shows "\<V> (\<Inter>I\<in>{I. ideal I R (+) (\<cdot>) \<zero> \<one> \<and> (\<Union>j\<in>J. \<aa> j) \<subseteq> I}. I) = (\<Inter>j\<in>J. \<V> (\<aa> j))" (is "?lhs = ?rhs")
-  unfolding closed_subsets_def
-  using \<open>J \<noteq> {}\<close> by (force simp: prime_ideal_def)
+  assumes "J \<noteq> {}" and "\<And>j. j\<in>J \<Longrightarrow> ideal (\<aa> j) R (+) (\<cdot>) \<zero> \<one>"
+  shows "\<V> ({x. \<exists>I f. x = finsum I f \<and> I \<subseteq> J \<and> finite I \<and> (\<forall>i. i\<in>I \<longrightarrow> f i \<in> \<aa> i)}) = (\<Inter>j\<in>J. \<V> (\<aa> j))"
+  sorry
 
 (* ex 0.16 *)
 lemma zarisky_is_topological_space:
