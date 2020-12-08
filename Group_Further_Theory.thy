@@ -15,7 +15,9 @@ begin
 (* The following 4 definitions are taken from HOL-Algebra.FiniteProduct. I could simply import
 "HOL-Algebra.FiniteProduct" but then it creates ambiguities in our other theories that made me 
 mad. If you know a simple way to remove these ambiguities, then delete the following 3 definitions
-and simply import HOL-Algebra.FiniteProduct. *)
+and simply import HOL-Algebra.FiniteProduct. Note however that finprod needs to be redefined, since 
+in HOL-Algebra it uses a monoid-record which simply does not exist in the Ballarin's new formalism. 
+*)
 inductive_set
   foldSetD :: "['a set, 'b \<Rightarrow> 'a \<Rightarrow> 'a, 'a] \<Rightarrow> ('b set * 'a) set"
   for D :: "'a set" and f :: "'b \<Rightarrow> 'a \<Rightarrow> 'a" and e :: 'a
