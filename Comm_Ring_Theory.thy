@@ -3,6 +3,7 @@ theory Comm_Ring_Theory
           "Group_Further_Theory"
           "Topological_Space_Theory" Sketch_and_Explore
           "Jacobson_Basic_Algebra.Ring_Theory"
+          "Set_Further_Theory"
 
 begin
 
@@ -453,11 +454,24 @@ definition mult_rel:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \
 definition carrier_quotient_ring:: "('a \<times> 'a) set set"
   where "carrier_quotient_ring \<equiv> equivalence.Partition (R \<times> S) {(x,y). x \<sim> y}"
 
+(* ex. 0.26 *)
 lemma
   shows "ring carrier_quotient_ring add_rel mult_rel (\<zero> / \<one>) (\<one> / \<one>)" sorry
 
 end (* cxt_quotient_ring *)
 
 (* Should we introduce the notation S\<^sup>-\<^sup>1 R for carrier_quotient_ring? *)
+
+context prime_ideal 
+begin
+
+lemma
+  shows "submonoid (R \<setminus> I) R (\<cdot>) \<one>" sorry
+
+(* definition 0.28 *)
+definition carrier_local_ring_at:: "('a \<times> 'a) set set"
+  where "carrier_local_ring_at \<equiv> cxt_quotient_ring.carrier_quotient_ring (R \<setminus> I) R (+) (\<cdot>) \<zero>"
+
+end (* prime_ideal *)
 
 end
