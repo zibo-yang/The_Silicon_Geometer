@@ -3,6 +3,7 @@ theory Comm_Ring_Theory
           "Group_Further_Theory"
           "Topological_Space_Theory" Sketch_and_Explore
           "Jacobson_Basic_Algebra.Ring_Theory"
+          "Jacobson_Basic_Algebra.Set_Theory"
 
 begin
 
@@ -392,11 +393,12 @@ definition induced_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> (
 lemma induced_sheaf_is_sheaf:
   shows "sheaf_of_rings U (is_open_wrt_induced_top) induced_sheaf induced_ring_morphisms b" sorry
 
-end (* induced_sheaf*)
+end (* cxt_induced_sheaf*)
 
 (* context for construction 0.22 *) 
 locale cxt_direct_image_sheaf = continuous_map X is_open X' is_open' f + 
-sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and X' and is_open' and f and \<FF> and \<rho> and b
+sheaf_of_rings X is_open \<FF> \<rho> b 
+for X and is_open and X' and is_open' and f and \<FF> and \<rho> and b
 begin
 
 (* def 0.24 *)
@@ -411,5 +413,24 @@ lemma
   shows "sheaf_of_rings X' (is_open') direct_image_sheaf direct_image_sheaf_ring_morphisms b" sorry
 
 end (* cxt_direct_image_sheaf *)
+
+
+subsection \<open>Quotient Ring\<close>
+
+locale cxt_quotient_ring = entire_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + submonoid S R "(\<cdot>)" "\<one>" 
+  for S and R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
+unit ("\<one>")
+begin
+
+definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> bool" (infix "\<sim>" 80)
+  where "x \<sim> y \<equiv> \<exists>s1. s1 \<in> S \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
+
+lemma rel_is_equivalence:
+  shows "equivalence (R \<times> S) {(x,y). x \<sim> y}" sorry
+
+definition frac:: "'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set"
+  where "frac r s \<equiv> equivalence.Class (R \<times> S) {(x,y). x \<sim> y} (r, s)"
+
+end (* cxt_quotient_ring *)
 
 end
