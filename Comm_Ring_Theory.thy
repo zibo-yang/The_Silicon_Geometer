@@ -3,7 +3,6 @@ theory Comm_Ring_Theory
           "Group_Further_Theory"
           "Topological_Space_Theory" Sketch_and_Explore
           "Jacobson_Basic_Algebra.Ring_Theory"
-          "Jacobson_Basic_Algebra.Set_Theory"
 
 begin
 
@@ -428,9 +427,37 @@ definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> 
 lemma rel_is_equivalence:
   shows "equivalence (R \<times> S) {(x,y). x \<sim> y}" sorry
 
-definition frac:: "'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set"
-  where "frac r s \<equiv> equivalence.Class (R \<times> S) {(x,y). x \<sim> y} (r, s)"
+notation equivalence.Partition (infixl "'/" 75)
+
+definition frac:: "'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set" (infixl "'/" 75)
+  where "r / s \<equiv> equivalence.Class (R \<times> S) {(x,y). x \<sim> y} (r, s)"
+
+definition add_rel_aux:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set"
+  where "add_rel_aux r s r' s' \<equiv> (r\<cdot>s' + r'\<cdot>s) / (s\<cdot>s')"
+
+definition add_rel:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
+  where "add_rel X Y \<equiv> 
+  let x = (SOME x. x \<in> X) in 
+  let y = (SOME y. y \<in> Y) in
+  add_rel_aux (fst x) (snd x) (fst y) (snd y)"
+
+definition mult_rel_aux:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set"
+  where "mult_rel_aux r s r' s' \<equiv> (r\<cdot>r') / (s\<cdot>s')"
+
+definition mult_rel:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
+  where "mult_rel X Y \<equiv>
+  let x = (SOME x. x \<in> X) in
+  let y = (SOME y. y \<in> Y) in
+  mult_rel_aux (fst x) (snd x) (fst y) (snd y)"
+
+definition carrier_quotient_ring:: "('a \<times> 'a) set set"
+  where "carrier_quotient_ring \<equiv> equivalence.Partition (R \<times> S) {(x,y). x \<sim> y}"
+
+lemma
+  shows "ring carrier_quotient_ring add_rel mult_rel (\<zero> / \<one>) (\<one> / \<one>)" sorry
 
 end (* cxt_quotient_ring *)
+
+(* Should we introduce the notation S\<^sup>-\<^sup>1 R for carrier_quotient_ring? *)
 
 end
