@@ -214,7 +214,10 @@ qed
 
 end (* prime_ideal *)
 
-subsection \<open>Spectrum of a ring\<close>
+
+section \<open>Spectrum of a ring\<close>
+
+subsection \<open>The Zariski Topology\<close>
 
 context entire_ring begin
 
@@ -305,6 +308,7 @@ lemma zarisky_is_topological_space:
 
 end (* entire_ring *)
 
+
 subsection \<open>Presheaves of Rings\<close>
 
 (* def. 0.17 *)
@@ -366,6 +370,9 @@ assumes is_ring_homomorphism: "\<And>U. is_open U \<Longrightarrow> (\<exists>ad
                                                                       (\<FF>' U) add' mult' zero' one')"
 and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
                       (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)" 
+
+
+subsection \<open>Sheaves of Rings\<close>
 
 (* def 0.19 *)
 locale sheaf_of_rings = presheaf_of_rings X is_open \<FF> \<rho> b 
@@ -464,6 +471,9 @@ lemma
 
 end (* cxt_quotient_ring *)
 
+
+subsection \<open>Local Rings at Prime Ideals\<close>
+
 context prime_ideal 
 begin
 
@@ -475,6 +485,8 @@ definition carrier_local_ring_at:: "('a \<times> 'a) set set"
   where "carrier_local_ring_at \<equiv> cxt_quotient_ring.carrier_quotient_ring (R \<setminus> I) R (+) (\<cdot>) \<zero>"
 
 end (* prime_ideal *)
+
+subsection \<open>Spectrum of a Ring\<close>
 
 (* construction 0.29 *)
 context entire_ring
@@ -549,6 +561,11 @@ lemma
   sorry
 
 end (* entire_ring *)
+
+
+section \<open>Schemes\<close>
+
+subsection \<open>Ringed Spaces\<close>
 
 (* definition 0.32 *)
 locale ringed_space = topological_space X is_open + sheaf_of_rings X is_open \<O> \<rho> b
