@@ -460,8 +460,6 @@ lemma
 
 end (* cxt_quotient_ring *)
 
-(* Should we introduce the notation S\<^sup>-\<^sup>1 R for carrier_quotient_ring? *)
-
 context prime_ideal 
 begin
 
@@ -473,5 +471,28 @@ definition carrier_local_ring_at:: "('a \<times> 'a) set set"
   where "carrier_local_ring_at \<equiv> cxt_quotient_ring.carrier_quotient_ring (R \<setminus> I) R (+) (\<cdot>) \<zero>"
 
 end (* prime_ideal *)
+
+(* construction 0.29 *)
+context entire_ring
+begin
+
+definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set) set \<Rightarrow> bool" 
+  where "is_regular s U \<equiv> 
+(\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> s \<pp> \<in> prime_ideal.carrier_local_ring_at \<pp> R (+) (\<cdot>) \<zero>)
+\<and> (\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> 
+              (\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
+                                                                        f \<notin> \<qq> 
+                                                                          \<and> 
+                                                                        s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
+))))"
+
+(* Some syntactic sugar, namely R\<^sub>\<pp>, would be good instead of prime_ideal.carrier_local_ring_at \<pp> R (+) (\<cdot>) \<zero>. 
+Also, how to use the notation r/f, which stands for  cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f,
+outside the locale where it was defined? *)
+
+definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
+where "\<O> U \<equiv> {s. is_regular s U}"
+
+end (* entire_ring *)
 
 end
