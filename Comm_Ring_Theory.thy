@@ -295,8 +295,12 @@ lemma
   sorry
 
 (* ex 0.16 *)
+
+definition is_zariski_open:: "'a set set \<Rightarrow> bool"
+  where "is_zariski_open U \<equiv> generated_topology {U. \<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>} U"
+
 lemma zarisky_is_topological_space:
-  shows "topological_space Spec (generated_topology {U. \<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>})"
+  shows "topological_space Spec is_zariski_open"
   sorry
 
 end (* entire_ring *)
@@ -491,7 +495,71 @@ Also, how to use the notation r/f, which stands for  cxt_quotient_ring.frac (R \
 outside the locale where it was defined? *)
 
 definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
-where "\<O> U \<equiv> {s. is_regular s U}"
+  where "\<O> U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. prime_ideal.carrier_local_ring_at \<pp> R (+) (\<cdot>) \<zero>)) 
+                  \<and> is_regular s U}"
+
+definition add_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
+  where "add_sheaf_on_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.add_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
+
+lemma
+  assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
+  shows "is_regular (add_sheaf_on_spec U s s') U" sorry
+
+definition mult_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
+  where "mult_sheaf_on_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.mult_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
+
+lemma
+  assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
+  shows "is_regular (mult_sheaf_on_spec U s s') U" sorry
+
+definition zero_sheaf_on_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
+  where "zero_sheaf_on_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"
+
+lemma 
+  assumes "is_zariski_open U"
+  shows "is_regular (zero_sheaf_on_spec U) U" sorry
+
+definition one_sheaf_on_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
+  where "one_sheaf_on_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one> \<one>"
+
+lemma 
+  assumes "is_zariski_open U"
+  shows "is_regular (one_sheaf_on_spec U) U" sorry
+
+lemma 
+  assumes "is_zariski_open U"
+  shows "ring (\<O> U) (add_sheaf_on_spec U) (mult_sheaf_on_spec U) (zero_sheaf_on_spec U) (one_sheaf_on_spec U)"
+  sorry
+
+definition sheaf_on_spec_ring_morphisms:: 
+"'a set set \<Rightarrow> 'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set))"
+where "sheaf_on_spec_ring_morphisms U V \<equiv> \<lambda>s. restrict s V"
+
+lemma 
+  assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
+  shows "ring_homomorphism (sheaf_on_spec_ring_morphisms U V)
+                            (\<O> U) (add_sheaf_on_spec U) (mult_sheaf_on_spec U) (zero_sheaf_on_spec U) (one_sheaf_on_spec U)
+                            (\<O> V) (add_sheaf_on_spec V) (mult_sheaf_on_spec V) (zero_sheaf_on_spec V) (one_sheaf_on_spec V)"
+  sorry
+
+(* ex. 0.30 *)
+lemma
+  fixes a:: "'a"
+  shows "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(a,a)})"
+  sorry
+
+end (* entire_ring *)
+
+(* definition 0.32 *)
+locale ringed_space = topological_space X is_open + sheaf_of_rings X is_open \<O> \<rho> b
+  for X and is_open and \<O> and \<rho> and b
+
+context entire_ring
+begin
+
+lemma 
+  shows "ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(a,a)})"
+  sorry
 
 end (* entire_ring *)
 
