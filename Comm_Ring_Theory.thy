@@ -580,4 +580,15 @@ lemma
 
 end (* entire_ring *)
 
+(* definition 0.33 *)
+locale morphism_ringed_spaces = source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b + 
+target: ringed_space Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d 
+for X and is_open\<^sub>X and \<O>\<^sub>X and \<rho>\<^sub>X and b and Y and is_open\<^sub>Y and \<O>\<^sub>Y and \<rho>\<^sub>Y and d +
+fixes f:: "'a \<Rightarrow> 'c" and \<phi>\<^sub>f:: "'c set \<Rightarrow> ('d \<Rightarrow> 'b)"
+assumes is_continuous: "continuous_map X is_open\<^sub>X Y is_open\<^sub>Y f"
+and is_morphism_of_sheaves: "morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d 
+(cxt_direct_image_sheaf.direct_image_sheaf f \<O>\<^sub>X) 
+(cxt_direct_image_sheaf.direct_image_sheaf_ring_morphisms f \<rho>\<^sub>X) 
+b \<phi>\<^sub>f"
+
 end
