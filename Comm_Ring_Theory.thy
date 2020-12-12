@@ -400,7 +400,6 @@ definition induced_sheaf:: "'a set \<Rightarrow> 'b set"
 definition induced_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)"
   where "induced_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
 
-(* Below we have an error certainly due to the additional type variables in the locale sheaf_of_rings *)
 lemma induced_sheaf_is_sheaf:
   shows "sheaf_of_rings U (is_open_wrt_induced_top) induced_sheaf induced_ring_morphisms b" sorry
 
@@ -590,5 +589,25 @@ and is_morphism_of_sheaves: "morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^
 (cxt_direct_image_sheaf.direct_image_sheaf f \<O>\<^sub>X) 
 (cxt_direct_image_sheaf.direct_image_sheaf_ring_morphisms f \<rho>\<^sub>X) 
 b \<phi>\<^sub>f"
+
+
+subsection \<open>Direct Limits of Rings\<close>
+
+locale cxt_direct_limit = sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and \<FF> and \<rho> and b +
+  fixes I:: "'a set set"
+  assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U"
+begin
+
+definition rel:: "'b \<Rightarrow> 'b \<Rightarrow> bool" (infix "\<sim>" 80)
+  where "s \<sim> t \<equiv> 
+\<exists>U V W. (U \<in> I \<and> V \<in> I \<and> W \<in> I) \<and> (s \<in> \<FF> U \<and> t \<in> \<FF> V) \<and> (W \<subseteq> U \<inter> V) \<and> (\<rho> (U \<inter> V) W s = \<rho> (U \<inter> V) W t)"
+
+(*
+lemma rel_is_equivalence:
+  shows "equivalence () {(x, y). x \<sim> y}"
+*)
+
+
+end (* cxt_direct_limit *)
 
 end
