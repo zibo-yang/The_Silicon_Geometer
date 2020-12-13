@@ -598,15 +598,12 @@ locale cxt_direct_limit = sheaf_of_rings X is_open \<FF> \<rho> b for X and is_o
   assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U"
 begin
 
-definition rel:: "'b \<Rightarrow> 'b \<Rightarrow> bool" (infix "\<sim>" 80)
-  where "s \<sim> t \<equiv> 
-\<exists>U V W. (U \<in> I \<and> V \<in> I \<and> W \<in> I) \<and> (s \<in> \<FF> U \<and> t \<in> \<FF> V) \<and> (W \<subseteq> U \<inter> V) \<and> (\<rho> (U \<inter> V) W s = \<rho> (U \<inter> V) W t)"
+definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> bool" (infix "\<sim>" 80)
+  where "x \<sim> y \<equiv> (fst x \<in> I \<and> fst y \<in> I) \<and> (snd x \<in> \<FF> (fst x) \<and> snd y \<in> \<FF> (fst y)) \<and>
+(\<exists>W. (W \<in> I) \<and> (W \<subseteq> fst x \<inter> fst y) \<and> \<rho> (fst x \<inter> fst y) W (snd x) = \<rho> (fst x \<inter> fst y) W (snd y))"
 
-(*
 lemma rel_is_equivalence:
-  shows "equivalence () {(x, y). x \<sim> y}"
-*)
-
+  shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}" sorry
 
 end (* cxt_direct_limit *)
 
