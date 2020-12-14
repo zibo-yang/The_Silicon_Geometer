@@ -605,6 +605,18 @@ definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Righ
 lemma rel_is_equivalence:
   shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}" sorry
 
+lemma 
+  assumes "U \<in> I" and "U' \<in> I" and "ring (\<FF> U) add mult zero one" 
+and "ring (\<FF> U') add' mult' zero' one'"
+  shows "equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, zero) = 
+        equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U', zero')" sorry
+
+lemma 
+  assumes "U \<in> I" and "U' \<in> I" and "ring (\<FF> U) add mult zero one" 
+and "ring (\<FF> U') add' mult' zero' one'"
+  shows "equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, one) = 
+        equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U', one')" sorry
+
 end (* cxt_direct_limit *)
 
 end
