@@ -599,6 +599,7 @@ b \<phi>\<^sub>f"
 
 subsection \<open>Direct Limits of Rings\<close>
 
+(* construction 0.34 *)
 locale cxt_direct_limit = sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and \<FF> and \<rho> and b +
   fixes I:: "'a set set"
   assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U"
@@ -647,10 +648,20 @@ let mult = (SOME m. \<exists>add zero one. ring (\<FF> z) add m zero one) in
 definition carrier_direct_lim:: "('a set \<times> 'b) set set"
   where "carrier_direct_lim \<equiv> equivalence.Partition (Sigma I \<FF>) {(x, y). x \<sim> y}"
 
+(* exercise 0.35 *)
 lemma
   assumes "U \<in> I" and "ring (\<FF> U) add mult zero one"
   shows "ring carrier_direct_lim add_rel mult_rel \<lfloor>U,zero\<rfloor> \<lfloor>U,one\<rfloor>" sorry
 
 end (* cxt_direct_limit *)
+
+context presheaf_of_rings
+begin
+
+(* definition 0.37 *)
+definition stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set set"
+  where "stalk_at x \<equiv> cxt_direct_limit.carrier_direct_lim \<FF> \<rho> {U. is_open U \<and> x \<in> U}"
+
+end (* presheaf_of_rings *)
 
 end
