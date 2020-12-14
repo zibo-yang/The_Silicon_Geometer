@@ -355,6 +355,12 @@ lemma is_ring_from_is_homomorphism:
   shows "\<And>U. is_open U \<Longrightarrow> (\<exists>add mult zero one. ring (\<FF> U) add mult zero one)"
   using is_homomorphism ring_homomorphism.axioms(2) by fastforce
 
+(* The small lemma below should be useful later in various places. *)
+lemma
+  assumes "is_open U" and "is_open V" and "is_open W" and "W \<subseteq> U \<inter> V" and "s \<in> \<FF> U" and "t \<in> \<FF> V"
+and "\<rho> U W s = \<rho> V W t" and "is_open W'" and "W' \<subseteq> W"
+  shows "\<rho> U W' s = \<rho> V W' t" sorry
+
 end (* presheaf_of_rings *)
 
 locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> b + 
