@@ -602,6 +602,7 @@ subsection \<open>Direct Limits of Rings\<close>
 locale cxt_direct_limit = sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and \<FF> and \<rho> and b +
   fixes I:: "'a set set"
   assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U"
+and has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
 begin
 
 definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> bool" (infix "\<sim>" 80)
