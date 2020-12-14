@@ -612,17 +612,44 @@ definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Righ
 lemma rel_is_equivalence:
   shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}" sorry
 
-lemma 
-  assumes "U \<in> I" and "U' \<in> I" and "ring (\<FF> U) add mult zero one" 
-and "ring (\<FF> U') add' mult' zero' one'"
-  shows "equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, zero) = 
-        equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U', zero')" sorry
+definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor> _ , _ \<rfloor>")
+  where "\<lfloor>U,s\<rfloor> \<equiv> equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, s)"
 
 lemma 
   assumes "U \<in> I" and "U' \<in> I" and "ring (\<FF> U) add mult zero one" 
 and "ring (\<FF> U') add' mult' zero' one'"
-  shows "equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, one) = 
-        equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U', one')" sorry
+  shows "\<lfloor>U, zero\<rfloor> = \<lfloor>U', zero'\<rfloor>" sorry
+
+lemma 
+  assumes "U \<in> I" and "U' \<in> I" and "ring (\<FF> U) add mult zero one" 
+and "ring (\<FF> U') add' mult' zero' one'"
+  shows "\<lfloor>U, one\<rfloor> = \<lfloor>U', one'\<rfloor>" sorry
+
+definition op_rel_aux:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> 'a set \<Rightarrow> bool"
+  where "op_rel_aux x y z \<equiv> (z \<in> I) \<and> (z \<subseteq> fst x \<inter> fst y)"
+
+definition add_rel:: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
+  where "add_rel \<equiv> \<lambda>X Y.
+let x = (SOME x. x \<in> X) in
+let y = (SOME y. y \<in> Y) in 
+let z = (SOME z. op_rel_aux x y z) in
+let add = (SOME a. \<exists>mult zero one. ring (\<FF> z) a mult zero one) in
+\<lfloor>z, add (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
+
+definition mult_rel:: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
+  where "mult_rel \<equiv> \<lambda>X Y.
+let x = (SOME x. x \<in> X) in
+let y = (SOME y. y \<in> Y) in 
+let z = (SOME z. op_rel_aux x y z) in
+let mult = (SOME m. \<exists>add zero one. ring (\<FF> z) add m zero one) in
+\<lfloor>z, mult (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
+
+definition carrier_direct_lim:: "('a set \<times> 'b) set set"
+  where "carrier_direct_lim \<equiv> equivalence.Partition (Sigma I \<FF>) {(x, y). x \<sim> y}"
+
+lemma
+  assumes "U \<in> I" and "ring (\<FF> U) add mult zero one"
+  shows "ring carrier_direct_lim add_rel mult_rel \<lfloor>U,zero\<rfloor> \<lfloor>U,one\<rfloor>" sorry
 
 end (* cxt_direct_limit *)
 
