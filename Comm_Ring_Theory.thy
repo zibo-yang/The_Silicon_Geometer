@@ -489,6 +489,18 @@ lemma
 definition carrier_local_ring_at:: "('a \<times> 'a) set set"
   where "carrier_local_ring_at \<equiv> cxt_quotient_ring.carrier_quotient_ring (R \<setminus> I) R (+) (\<cdot>) \<zero>"
 
+definition add_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
+  where "add_local_ring_at X Y \<equiv> cxt_quotient_ring.add_rel (R \<setminus> I) R (+) (\<cdot>) \<zero> X Y"
+
+definition mult_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
+  where "mult_local_ring_at X Y \<equiv> cxt_quotient_ring.mult_rel (R \<setminus> I) R (+) (\<cdot>) \<zero> X Y"
+
+definition zero_local_ring_at:: "('a \<times> 'a) set"
+  where "zero_local_ring_at \<equiv> cxt_quotient_ring.frac (R \<setminus> I) R (+) (\<cdot>) \<zero> \<zero> \<one>"
+
+definition one_local_ring_at:: "('a \<times> 'a) set"
+  where "one_local_ring_at \<equiv> cxt_quotient_ring.frac (R \<setminus> I) R (+) (\<cdot>) \<zero> \<one> \<one>"
+
 end (* prime_ideal *)
 
 subsection \<open>Spectrum of a Ring\<close>
@@ -663,5 +675,45 @@ definition stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set set"
   where "stalk_at x \<equiv> cxt_direct_limit.carrier_direct_lim \<FF> \<rho> {U. is_open U \<and> x \<in> U}"
 
 end (* presheaf_of_rings *)
+
+(* definition 0.38 *)
+locale max_ideal = entire_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
+  for I and R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
+unit ("\<one>") +
+assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
+begin
+
+lemma
+  shows "\<not>(\<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> \<aa> \<noteq> R \<and> I \<subset> \<aa>)" sorry
+
+end (* locale max_ideal *)
+
+(* definition 0.39 *)
+locale local_ring = entire_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
+  for R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
+unit ("\<one>") +
+assumes is_unique: "\<lbrakk>I \<subseteq> R; J \<subseteq> R\<rbrakk> \<Longrightarrow> max_ideal I R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal J R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
+and has_max_ideal: "\<exists>\<ww>. max_ideal \<ww> R (+) (\<cdot>) \<zero> \<one>"
+
+context prime_ideal
+begin
+
+(* ex. 0.40 *)
+lemma
+  shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
+(zero_local_ring_at) (one_local_ring_at)"
+  sorry
+
+end (* prime_ideal*)
+
+(* def. 0.41 *)
+locale local_ring_morphism = 
+source: local_ring A "(+)" "(\<cdot>)" \<zero> \<one> + target: local_ring B "(+')" "(\<cdot>')" "\<zero>'" "\<one>'"
++ ring_homomorphism f A "(+)" "(\<cdot>)" \<zero> \<one> B "(+')" "(\<cdot>')" "\<zero>'" "\<one>'"
+for f and 
+A and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") and 
+B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) and zero' ("\<zero>''") and unit' ("\<one>''")
++ assumes preimage_of_max_ideal: 
+"\<lbrakk>\<ww>\<^sub>A \<subseteq> A; \<ww>\<^sub>B \<subseteq> B\<rbrakk> \<Longrightarrow> max_ideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> {x. f x \<in> \<ww>\<^sub>B} = \<ww>\<^sub>A"
 
 end
