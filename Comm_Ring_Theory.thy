@@ -612,7 +612,7 @@ b \<phi>\<^sub>f"
 subsection \<open>Direct Limits of Rings\<close>
 
 (* construction 0.34 *)
-locale cxt_direct_limit = sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and \<FF> and \<rho> and b +
+locale cxt_direct_lim = sheaf_of_rings X is_open \<FF> \<rho> b for X and is_open and \<FF> and \<rho> and b +
   fixes I:: "'a set set"
   assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U"
 and has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
@@ -672,7 +672,20 @@ begin
 
 (* definition 0.37 *)
 definition stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set set"
-  where "stalk_at x \<equiv> cxt_direct_limit.carrier_direct_lim \<FF> \<rho> {U. is_open U \<and> x \<in> U}"
+  where "stalk_at x \<equiv> cxt_direct_lim.carrier_direct_lim \<FF> \<rho> {U. is_open U \<and> x \<in> U}"
+
+definition add_stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
+  where "add_stalk_at x \<equiv> cxt_direct_lim.add_rel \<FF> \<rho> {U. is_open U \<and> x \<in> U}"
+
+definition mult_stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
+  where "mult_stalk_at x \<equiv> cxt_direct_lim.mult_rel \<FF> \<rho> {U. is_open U \<and> x \<in> U}"
+
+definition zero_stalk_at:: "'a \<Rightarrow> 'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set"
+  where "zero_stalk_at x U zero \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. is_open U \<and> x \<in> U} U zero"
+
+definition one_stalk_at:: "'a \<Rightarrow> 'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set"
+  where "one_stalk_at x U one \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. is_open U \<and> x \<in> U} U one"
+
 
 end (* presheaf_of_rings *)
 
@@ -712,8 +725,25 @@ source: local_ring A "(+)" "(\<cdot>)" \<zero> \<one> + target: local_ring B "(+
 + ring_homomorphism f A "(+)" "(\<cdot>)" \<zero> \<one> B "(+')" "(\<cdot>')" "\<zero>'" "\<one>'"
 for f and 
 A and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") and 
-B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) and zero' ("\<zero>''") and unit' ("\<one>''")
+B and addition' (infixl "+'" 65) and multiplication' (infixl "\<cdot>'" 70) and zero' ("\<zero>'") and unit' ("\<one>'")
 + assumes preimage_of_max_ideal: 
 "\<lbrakk>\<ww>\<^sub>A \<subseteq> A; \<ww>\<^sub>B \<subseteq> B\<rbrakk> \<Longrightarrow> max_ideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> {x. f x \<in> \<ww>\<^sub>B} = \<ww>\<^sub>A"
+
+(* def. 0.42 *)
+locale locally_ringed_space = ringed_space X is_open \<O> \<rho> b
+  for X and is_open and \<O> and \<rho> and b +
+  assumes is_local_ring: "\<And>x U zero. x \<in> X \<Longrightarrow> is_open U \<Longrightarrow> (\<exists>add mult one. ring (\<FF> U) add mult zero one) \<Longrightarrow>
+local_ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x U zero) (one_stalk_at x U one)"
+
+context entire_ring
+begin
+
+(* ex. 0.43 *)
+lemma
+  fixes a:: "'a"
+  shows "locally_ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(a,a)})"
+  sorry
+
+end (* entire_ring *)
 
 end
