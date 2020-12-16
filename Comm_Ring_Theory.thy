@@ -7,6 +7,18 @@ theory Comm_Ring_Theory
 
 begin
 
+(* 
+We have tried to avoid the use of records (cf. Wenda's advice) which means that any structure should 
+be converted into a property. We are not even sure it is feasible or worth it. If I understand 
+correctly, records slow down automation, hence our attempt. If it is not possible, or not worth it, 
+to achieve our goals without records, then records should be introduced and a few corresponding 
+changes in our definitions should be expected.
+However, not using records should be possible, especially if one adopts a functional point of view
+where the ring structures provided by a sheaf of rings are given by appropriate functions (introduced 
+within locales using the keyword fixes), since it is probably not enough to merely state these ring 
+structures exist. 
+cf. what is done for the universal property of direct limits, I think it is the right point of view.  
+*)
 section \<open>Commutative Rings\<close> 
 
 subsection \<open>Commutative Rings\<close>
@@ -412,23 +424,23 @@ lemma induced_sheaf_is_sheaf:
 end (* cxt_induced_sheaf*)
 
 (* context for construction 0.22 *) 
-locale cxt_direct_image_sheaf = continuous_map X is_open X' is_open' f + 
+locale cxt_direct_im_sheaf = continuous_map X is_open X' is_open' f + 
 sheaf_of_rings X is_open \<FF> \<rho> b 
 for X and is_open and X' and is_open' and f and \<FF> and \<rho> and b
 begin
 
 (* def 0.24 *)
-definition direct_image_sheaf:: "'b set => 'c set"
-  where "direct_image_sheaf V \<equiv> \<FF> ({x. f x \<in> V})"
+definition direct_im_sheaf:: "'b set => 'c set"
+  where "direct_im_sheaf V \<equiv> \<FF> ({x. f x \<in> V})"
 
-definition direct_image_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Rightarrow> ('c \<Rightarrow> 'c)"
-  where "direct_image_sheaf_ring_morphisms U V \<equiv> \<rho> {x. f x \<in> U} {x. f x \<in> V}"
+definition direct_im_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Rightarrow> ('c \<Rightarrow> 'c)"
+  where "direct_im_sheaf_ring_morphisms U V \<equiv> \<rho> {x. f x \<in> U} {x. f x \<in> V}"
 
 (* ex 0.23 *)
 lemma 
-  shows "sheaf_of_rings X' (is_open') direct_image_sheaf direct_image_sheaf_ring_morphisms b" sorry
+  shows "sheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b" sorry
 
-end (* cxt_direct_image_sheaf *)
+end (* cxt_direct_im_sheaf *)
 
 
 subsection \<open>Quotient Ring\<close>
@@ -604,8 +616,8 @@ for X and is_open\<^sub>X and \<O>\<^sub>X and \<rho>\<^sub>X and b and Y and is
 fixes f:: "'a \<Rightarrow> 'c" and \<phi>\<^sub>f:: "'c set \<Rightarrow> ('d \<Rightarrow> 'b)"
 assumes is_continuous: "continuous_map X is_open\<^sub>X Y is_open\<^sub>Y f"
 and is_morphism_of_sheaves: "morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d 
-(cxt_direct_image_sheaf.direct_image_sheaf f \<O>\<^sub>X) 
-(cxt_direct_image_sheaf.direct_image_sheaf_ring_morphisms f \<rho>\<^sub>X) 
+(cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) 
+(cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) 
 b \<phi>\<^sub>f"
 
 
@@ -665,7 +677,26 @@ lemma
   assumes "U \<in> I" and "ring (\<FF> U) add mult zero one"
   shows "ring carrier_direct_lim add_rel mult_rel \<lfloor>U,zero\<rfloor> \<lfloor>U,one\<rfloor>" sorry
 
-end (* cxt_direct_limit *)
+(* The canonical function from \<FF> U into lim \<FF> for U \<in> I: *)
+definition canonical_fun:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set"
+  where "canonical_fun U x = \<lfloor>U, x\<rfloor>"
+
+end (* cxt_direct_lim *)
+
+subsubsection \<open>Universal property of direct limits\<close>
+
+lemma (in cxt_direct_lim)
+  fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> 'b \<Rightarrow> 'c" and add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
+and mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" and zero_str:: "'a set \<Rightarrow> 'b" and one_str:: "'a set \<Rightarrow> 'b" 
+  assumes "ring A addA multA zeroA oneA" and 
+"\<And>U. U \<in> I \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) A addA multA zeroA oneA" 
+and "\<And>U V. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> V \<subseteq> U \<Longrightarrow> (\<psi> V) \<circ> (\<rho> U V) = \<psi> U"
+  shows "\<exists>!u. \<forall>U. U \<in> I \<longrightarrow> 
+  ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor>U,zero\<rfloor> \<lfloor>U,one\<rfloor> A addA multA zeroA oneA 
+\<and> u \<circ> (canonical_fun U) = \<psi> U" sorry
+
+
+subsection \<open>Locally Ringed Spaces\<close>
 
 context presheaf_of_rings
 begin
@@ -722,7 +753,7 @@ end (* prime_ideal*)
 (* def. 0.41 *)
 locale local_ring_morphism = 
 source: local_ring A "(+)" "(\<cdot>)" \<zero> \<one> + target: local_ring B "(+')" "(\<cdot>')" "\<zero>'" "\<one>'"
-+ ring_homomorphism f A "(+)" "(\<cdot>)" \<zero> \<one> B "(+')" "(\<cdot>')" "\<zero>'" "\<one>'"
++ ring_homomorphism f A "(+)" "(\<cdot>)" "\<zero>" "\<one>" B "(+')" "(\<cdot>')" "\<zero>'" "\<one>'"
 for f and 
 A and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") and 
 B and addition' (infixl "+'" 65) and multiplication' (infixl "\<cdot>'" 70) and zero' ("\<zero>'") and unit' ("\<one>'")
@@ -745,5 +776,40 @@ lemma
   sorry
 
 end (* entire_ring *)
+
+(* Construction 0.44: induced morphism between direct limits *)
+
+locale cxt_ind_morphism_bwt_lim = source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b + target: ringed_space Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d
++ morphism_ringed_spaces X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d f \<phi>\<^sub>f 
+for X and is_open\<^sub>X and \<O>\<^sub>X and \<rho>\<^sub>X and b and Y and is_open\<^sub>Y and \<O>\<^sub>Y and \<rho>\<^sub>Y and d and f and \<phi>\<^sub>f
++ fixes x::"'a"
+begin
+
+definition index:: "'c set set"
+  where "index \<equiv> {V. is_open\<^sub>Y V \<and> f x \<in> V}"
+
+lemma
+  fixes add_strX:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" and mult_strX:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" and
+zero_strX:: "'a set \<Rightarrow> 'b" and one_strX:: "'a set \<Rightarrow> 'b"
+and add_strY:: "'c set \<Rightarrow> ('d \<Rightarrow> 'd \<Rightarrow> 'd)" and mult_strY:: "'c set \<Rightarrow> ('d \<Rightarrow> 'd \<Rightarrow> 'd)" and
+zero_strY:: "'c set \<Rightarrow> 'd" and one_strY:: "'c set \<Rightarrow> 'd"
+  assumes "V \<in> index" and "\<And>U. is_open\<^sub>X U \<Longrightarrow> ring (\<O>\<^sub>X U) (add_strX U) (mult_strX U) (zero_strX U) (one_strX U)"
+and "\<And>V. is_open\<^sub>Y V \<Longrightarrow> ring (\<O>\<^sub>Y V) (add_strY V) (mult_strY V) (zero_strY V) (one_strY V)"  
+  shows "\<exists>u. ring_homomorphism u
+(presheaf_of_rings.stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x))
+(presheaf_of_rings.add_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x))
+(presheaf_of_rings.mult_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x))
+(presheaf_of_rings.zero_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x) V (zero_strY V))
+(presheaf_of_rings.one_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x) V (one_strY V)) 
+(cxt_direct_lim.carrier_direct_lim (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index)
+(cxt_direct_lim.add_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index)
+(cxt_direct_lim.mult_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index)
+(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V (zero_strX {x'. f x' \<in> V}))
+(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V (one_strX {x'. f x' \<in> V}))
+"
+  sorry
+
+end (* cxt_ind_morphism_bwt_lim *)
+
 
 end
