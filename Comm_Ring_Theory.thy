@@ -768,11 +768,12 @@ end (* entire_ring *)
 (* Construction 0.44: induced morphism between direct limits *)
 
 locale cxt_ind_morphism_bwt_lim = 
-source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>x mult_str\<^sub>x zero_str\<^sub>x one_str\<^sub>x + 
-target: ringed_space Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>y mult_str\<^sub>y zero_str\<^sub>Y one_str\<^sub>Y + 
-morphism_ringed_spaces X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>x mult_str\<^sub>x zero_str\<^sub>x one_str\<^sub>x Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>y mult_str\<^sub>y zero_str\<^sub>Y one_str\<^sub>Y f \<phi>\<^sub>f 
-for X and is_open\<^sub>X and \<O>\<^sub>X and \<rho>\<^sub>X and b and add_str\<^sub>x and mult_str\<^sub>x and zero_str\<^sub>x ("\<zero>\<^bsub>_\<^esub>") and one_str\<^sub>x ("\<one>\<^bsub>_\<^esub>")
-and Y and is_open\<^sub>Y and \<O>\<^sub>Y and \<rho>\<^sub>Y and d and add_str\<^sub>y and mult_str\<^sub>y and zero_str\<^sub>Y and one_str\<^sub>Y and f and \<phi>\<^sub>f
+source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X + 
+target: ringed_space Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y + 
+morphism_ringed_spaces X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y f \<phi>\<^sub>f 
+for X and is_open\<^sub>X and \<O>\<^sub>X and \<rho>\<^sub>X and b and add_str\<^sub>X (infixl "+\<^bsub>_\<^esub>" 65) and mult_str\<^sub>X and zero_str\<^sub>X ("\<zero>\<^bsub>_\<^esub>") and one_str\<^sub>X ("\<one>\<^bsub>_\<^esub>")
+and Y and is_open\<^sub>Y and \<O>\<^sub>Y and \<rho>\<^sub>Y and d and add_str\<^sub>Y and mult_str\<^sub>Y and zero_str\<^sub>Y and one_str\<^sub>Y 
+and f and \<phi>\<^sub>f
 + fixes x::"'a"
 begin
 
@@ -788,10 +789,26 @@ lemma
 (presheaf_of_rings.zero_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y zero_str\<^sub>Y (f x) V)
 (presheaf_of_rings.one_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y one_str\<^sub>Y (f x) V) 
 (lim (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index)
-(cxt_direct_lim.add_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) add_str\<^sub>X index)
-(cxt_direct_lim.mult_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) mult_str\<^sub>X index)
-(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V \<zero>\<^bsub>{x'. f x' \<in> V}\<^esub>)
-(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V \<one>\<^bsub>{x'. f x' \<in> V}\<^esub>)
+(cxt_direct_lim.add_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) (\<lambda>V x y. add_str\<^sub>X (f\<^sup>\<inverse>V) x y) index)
+(cxt_direct_lim.mult_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) (\<lambda>V x y. mult_str\<^sub>X (f\<^sup>\<inverse>V) x y) index)
+(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V (zero_str\<^sub>X f\<^sup>\<inverse>V))
+(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V (one_str\<^sub>X f\<^sup>\<inverse>V))
+"
+  sorry
+
+lemma
+  assumes "V \<in> index"
+  shows "\<exists>i. ring_homomorphism i
+(lim (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index)
+(cxt_direct_lim.add_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) (\<lambda>V x y. add_str\<^sub>X (f\<^sup>\<inverse>V) x y) index)
+(cxt_direct_lim.mult_rel (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) (\<lambda>V x y. mult_str\<^sub>X (f\<^sup>\<inverse>V) x y) index)
+(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V (zero_str\<^sub>X f\<^sup>\<inverse>V))
+(cxt_direct_lim.class_of (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) index V (one_str\<^sub>X f\<^sup>\<inverse>V))
+(presheaf_of_rings.stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X x)
+(presheaf_of_rings.add_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X add_str\<^sub>X x)
+(presheaf_of_rings.mult_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X mult_str\<^sub>X x)
+(presheaf_of_rings.zero_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X zero_str\<^sub>X x (f\<^sup>\<inverse> V))
+(presheaf_of_rings.one_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X one_str\<^sub>X x (f\<^sup>\<inverse> V))
 "
   sorry
 
