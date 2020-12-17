@@ -53,11 +53,11 @@ locale ind_topology = topological_space X is_open for X and is_open +
   assumes is_subset: "S \<subseteq> X"
 begin
 
-definition is_open_wrt_ind_top:: "'a set \<Rightarrow> bool"
-  where "is_open_wrt_ind_top U \<equiv> U \<subseteq> S \<and> (\<exists>V. is_open V \<and> U = S \<inter> V)"
+definition ind_is_open:: "'a set \<Rightarrow> bool"
+  where "ind_is_open U \<equiv> U \<subseteq> S \<and> (\<exists>V. is_open V \<and> U = S \<inter> V)"
 
 lemma 
-  shows "topological_space S (is_open_wrt_ind_top)" sorry
+  shows "topological_space S (ind_is_open)" sorry
 
 end (* induced topology *)
 

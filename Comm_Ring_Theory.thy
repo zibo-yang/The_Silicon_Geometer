@@ -405,9 +405,21 @@ definition ind_sheaf:: "'a set \<Rightarrow> 'b set"
 definition ind_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)"
   where "ind_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
 
+definition ind_add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
+  where "ind_add_str V x y \<equiv> add_str (U\<inter>V) x y"
+
+definition ind_mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
+  where "ind_mult_str V x y \<equiv> mult_str (U\<inter>V) x y"
+
+definition ind_zero_str:: "'a set \<Rightarrow> 'b"
+  where "ind_zero_str V \<equiv> \<zero>\<^bsub>(U\<inter>V)\<^esub>"
+
+definition ind_one_str:: "'a set \<Rightarrow> 'b"
+  where "ind_one_str V \<equiv> \<one>\<^bsub>(U\<inter>V)\<^esub>"
+
 lemma ind_sheaf_is_sheaf:
-  shows "sheaf_of_rings U (is_open_wrt_ind_top) ind_sheaf ind_ring_morphisms b
-(\<lambda>V x y. add_str (U\<inter>V) x y) (\<lambda>V x y. mult_str (U\<inter>V) x y) (\<lambda>V. \<zero>\<^bsub>(U\<inter>V)\<^esub> ) (\<lambda>V. \<one>\<^bsub>(U\<inter>V)\<^esub> )"
+  shows "sheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
+ind_add_str ind_mult_str ind_zero_str ind_one_str"
   sorry
 
 end (* cxt_ind_sheaf*)
@@ -852,12 +864,17 @@ locale affine_scheme = locally_ringed_space + entire_ring +
 Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(c, c)}) (\<lambda>U. add_sheaf_on_spec U)
 (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U) f \<phi>\<^sub>f"
 
-(*
+
 subsection \<open>Schemes\<close>
 
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + entire_ring +
-  assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U)"
-*)
+  fixes c:: "'c"
+  assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U \<and> 
+affine_scheme U (ind_topology.ind_is_open is_open U) (cxt_ind_sheaf.ind_sheaf \<O> U) 
+(cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
+(cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
+(cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one> c
+)"
 
 end
