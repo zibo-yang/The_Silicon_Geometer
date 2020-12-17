@@ -392,25 +392,25 @@ locale morphism_sheaves_of_rings = morphism_presheaves_of_rings
 locale iso_sheaves_of_rings = iso_presheaves_of_rings 
 
 (* ex. 0.21 *)
-locale cxt_induced_sheaf = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str + 
-induced_topology X is_open U
+locale cxt_ind_sheaf = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str + 
+ind_topology X is_open U
 for X and is_open and \<FF> and \<rho> and b and add_str (infixl "+\<^bsub>_\<^esub>" 65) and mult_str (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
 and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") and U +
   assumes is_open_subset: "is_open U"
 begin
 
-definition induced_sheaf:: "'a set \<Rightarrow> 'b set"
-  where "induced_sheaf V \<equiv> \<FF> (U \<inter> V)"
+definition ind_sheaf:: "'a set \<Rightarrow> 'b set"
+  where "ind_sheaf V \<equiv> \<FF> (U \<inter> V)"
 
-definition induced_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)"
-  where "induced_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
+definition ind_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)"
+  where "ind_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
 
-lemma induced_sheaf_is_sheaf:
-  shows "sheaf_of_rings U (is_open_wrt_induced_top) induced_sheaf induced_ring_morphisms b
+lemma ind_sheaf_is_sheaf:
+  shows "sheaf_of_rings U (is_open_wrt_ind_top) ind_sheaf ind_ring_morphisms b
 (\<lambda>V x y. add_str (U\<inter>V) x y) (\<lambda>V x y. mult_str (U\<inter>V) x y) (\<lambda>V. \<zero>\<^bsub>(U\<inter>V)\<^esub> ) (\<lambda>V. \<one>\<^bsub>(U\<inter>V)\<^esub> )"
   sorry
 
-end (* cxt_induced_sheaf*)
+end (* cxt_ind_sheaf*)
 
 (* context for construction 0.22 *)
 locale cxt_direct_im_sheaf = continuous_map + sheaf_of_rings
@@ -524,8 +524,8 @@ definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarro
                                                                         s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
 ))))"
 
-definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
-  where "\<O> U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
+definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set"
+  where "sheaf_on_spec U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
                   \<and> is_regular s U}"
 
 definition add_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
@@ -602,12 +602,12 @@ end (* entire_ring *)
 
 (* definition 0.33 *)
 locale morphism_ringed_spaces = source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X 
-+ target: ringed_space Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
++ target: ringed_space Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
 for X and is_open\<^sub>X and \<O>\<^sub>X and \<rho>\<^sub>X and b and add_str\<^sub>X and mult_str\<^sub>X and zero_str\<^sub>X and one_str\<^sub>X 
-and Y and is_open\<^sub>Y and \<O>\<^sub>Y and \<rho>\<^sub>Y and d and add_str\<^sub>Y and mult\<^sub>Y and zero_str\<^sub>Y and one_str\<^sub>Y +
+and Y and is_open\<^sub>Y and \<O>\<^sub>Y and \<rho>\<^sub>Y and d and add_str\<^sub>Y and mult_str\<^sub>Y and zero_str\<^sub>Y and one_str\<^sub>Y +
 fixes f:: "'a \<Rightarrow> 'c" and \<phi>\<^sub>f:: "'c set \<Rightarrow> ('d \<Rightarrow> 'b)"
 assumes is_continuous: "continuous_map X is_open\<^sub>X Y is_open\<^sub>Y f"
-and is_morphism_of_sheaves: "morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y 
+and is_morphism_of_sheaves: "morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y 
 (cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X) 
 (cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X) 
 b 
@@ -832,7 +832,7 @@ assumes is_local_morphism: "\<And>x. x \<in> X \<Longrightarrow> local_ring_morp
 
 locale iso_locally_ringed_spaces =
 morphism_locally_ringed_spaces + homeomorphism X is_open\<^sub>X Y is_open\<^sub>Y f +
-iso_presheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
+iso_presheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
 "cxt_direct_im_sheaf.direct_im_sheaf f \<O>\<^sub>X" 
 "cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms f \<rho>\<^sub>X" 
 b 
@@ -842,5 +842,22 @@ b
 "\<lambda>V. one_str\<^sub>X (f\<^sup>\<inverse> V)"
 \<phi>\<^sub>f
 
+
+subsection \<open>Affine Schemes\<close>
+
+(* definition 0.46 *)
+locale affine_scheme = locally_ringed_space + entire_ring +
+  fixes c:: "'c"
+  assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O> \<rho> b add_str mult_str zero_str one_str
+Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(c, c)}) (\<lambda>U. add_sheaf_on_spec U)
+(\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U) f \<phi>\<^sub>f"
+
+(*
+subsection \<open>Schemes\<close>
+
+(* def. 0.47 *)
+locale scheme = locally_ringed_space + entire_ring +
+  assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U)"
+*)
 
 end
