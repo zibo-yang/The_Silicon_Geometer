@@ -1,7 +1,8 @@
 theory Topological_Space_Theory
-  imports Main 
-          "Jacobson_Basic_Algebra.Set_Theory"
+  imports Main
           HOL.Real
+          "Jacobson_Basic_Algebra.Set_Theory"
+          Set_Further_Theory
 
 begin
 
@@ -66,5 +67,13 @@ locale continuous_map = source: topological_space X is_open + target: topologica
 + map f X X'
   for X and is_open and X' and is_open' and f +
   assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open {x. f x \<in> U}"
+
+subsection \<open>Homeomorphisms\<close>
+
+text \<open>The topological isomorphisms between topological spaces are called homeomorphisms.\<close>
+
+locale homeomorphism = 
+continuous_map + bijective_map f X X' + 
+continuous_map X' is_open' X is_open "f\<^sup>\<inverse> X X'"
 
 end
