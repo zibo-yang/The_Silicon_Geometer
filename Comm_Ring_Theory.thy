@@ -11,10 +11,20 @@ section \<open>Commutative Rings\<close>
 
 subsection \<open>Commutative Rings\<close>
 
-no_notation plus (infixl "+" 65)
-
 locale comm_ring = ring +
   assumes commutative_mult: "\<lbrakk> a \<in> R; b \<in> R \<rbrakk> \<Longrightarrow> a \<cdot> b = b \<cdot> a"
+
+text \<open>The trivial ring is a commutative ring.\<close>
+
+lemma trivial_ring_is_ring:
+  shows "ring {0::nat} (\<lambda>n m. n + m) (\<lambda>n m. n * m) 0 0"
+  sorry
+
+lemma trivial_ring_is_comm_ring:
+  shows "comm_ring {0::nat} (\<lambda>n m. n + m) (\<lambda>n m. n * m) 0 0"
+  sorry
+
+no_notation plus (infixl "+" 65)
 
 (* def 0.13 *)
 definition (in ring) zero_divisor :: "'a \<Rightarrow> 'a \<Rightarrow> bool" 
@@ -536,6 +546,11 @@ definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarro
                                                                         s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
 ))))"
 
+lemma
+  fixes s:: "'a set \<Rightarrow> ('a \<times> 'a) set"
+  shows "is_regular s {}"
+  by (simp add: is_regular_def)
+
 definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set"
   where "sheaf_on_spec U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
                   \<and> is_regular s U}"
@@ -586,8 +601,7 @@ lemma
 
 (* ex. 0.30 *)
 lemma
-  fixes a:: "'a"
-  shows "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(a,a)})
+  shows "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(\<zero>,\<zero>)})
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
@@ -779,8 +793,7 @@ begin
 
 (* ex. 0.43 *)
 lemma
-  fixes a:: "'a"
-  shows "locally_ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(a,a)})
+  shows "locally_ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(\<zero>,\<zero>)})
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
@@ -859,9 +872,8 @@ subsection \<open>Affine Schemes\<close>
 
 (* definition 0.46 *)
 locale affine_scheme = locally_ringed_space + entire_ring +
-  fixes c:: "'c"
   assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O> \<rho> b add_str mult_str zero_str one_str
-Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(c, c)}) (\<lambda>U. add_sheaf_on_spec U)
+Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(\<zero>,\<zero>)}) (\<lambda>U. add_sheaf_on_spec U)
 (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U) f \<phi>\<^sub>f"
 
 
@@ -869,19 +881,18 @@ subsection \<open>Schemes\<close>
 
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + entire_ring +
-  fixes c:: "'c"
   assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U \<and> 
 affine_scheme U (ind_topology.ind_is_open is_open U) (cxt_ind_sheaf.ind_sheaf \<O> U) 
 (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
 (cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
-(cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one> c
+(cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>
 )"
 
 context affine_scheme
 begin
 
 lemma affine_scheme_is_scheme:
-  shows "scheme X is_open \<O> \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one> c"
+  shows "scheme X is_open \<O> \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
   sorry
 
 end (* affine_scheme*)
