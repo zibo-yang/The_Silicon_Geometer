@@ -16,12 +16,12 @@ locale comm_ring = ring +
 
 text \<open>The trivial ring is a commutative ring.\<close>
 
-lemma trivial_ring_is_ring:
-  shows "ring {0::nat} (\<lambda>n m. n + m) (\<lambda>n m. n * m) 0 0"
+lemma zero_ring_is_ring:
+  shows "ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
   sorry
 
-lemma trivial_ring_is_comm_ring:
-  shows "comm_ring {0::nat} (\<lambda>n m. n + m) (\<lambda>n m. n * m) 0 0"
+lemma zero_ring_is_comm_ring:
+  shows "comm_ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
   sorry
 
 no_notation plus (infixl "+" 65)
@@ -38,7 +38,7 @@ no_zero_divisors: "\<lbrakk> x \<in> R; y \<in> R\<rbrakk> \<Longrightarrow> \<n
 
 subsection \<open>Ideals\<close>
 
-context entire_ring begin
+context comm_ring begin
 
 (* ex. 0.16 *)
 lemma ideal_R_R: "ideal R R (+) (\<cdot>) \<zero> \<one>"
@@ -69,7 +69,7 @@ lemma ideal_implies_subset:
 lemma ideal_inverse:
   assumes "a \<in> A" "ideal A R (+) mult zero unit"
   shows "additive.inverse a \<in> A"
-  by (meson additive.invertible assms entire_ring.ideal_implies_subset entire_ring_axioms ideal_def subgroup.subgroup_inverse_iff subgroup_of_additive_group_of_ring_def subsetD)
+  by (meson additive.invertible assms comm_ring.ideal_implies_subset comm_ring_axioms ideal_def subgroup.subgroup_inverse_iff subgroup_of_additive_group_of_ring_def subsetD)
 
 lemma ideal_add:
   assumes "a \<in> A"  "b \<in> A" "ideal A R add mult zero unit"
@@ -183,7 +183,7 @@ qed
 end (* entire_ring *)
 
 text \<open>def. 0.18, see remark 0.20\<close>
-locale prime_ideal = entire_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
+locale prime_ideal = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
   for R and I and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>")
 (* 
@@ -232,7 +232,7 @@ section \<open>Spectrum of a ring\<close>
 
 subsection \<open>The Zariski Topology\<close>
 
-context entire_ring begin
+context comm_ring begin
 
 text \<open>Notation 1\<close>
 definition closed_subsets :: "'a set \<Rightarrow> ('a set) set" ("\<V> _" [900] 900)
@@ -266,7 +266,7 @@ proof
   proof induction
     case unit
     then show ?case
-      by (meson entire_ring.ideal_zero prime prime_ideal_def)
+      by (meson comm_ring.ideal_zero prime prime_ideal_def)
   next
     case (incl a)
     then have "a \<in> R"
@@ -282,7 +282,7 @@ proof
   next
     case (mult a b)
     then show ?case
-      by (meson prime entire_ring.ideal_add prime_ideal_def)
+      by (meson prime comm_ring.ideal_add prime_ideal_def)
   qed
 qed
 
@@ -319,7 +319,7 @@ lemma zarisky_is_topological_space:
   shows "topological_space Spec is_zariski_open"
   sorry
 
-end (* entire_ring *)
+end (* comm_ring *)
 
 
 subsection \<open>Presheaves of Rings\<close>
@@ -456,7 +456,7 @@ end (* cxt_direct_im_sheaf *)
 
 subsection \<open>Quotient Ring\<close>
 
-locale cxt_quotient_ring = entire_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + submonoid S R "(\<cdot>)" "\<one>" 
+locale cxt_quotient_ring = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + submonoid S R "(\<cdot>)" "\<one>" 
   for S and R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>")
 begin
@@ -533,7 +533,7 @@ notation prime_ideal.carrier_local_ring_at ("_ \<^bsub>_ _ _ _\<^esub>")
 subsection \<open>Spectrum of a Ring\<close>
 
 (* construction 0.29 *)
-context entire_ring
+context comm_ring
 begin
 
 definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set) set \<Rightarrow> bool" 
@@ -605,7 +605,7 @@ lemma
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
-end (* entire_ring *)
+end (* comm_ring *)
 
 
 section \<open>Schemes\<close>
@@ -616,7 +616,7 @@ subsection \<open>Ringed Spaces\<close>
 locale ringed_space = topological_space X is_open + sheaf_of_rings X is_open \<O> \<rho> b add_str mult_str zero_str one_str
   for X and is_open and \<O> and \<rho> and b and add_str and mult_str and zero_str and one_str
 
-context entire_ring
+context comm_ring
 begin
 
 lemma 
@@ -624,7 +624,7 @@ lemma
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
-end (* entire_ring *)
+end (* comm_ring *)
 
 (* definition 0.33 *)
 locale morphism_ringed_spaces = source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X 
@@ -745,7 +745,7 @@ end (* presheaf_of_rings *)
 
 (* definition 0.38 *)
 
-locale max_ideal = entire_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
+locale max_ideal = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
   for R and I and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>") +
 assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
@@ -760,7 +760,7 @@ lemma
 end (* locale max_ideal *)
 
 (* definition 0.39 *)
-locale local_ring = entire_ring +
+locale local_ring = comm_ring +
 assumes is_unique: "\<lbrakk>I \<subseteq> R; J \<subseteq> R\<rbrakk> \<Longrightarrow> max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
 and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
 context prime_ideal
@@ -797,7 +797,7 @@ lemma
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
-end (* entire_ring *)
+end (* comm_ring *)
 
 (* Construction 0.44: induced morphism between direct limits *)
 locale cxt_ind_morphism_bwt_lim = 
@@ -871,7 +871,7 @@ b
 subsection \<open>Affine Schemes\<close>
 
 (* definition 0.46 *)
-locale affine_scheme = locally_ringed_space + entire_ring +
+locale affine_scheme = locally_ringed_space + comm_ring +
   assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O> \<rho> b add_str mult_str zero_str one_str
 Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(\<zero>,\<zero>)}) (\<lambda>U. add_sheaf_on_spec U)
 (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U) f \<phi>\<^sub>f"
@@ -880,7 +880,7 @@ Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>.
 subsection \<open>Schemes\<close>
 
 (* def. 0.47 *)
-locale scheme = locally_ringed_space + entire_ring +
+locale scheme = locally_ringed_space + comm_ring +
   assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U \<and> 
 affine_scheme U (ind_topology.ind_is_open is_open U) (cxt_ind_sheaf.ind_sheaf \<O> U) 
 (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
