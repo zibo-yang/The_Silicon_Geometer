@@ -877,4 +877,14 @@ affine_scheme U (ind_topology.ind_is_open is_open U) (cxt_ind_sheaf.ind_sheaf \<
 (cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one> c
 )"
 
+context affine_scheme
+begin
+
+lemma affine_scheme_is_scheme:
+  shows "scheme X is_open \<O> \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one> c"
+  sorry
+
+end (* affine_scheme*)
+
+
 end
