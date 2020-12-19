@@ -14,7 +14,7 @@ subsection \<open>Commutative Rings\<close>
 locale comm_ring = ring +
   assumes commutative_mult: "\<lbrakk> a \<in> R; b \<in> R \<rbrakk> \<Longrightarrow> a \<cdot> b = b \<cdot> a"
 
-text \<open>The trivial ring is a commutative ring.\<close>
+text \<open>The zero ring is a commutative ring.\<close>
 
 lemma zero_ring_is_ring:
   shows "ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
@@ -896,6 +896,11 @@ lemma affine_scheme_is_scheme:
   sorry
 
 end (* affine_scheme*)
+
+lemma empty_scheme_is_affine_scheme:
+  shows "affine_scheme {} (\<lambda>U. True) (\<lambda>U. {0::nat}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
+{0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0"
+  sorry
 
 
 end
