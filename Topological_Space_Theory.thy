@@ -1,7 +1,8 @@
 theory Topological_Space_Theory
-  imports Main 
-          "Jacobson_Basic_Algebra.Set_Theory"
+  imports Main
           HOL.Real
+          "Jacobson_Basic_Algebra.Set_Theory"
+          Set_Further_Theory
 
 begin
 
@@ -47,18 +48,19 @@ locale open_cover_of_open_subset = open_cover_of_subset X is_open U I C
 
 subsection \<open>Induced Topology\<close>
 
-locale induced_topology = topological_space X is_open for X and is_open +
+locale ind_topology = topological_space X is_open for X and is_open +
   fixes S:: "'a set"
   assumes is_subset: "S \<subseteq> X"
 begin
 
-definition is_open_wrt_induced_top:: "'a set \<Rightarrow> bool"
-  where "is_open_wrt_induced_top U \<equiv> U \<subseteq> S \<and> (\<exists>V. is_open V \<and> U = S \<inter> V)"
+definition ind_is_open:: "'a set \<Rightarrow> bool"
+  where "ind_is_open U \<equiv> U \<subseteq> S \<and> (\<exists>V. is_open V \<and> U = S \<inter> V)"
 
 lemma 
-  shows "topological_space S (is_open_wrt_induced_top)" sorry
+  shows "topological_space S (ind_is_open)" sorry
 
 end (* induced topology *)
+
 
 subsection \<open>Continuous Maps\<close>
 
@@ -66,5 +68,14 @@ locale continuous_map = source: topological_space X is_open + target: topologica
 + map f X X'
   for X and is_open and X' and is_open' and f +
   assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open {x. f x \<in> U}"
+
+
+subsection \<open>Homeomorphisms\<close>
+
+text \<open>The topological isomorphisms between topological spaces are called homeomorphisms.\<close>
+
+locale homeomorphism = 
+continuous_map + bijective_map f X X' + 
+continuous_map X' is_open' X is_open "f\<^sup>\<inverse> X X'"
 
 end
