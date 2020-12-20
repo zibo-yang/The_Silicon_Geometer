@@ -23,7 +23,8 @@ lemma empty_set_is_algebraic:
   shows "algebraic empty" sorry
 
 lemma whole_space_is_algebraic:
-  shows "algebraic R" sorry
+  shows "algebraic R" 
+  by (auto simp: algebraic_def zero_set_def)
 
 (* exercise 0.0.6 *)
 lemma inter_of_alg_family_is_algebraic:

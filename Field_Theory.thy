@@ -17,6 +17,10 @@ locale field = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>"
 
 begin
 
+declare nonzero [simp]
+lemma nonzero' [simp]: "\<one> \<noteq> \<zero>"
+  using nonzero by blast 
+
 lemma left_inv_mult_is_right_inv:
   assumes "a \<in> R" and "b \<in> R" and "a \<cdot> b = \<one>"
   shows "b \<cdot> a = \<one>"
@@ -46,10 +50,6 @@ definition degree :: "'a upoly \<Rightarrow> nat"
 
 definition zero_poly :: "'a upoly"
   where "zero_poly \<equiv> \<lambda>_. \<zero>"
-
-primrec foldr :: "('a \<Rightarrow> 'b \<Rightarrow> 'b) \<Rightarrow> 'a list \<Rightarrow> 'b \<Rightarrow> 'b" where
-foldr_Nil:  "foldr f [] = id" |
-foldr_Cons: "foldr f (x # xs) = f x \<circ> foldr f xs"
 
 definition coeffs :: "'a upoly \<Rightarrow> 'a list"
   where "coeffs p = (if p = zero_poly then [] else map (\<lambda>i. p i) [0 ..< Suc (degree p)])"
