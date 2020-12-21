@@ -9,7 +9,7 @@ begin
 section \<open>Topological Spaces\<close>
 
 locale topological_space = fixes S :: "'a set" and is_open :: "'a set \<Rightarrow> bool"
-  assumes open_space [simp, intro]: "is_open S" and 
+  assumes open_space [simp, intro]: "is_open S" and open_empty [simp, intro]: "is_open {}" and
 open_inter [intro]: "\<lbrakk>U \<subseteq> S; V \<subseteq> S\<rbrakk> \<Longrightarrow> is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open (U \<inter> V)" and
 open_union [intro]: "\<forall>F::('a set) set. (\<forall>x\<in>F. x \<subseteq> S \<and> is_open x) \<Longrightarrow> is_open (\<Union>x\<in>F. x)"
 
