@@ -16,13 +16,16 @@ locale comm_ring = ring +
 
 text \<open>The zero ring is a commutative ring.\<close>
 
+lemma invertible_0: "monoid.invertible {0} (\<lambda>n m. 0) 0 0"
+    using Group_Theory.monoid.intro monoid.unit_invertible by force
+
 lemma zero_ring_is_ring:
   shows "ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
-  sorry
+  using invertible_0 by unfold_locales auto
 
 lemma zero_ring_is_comm_ring:
   shows "comm_ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
-  sorry
+  by (simp add: comm_ring_axioms_def comm_ring_def zero_ring_is_ring)
 
 no_notation plus (infixl "+" 65)
 
@@ -183,7 +186,7 @@ qed
 end (* entire_ring *)
 
 text \<open>def. 0.18, see remark 0.20\<close>
-locale prime_ideal = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
+locale prime_ideal = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
   for R and I and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>")
 (* 
@@ -300,15 +303,78 @@ proof
     using closed_subsets_ideal_aux [OF assms] by auto
 qed
 
-definition finsum:: "'b set \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a"
+abbreviation finsum:: "'b set \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a"
   where "finsum I f \<equiv> additive.finprod I f"
 
+lemma finsum_empty [simp]: "finsum {} f = \<zero>"
+  by (simp add: additive.finprod_def)
+
+lemma finsum_insert: 
+  assumes "finite I" "i \<notin> I"
+    and R: "f i \<in> R" "\<And>j. j \<in> I \<Longrightarrow> f j \<in> R"
+  shows "finsum (insert i I) f = f i + finsum I f"
+  unfolding additive.finprod_def
+proof (subst LCD.foldD_insert [where B = "insert i I"])
+  show "LCD (insert i I) R ((+) \<circ> f)"
+  proof
+    show "((+) \<circ> f) x (((+) \<circ> f) y z) = ((+) \<circ> f) y (((+) \<circ> f) x z)"
+      if "x \<in> insert i I" "y \<in> insert i I" "z \<in> R" for x y z
+      using that additive.associative additive.commutative R by auto
+    show "((+) \<circ> f) x y \<in> R"
+      if "x \<in> insert i I" "y \<in> R" for x y
+      using that R by force
+  qed
+qed (use assms in auto)
+
+lemma finsum_singleton [simp]: 
+  assumes "f i \<in> R" 
+  shows "finsum {i} f = f i"
+  by (metis additive.right_unit assms finite.emptyI finsum_empty finsum_insert insert_absorb insert_not_empty)
+
+
 (* ex. 0.15 *)
-lemma
+lemma ex_15:
   fixes J :: "'b set" and \<aa> :: "'b \<Rightarrow> 'a set"
-  assumes "J \<noteq> {}" and "\<And>j. j\<in>J \<Longrightarrow> ideal (\<aa> j) R (+) (\<cdot>) \<zero> \<one>"
+  assumes "J \<noteq> {}" and J: "\<And>j. j\<in>J \<Longrightarrow> ideal (\<aa> j) R (+) (\<cdot>) \<zero> \<one>"
   shows "\<V> ({x. \<exists>I f. x = finsum I f \<and> I \<subseteq> J \<and> finite I \<and> (\<forall>i. i\<in>I \<longrightarrow> f i \<in> \<aa> i)}) = (\<Inter>j\<in>J. \<V> (\<aa> j))"
-  sorry
+  proof -
+  have "y \<in> U"
+    if j: "j \<in> J" "y \<in> \<aa> j"
+      and "prime_ideal R U (+) (\<cdot>) \<zero> \<one>"
+      and U: "{finsum I f |I f. I \<subseteq> J \<and> finite I \<and> (\<forall>i. i \<in> I \<longrightarrow> f i \<in> \<aa> i)} \<subseteq> U"
+    for U j y
+  proof -
+    have "y \<in> R"
+      using J j ideal_implies_subset by blast
+    then have y: "y = finsum {j} (\<lambda>_. y)"
+      by simp
+    then have "y \<in> {finsum I f |I f. I \<subseteq> J \<and> finite I \<and> (\<forall>i. i \<in> I \<longrightarrow> f i \<in> \<aa> i)}"
+      using that by blast
+    then show ?thesis
+      by (rule subsetD [OF U])
+  qed
+  moreover have PI: "prime_ideal R x (+) (\<cdot>) \<zero> \<one>" if "\<forall>j\<in>J. prime_ideal R x (+) (\<cdot>) \<zero> \<one> \<and> \<aa> j \<subseteq> x" for x 
+    using that assms(1) by fastforce
+  moreover have "finsum I f \<in> U"
+    if "finite I"
+      and "\<forall>j\<in>J. prime_ideal R U (+) (\<cdot>) \<zero> \<one> \<and> \<aa> j \<subseteq> U"
+      and "I \<subseteq> J" "\<forall>i. i \<in> I \<longrightarrow> f i \<in> \<aa> i" for U I f
+    using that
+  proof (induction I rule: finite_induct)
+    case empty
+    then show ?case
+      using PI assms ideal_zero by fastforce
+  next
+    case (insert i I)
+    then have "finsum (insert i I) f = f i + finsum I f"
+      by (metis assms(2) finsum_insert ideal_implies_subset insertCI subset_iff)
+    also have "... \<in> U"
+      using insert by (metis ideal_add insertCI prime_ideal.axioms(2) subset_eq)
+    finally show ?case .
+  qed
+  ultimately show ?thesis
+    by (auto simp: closed_subsets_def)
+qed
 
 (* ex 0.16 *)
 
@@ -317,7 +383,7 @@ definition is_zariski_open:: "'a set set \<Rightarrow> bool"
 
 lemma zarisky_is_topological_space:
   shows "topological_space Spec is_zariski_open"
-  sorry
+proof qed (auto simp: is_zariski_open_def spectrum_def  UNIV)
 
 end (* comm_ring *)
 
