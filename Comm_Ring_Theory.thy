@@ -392,18 +392,18 @@ subsection \<open>Presheaves of Rings\<close>
 
 (* def 0.17 *)
 locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'b set"
-and \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)" and b:: "'b" 
-and add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" (infixl "+\<^bsub>_\<^esub>" 65) 
-and mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
-and zero_str:: "'a set \<Rightarrow> 'b" ("\<zero>\<^bsub>_\<^esub>") and one_str:: "'a set \<Rightarrow> 'b" ("\<one>\<^bsub>_\<^esub>")
+  and \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)" and b:: "'b" 
+  and add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" (infixl "+\<^bsub>_\<^esub>" 65) 
+  and mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
+  and zero_str:: "'a set \<Rightarrow> 'b" ("\<zero>\<^bsub>_\<^esub>") and one_str:: "'a set \<Rightarrow> 'b" ("\<one>\<^bsub>_\<^esub>")
 assumes is_ring_morphism: 
-"\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
-                                              (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
-                                              (\<FF> V) (+\<^bsub>V\<^esub>) (\<cdot>\<^bsub>V\<^esub>) \<zero>\<^bsub>V\<^esub> \<one>\<^bsub>V\<^esub>"
-and ring_of_empty: "\<FF> {} = {b}"
-and identity_map: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
-and assoc_comp: 
-"\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
+  "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
+                                                  (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
+                                                  (\<FF> V) (+\<^bsub>V\<^esub>) (\<cdot>\<^bsub>V\<^esub>) \<zero>\<^bsub>V\<^esub> \<one>\<^bsub>V\<^esub>"
+  and ring_of_empty: "\<FF> {} = {b}"
+  and identity_map: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
+  and assoc_comp: 
+  "\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
 begin
 
 lemma is_ring_from_is_homomorphism:
@@ -411,25 +411,26 @@ lemma is_ring_from_is_homomorphism:
   using is_ring_morphism ring_homomorphism.axioms(2) by fastforce
 
 (* The small lemma below should be useful later in various places. *)
-lemma
-  assumes "is_open U" and "is_open V" and "is_open W" and "W \<subseteq> U \<inter> V" and "s \<in> \<FF> U" and "t \<in> \<FF> V"
-and "\<rho> U W s = \<rho> V W t" and "is_open W'" and "W' \<subseteq> W"
-  shows "\<rho> U W' s = \<rho> V W' t" sorry
+lemma eq_\<rho>:
+  assumes "is_open U" and "is_open V" and "is_open W" and "W \<subseteq> U \<inter> V" 
+    and "\<rho> U W s = \<rho> V W t" and "is_open W'" and "W' \<subseteq> W"
+  shows "\<rho> U W' s = \<rho> V W' t"
+  by (metis Int_subset_iff assms assoc_comp comp_apply)
 
 end (* presheaf_of_rings *)
 
 locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
-+ target: presheaf_of_rings X is_open \<FF>' \<rho>' c add_str' mult_str' zero_str' one_str'
-for X and is_open 
-and \<FF> and \<rho> and b and add_str (infixl "+\<^bsub>_\<^esub>" 65) and mult_str (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
-and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") 
-and \<FF>' and \<rho>' and c and add_str' (infixl "+''\<^bsub>_\<^esub>" 65) and mult_str' (infixl "\<cdot>''\<^bsub>_\<^esub>" 70) 
-and zero_str' ("\<zero>''\<^bsub>_\<^esub>") and one_str' ("\<one>''\<^bsub>_\<^esub>") + 
-fixes fam_morphisms:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
-assumes is_ring_morphism: "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (fam_morphisms U) 
+  + target: presheaf_of_rings X is_open \<FF>' \<rho>' c add_str' mult_str' zero_str' one_str'
+  for X and is_open 
+    and \<FF> and \<rho> and b and add_str (infixl "+\<^bsub>_\<^esub>" 65) and mult_str (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
+    and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") 
+    and \<FF>' and \<rho>' and c and add_str' (infixl "+''\<^bsub>_\<^esub>" 65) and mult_str' (infixl "\<cdot>''\<^bsub>_\<^esub>" 70) 
+    and zero_str' ("\<zero>''\<^bsub>_\<^esub>") and one_str' ("\<one>''\<^bsub>_\<^esub>") + 
+  fixes fam_morphisms:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
+  assumes is_ring_morphism: "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (fam_morphisms U) 
                                                                 (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
                                                                 (\<FF>' U) (+'\<^bsub>U\<^esub>) (\<cdot>'\<^bsub>U\<^esub>) \<zero>'\<^bsub>U\<^esub> \<one>'\<^bsub>U\<^esub>"
-and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
+    and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
                       (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)" 
 
 (* Identity presheaf *)
