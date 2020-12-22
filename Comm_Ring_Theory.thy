@@ -786,6 +786,8 @@ and "\<And>U V. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> V \<subs
 
 subsection \<open>Locally Ringed Spaces\<close>
 
+subsubsection \<open>Stalks of a Presheaf\<close>
+
 context presheaf_of_rings
 begin
 
@@ -810,8 +812,9 @@ definition class_of:: "'a \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> ('a s
 
 end (* presheaf_of_rings *)
 
-(* definition 0.38 *)
+subsubsection \<open>Maximal Ideals\<close>
 
+(* definition 0.38 *)
 locale max_ideal = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
   for R and I and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>") +
@@ -825,6 +828,8 @@ lemma
   shows "prime_ideal I R (+) (\<cdot>) \<zero> \<one>" sorry
 
 end (* locale max_ideal *)
+
+subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
 locale local_ring = comm_ring +
@@ -850,6 +855,8 @@ A and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero
 B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) and zero' ("\<zero>''") and unit' ("\<one>''")
 + assumes preimage_of_max_ideal: 
 "\<lbrakk>\<ww>\<^sub>A \<subseteq> A; \<ww>\<^sub>B \<subseteq> B\<rbrakk> \<Longrightarrow> max_ideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> {x. f x \<in> \<ww>\<^sub>B} = \<ww>\<^sub>A"
+
+subsubsection \<open>Locally Ringed Spaces\<close>
 
 (* def. 0.42 *)
 locale locally_ringed_space = ringed_space +
