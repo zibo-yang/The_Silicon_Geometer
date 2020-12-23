@@ -11,7 +11,7 @@ section \<open>Topological Spaces\<close>
 locale topological_space = fixes S :: "'a set" and is_open :: "'a set \<Rightarrow> bool"
   assumes open_space [simp, intro]: "is_open S" and open_empty [simp, intro]: "is_open {}" and
 open_inter [intro]: "\<lbrakk>U \<subseteq> S; V \<subseteq> S\<rbrakk> \<Longrightarrow> is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open (U \<inter> V)" and
-open_union [intro]: "\<forall>F::('a set) set. (\<forall>x\<in>F. x \<subseteq> S \<and> is_open x) \<Longrightarrow> is_open (\<Union>x\<in>F. x)"
+open_union [intro]: "\<And>F::('a set) set. (\<And>x. x \<in> F \<and> x \<subseteq> S \<and> is_open x) \<Longrightarrow> is_open (\<Union>x\<in>F. x)"
 
 begin
 
@@ -54,10 +54,36 @@ locale ind_topology = topological_space X is_open for X and is_open +
 begin
 
 definition ind_is_open:: "'a set \<Rightarrow> bool"
-  where "ind_is_open U \<equiv> U \<subseteq> S \<and> (\<exists>V. is_open V \<and> U = S \<inter> V)"
+  where "ind_is_open U \<equiv> U \<subseteq> S \<and> (\<exists>V. V \<subseteq> X \<and> is_open V \<and> U = S \<inter> V)"
 
 lemma 
-  shows "topological_space S (ind_is_open)" sorry
+  shows "topological_space S (ind_is_open)"
+proof-
+  have "ind_is_open S" using ind_is_open_def is_subset (* take V = X *) by auto
+  moreover have "ind_is_open {}" using ind_is_open_def (* take V = {} *) by auto
+  moreover have "\<And>U V. U \<subseteq> S \<Longrightarrow> V \<subseteq> S \<Longrightarrow> ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open (U \<inter> V)"
+  proof-
+    fix U assume "U \<subseteq> S" and "ind_is_open U" obtain V1 where H1:"V1 \<subseteq> X \<and> is_open V1 \<and> U = S \<inter> V1"
+      using \<open>ind_is_open U\<close> ind_is_open_def by auto
+    fix V assume "V \<subseteq> S" and "ind_is_open V" obtain V2 where H2:"V2 \<subseteq> X \<and> is_open V2 \<and> V = S \<inter> V2"
+      using \<open>ind_is_open V\<close> ind_is_open_def by auto
+    have "is_open (V1 \<inter> V2) \<and> (U \<inter> V = S \<inter> (V1 \<inter> V2))" using H1 H2 open_inter by auto
+    then show "ind_is_open (U \<inter> V)"
+      using ind_is_open_def by (metis H1 inf.cobounded1 subset_trans)
+  qed
+  moreover have "\<And>F::('a set) set. (\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x) \<Longrightarrow> ind_is_open (\<Union>x\<in>F. x)"
+  proof-
+    fix F assume "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x" obtain F' where "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
+      using ind_is_open_def by meson
+    then have "is_open (\<Union>x\<in>F. F' x) \<and> ((\<Union>x\<in>F. x) = S \<inter> (\<Union>x\<in>F. F' x))" 
+      using open_union
+      by (metis SUP_upper2 \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x\<close> inf_left_idem set_eq_subset)
+    then show "ind_is_open (\<Union>x\<in>F. x)" by (simp add: \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x\<close>)
+  qed
+  thus ?thesis
+    by (simp add: calculation(1-3) topological_space_def)
+qed
+
 
 end (* induced topology *)
 
