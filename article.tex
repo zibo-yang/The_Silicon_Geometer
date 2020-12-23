@@ -1,0 +1,524 @@
+\documentclass[12pt]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{amscd, amssymb, mathtools, amsthm, amsmath, mathrsfs}
+\usepackage{enumerate}
+
+% Palatino for main text and math
+\usepackage[osf,sc]{mathpazo}
+
+% Helvetica for sans serif
+% (scaled to match size of Palatino)
+\usepackage[scaled=0.90]{helvet}
+
+% Bera Mono for monospaced
+% (scaled to match size of Palatino)
+\usepackage[scaled=0.85]{beramono}
+
+\usepackage{hyperref}
+
+% To write appendixes
+\usepackage[page]{appendix}
+
+
+\renewcommand{\thesubsection}{\arabic{subsection}}
+%
+%
+\newenvironment{eq}{\begin{equation}}{\end{equation}}
+%
+\newenvironment{remarks}{{\bf Remarks}:\begin{enumerate}}{\end{enumerate}}
+\newenvironment{examples}{{\bf Examples}:\begin{enumerate}}{\end{enumerate}}  
+%
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}[proposition]{Lemma}
+\newtheorem{definition}[proposition]{Definition}
+\newtheorem{theorem}[proposition]{Theorem}
+\newtheorem{cor}[proposition]{Corollary}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{pretheorem}[proposition]{Pretheorem}
+\newtheorem{hypothesis}[proposition]{Hypothesis}
+\newtheorem{example}[proposition]{Example}
+\newtheorem*{rem}{Remark}
+\newtheorem{remark}[proposition]{Remark}
+\newtheorem{ex}[proposition]{Exercise}
+\newtheorem*{hint}{Hint}
+\newtheorem{cond}[proposition]{Conditions}
+\newtheorem{cons}[proposition]{Construction}
+%
+\newtheorem{problem}[proposition]{Problem}
+\newtheorem{construction}[proposition]{Construction}
+%
+\newtheorem*{nota}{Notation}
+\newtheorem{notation}{Notation}
+\newtheorem*{axiom}{Axiom}
+
+% For diagrams:
+\usepackage{tikz-cd}
+\usetikzlibrary{cd}
+
+% To avoid automatic identation of paragraphs:
+\usepackage[parfill]{parskip}
+
+% To create an index:
+\usepackage{makeidx}
+
+% To make the index and bibliography appear in the table of contents:
+\usepackage[nottoc]{tocbibind}
+
+\makeindex
+
+\begin{document}
+
+\title{Simple Type Theory is not too Simple}
+\subtitle{Grothendieck's Schemes in the Proof Assistant Isabelle}
+\author{}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+ 	We report on a formalization of Grothendieck's schemes in the proof assistant Isabelle and we discuss in the process the design choices made. Schemes being sophisticated mathematical objects in algebraic geometry introduced by the mathematician Alexander Grothendieck in 1960, this experiment shows that the simple type theory implemented in Isabelle can easily handle such sophisticated objects despite doubts raised about Isabelle capability in that direction.   
+\end{abstract}
+
+\section{Motivation and Problems}
+\label{sec:intro}
+
+It is well-known in the Isabelle community that the algebra library should be rebuilt from scratch. First, I should say the algebra libraries. Indeed, there are many libraries for algebra in Isabelle, the \textit{HOL-Algebra}\footnote{\url{https://isabelle.in.tum.de/dist/library/HOL/HOL-Algebra/index.html}} started in the previous millennium (1999), the more recent \textit{HOL-Computational\_Algebra}\footnote{\url{https://isabelle.in.tum.de/dist/library/HOL/HOL-Computational_Algebra/index.html}}, the oldest formalization of algebraic structures (groups, rings, modules, fields, vector spaces \dots) being found in the main library \textit{HOL}\footnote{\url{https://isabelle.in.tum.de/dist/library/HOL/HOL/index.html}}, and this is in addition to some entries in the Archive of Formal Proofs\footnote{https://www.isa-afp.org/} like \textit{Groups, Rings and Modules} \cite{Group-Ring-Module-AFP} and \textit{Vector Spaces} \cite{VectorSpace-AFP} to cite a few. As a result, there is an important amount of duplicated code and it makes the situation unclear regarding the status of algebra for the newcomer in the Isabelle world. Second, if these formalizations constitute an impressive body of work, not without its merits, parts of it are deprecated code not using the Isar language or the powerful locales, a module system in Isabelle for managing theory hierarchies \cite{ballarin2014}. A successful experiment was conducted recently in \cite{ballarin20} showing that locales allow for a smooth handling of basic algebraic structures in Isabelle. So, hopefully, the situation should improved in the near future. \\
+In the same time, some proof assistants have made impressive progress on the algebra front. Indeed, in 2003 Laurent Chicli formalized sheaves and affine schemes in the proof assistant Coq based on a powerful dependent type theory known as the \emph{Calculus of Inductive Constructions} \cite{chiclithesis}. More recently, in 2019 Grothendieck's schemes have been formalized by the mathematician Kevin Buzzard and three students using the brave new Lean theorem prover also based on a dependent type theory\footnote{\url{https://github.com/ramonfmir/lean-scheme}}. \\
+For the reader unfamiliar with schemes I will quote Kevin Buzzard.
+\begin{quote}
+	Schemes are the fundamental objects of study in algebraic geometry. They were discovered (in their current form) by Grothendieck in the late 1950s and early 1960s and they revolutionised the theory of algebraic geometry.\footnote{\url{https://github.com/leanprover-community/mathlib/issues/26}} 
+\end{quote}
+and
+\begin{quote}
+	A scheme is a mathematical object whose definition and basic properties are usually taught at MSc or early PhD level in a typical mathematics department.
+\end{quote}	
+Kevin Buzzard in 2017 proposed the formalization of schemes 
+\begin{quote}
+	as basically a challenge to see if Lean can handle such a complex definition.\footnote{\url{https://github.com/leanprover-community/mathlib/issues/26}} 
+\end{quote}
+We should note that the Isabelle proof assistant is based on a much more minimalist type theory, known as a simple type theory. As a consequence, many users of dependent type theories see Isabelle's type theory has a far less expressive system for formalizing advanced mathematics.  These doubts have been vocally expressed by Kevin Buzzard on his blog:
+\begin{quote}
+	What can Isabelle/HOL actually do before it breaks? Nobody knows. [\dots] But do you people want to attract “working mathematicians”? Then where are the schemes? Can your system even do schemes? I don’t know. Does anyone know? If it cannot then this would be very valuable to know because it will help mathematician early adopters to make an informed decision about which system to use.\footnote{\url{https://xenaproject.wordpress.com/2020/02/09/where-is-the-fashionable-mathematics/}}
+\end{quote}
+In this article we present a concise and elegant formalization of schemes in Isabelle/HOL following the classic graduate textbook of Hartshorne \cite{hartshorne}. 			
+ 
+
+\section{Schemes in Isabelle/HOL}
+\label{sec:schemes}
+
+For the remainder of this text fix a commutative ring $R$. \\
+The definition of an ideal of $R$ was introduced in Isabelle in \cite{ballarin20}.
+
+\begin{definition}[ideal]
+	An ideal $\mathfrak{a}$ of $R$ is a subset of $R$ which is an additive subgroup such that $R\mathfrak{a} = \mathfrak{a}$.
+\end{definition}
+
+% Snippet of code to be inserted
+
+One easily checks that $\lbrace 0 \rbrace$ and $R$ are ideals of $R$. In our formalization this translates as follows.
+
+% snippet of code to be inserted for `lemma ideal_R_R` and `lemma ideal_0_R`
+
+% ajouter une remarque ici pour expliquer pourquoi `lemma ideal_R_R` should be named `lemma ideal_ring_ring` instead, cf discussion ta remarque a ce sujet https://isabelle.zulipchat.com/#narrow/stream/234961-alexandria/topic/SEraPIS
+
+Given $\mathfrak{a}$ and $\mathfrak{b}$ be two ideals of $R$, one defines $\mathfrak{a} \mathfrak{b}$ to be the ideal whose underlying set is 
+\[
+	\lbrace a_1 b_1 + \dots + a_n b_n \mid a_i \in \mathfrak{a}, b_i \in \mathfrak{b}, n \in \mathbb{N} \rbrace.
+\]
+
+Actually, $\mathfrak{a} \mathfrak{b}$ is the smallest ideal generated by the set 
+	\[
+	\lbrace a b \mid a \in \mathfrak{a}, b \in \mathfrak{b} \rbrace
+	\]
+	
+% snippet of code to be inserted for `ideal_gen_by_prod` ``	
+
+and one easily checks it is an ideal.
+
+% snippet of code to be inserted for `ideal_subgroup_generated`
+
+The ideal $\mathfrak{a} \mathfrak{b}$ is in fact the intersection of all ideals of $R$ containing the set
+	\[
+	\lbrace a b \mid a \in \mathfrak{a}, b \in \mathfrak{b} \rbrace .
+	\]
+	
+% snippet of code to be inserted for `ideal_gen_by_prod_is_Inter`	
+
+Given $\lbrace \mathfrak{a}_i \rbrace$ a family of ideals of $R$ indexed by an arbitrary set $I$, one defines the set $\displaystyle \sum_{i \in I} \mathfrak{a}_i$ to be the set 
+	\[
+	\lbrace a_1 + \dots + a_n \mid n \in \mathbb{N}, a_i \in \mathfrak{a}_i \rbrace .
+	\]
+
+The set $\displaystyle \sum_{i \in I} \mathfrak{a}_i$ is again an ideal of $R$.	
+
+% snippet of code to be inserted
+
+The so-called prime ideals are an important class of ideals. A prime ideal $\mathfrak{p}$ of $R$ is an ideal $\mathfrak{p} \neq R$ such that $R/\mathfrak{p}$ is an entire ring. However, in a formal context we prefer the following equivalent definition which is more effective.
+
+\begin{definition}[prime ideal]
+	A prime ideal is an ideal $\mathfrak{p} \neq R$ such that $x y \in \mathfrak{p}$ implies $x \in \mathfrak{p}$ or $y \in \mathfrak{p}$ for every elements $x$ and $y$ in $R$.
+\end{definition}
+
+% snippet of code to be inserted `locale prime_ideal`
+
+Note that if $\mathfrak{p}$ is a prime ideal, then $1 \notin \mathfrak{p}$.
+
+% snippet of code to be inserted for the proof of this last statement
+
+Let $\mathfrak{p}$ be a prime ideal and $S$ be the complement of $\mathfrak{p}$ in $R$,  we prove $S$ is a multiplicative submonoid of $R$.
+
+% snippet of code to be inserted for this last fact 		
+
+If $\mathfrak{a}$ is an ideal of $R$, $V(\mathfrak{a})$ will denote the set of all prime ideals of $R$ which contain $\mathfrak{a}$. 
+
+% snippet of code to be inserted `definition closed_subsets`
+
+Note that $V(R) = \emptyset$ and $V(\lbrace 0 \rbrace)$ is the set of all prime ideals of $R$.
+
+% snippet of code to be inserted `lemma closed_subsets_empty` and `lemma closed_subsets_R`	
+
+%\begin{ex}
+%	Prove the equality $V(\mathfrak{a} \mathfrak{b}) = V(\mathfrak{a}) \cup V(\mathfrak{b})$.	
+%\end{ex}
+
+%\begin{ex}
+%	Prove the equality $\displaystyle V(\sum_{i \in I} \mathfrak{a}_i) = \bigcap_{i \in I} V(\mathfrak{a}_i)$ for any family of prime ideals indexed by a set $I$.
+%\end{ex}
+
+Then, one proves in Isabelle the subsets of the form $V(\mathfrak{a})$ as the closed subsets define a topology, the so-called \emph{Zariski topology}\label{zariskitop}, on the set of all primes ideals of $R$. In the rest of this text \emph{Spec $R$} will denote the set of all prime ideals of $R$ equipped with its Zariski topology.
+
+% snippets of code to be inserted here `definition is_zariski_open` and `zariski_is_topological_space`
+
+We now teach Isabelle what \emph{presheaves of rings} are. 
+
+\begin{definition}[presheaf of rings]
+	Let $X$ be a topological space. A presheaf $\mathscr{F}$ of rings on $X$ consists of the following data:
+	\begin{itemize}
+		\item for every open set $U$, a ring $\mathscr{F}(U)$
+		\item for every inclusion $V \subseteq U$ of open subsets, a morphism of rings $\rho_{UV}: \mathscr{F}(U) \rightarrow \mathscr{F}(V)$  
+	\end{itemize}
+satisfying 
+	\begin{enumerate}
+		\item $\mathscr{F}(\emptyset) = \lbrace 0 \rbrace$
+		\item $\rho_{UU}$ is the identity map for every open subset $U$
+		\item  If $W \subseteq V \subseteq U$ are three open subsets, then $\rho_{UW} = \rho_{VW} \circ \rho_{UV}$.
+	\end{enumerate}
+\end{definition}
+
+% snippet of code to be inserted `locale presheaf_of_rings`
+
+Given the condition \textit{is\_ring\_morphism} within the locale, notice it is possible to prove that the $\mathscr{F}(U)$'s are rings for every open subset $U$ of the underlying topological space.
+
+% snippet of code to be inserted `is_ring_from_is_homomorphism`
+
+\begin{notation}
+	The elements of $\mathscr{F}(U)$ are sometimes called the sections of the presheaf $\mathscr{F}$ and given $s \in \mathscr{F}(U)$, $s\restriction V$ denotes the element $\rho_{UV}(s)$.
+\end{notation}
+
+Of course, we have the corresponding notion of morphisms.
+
+\begin{definition}[morphism of presheaves of rings]
+	A morphism $\phi: \mathscr{F} \rightarrow \mathscr{F}'$ of sheaves of rings on a topological space $X$ is given by a morphism $\phi_U: \mathscr{F}(U) \rightarrow \mathscr{F}'(U)$ for each open subset $U$ of $X$ such that  the following diagram commutes
+	\[
+	\begin{tikzcd}
+	\mathscr{F}(U) \arrow[r, "\phi_U"] \arrow[d, "\rho_{UV}"] & \mathscr{F}'(U) \arrow[d, "\rho'_{UV}"] \\
+	\mathscr{F}(V) \arrow[r, "\phi_V"] & \mathscr{F}'(V) 
+	\end{tikzcd}
+	\]
+	for every inclusion $V \subseteq U$.
+\end{definition}
+
+% snippet of code to be inserted `locale morphism_presheaves_of_rings` 
+
+The notion of composition between presheaves is straightforward and we check in Isabelle without any difficulty that the composition is again a presheaf of rings. \\
+Indeed,	let $\phi: \mathscr{F} \rightarrow \mathscr{G}$ (\textit{resp.} $\psi: \mathscr{G} \rightarrow \mathscr{H}$) be a morphism of presheaves of rings on a topological space $X$. One defines the composition $\psi \circ \phi$ from $\mathscr{F}$ to $\mathscr{H}$ as 
+	\[
+	(\psi \circ \phi)_U \coloneqq \psi_U \circ \phi_U
+	\]
+	for every open subset $U$ of $X$. Prove $\psi \circ \phi$ is again a presheaf of rings on $X$.
+
+% snippet of code to be inserted here for the lemma that states the composition is again a presheaf
+
+\begin{remark}
+	Given a presheaf $\mathscr{F}$ on $X$, let us define $(1_{\mathscr{F}})_U$ as the identity morphism of $\mathscr{F}(U)$ for every open subset $U$ of $X$. $1_{\mathscr{F}}$ is obviously a morphism of presheaves from $\mathscr{F}$ to itself. A morphism $\phi: \mathscr{F} \rightarrow \mathscr{G}$ of presheaves of rings is an isomorphism if and only if there exists a morphism $\psi: \mathscr{G} \rightarrow \mathscr{F}$ such that $\psi \circ \phi = 1_{\mathscr{F}}$ and $\phi \circ \psi = 1_{\mathscr{G}}$.  
+\end{remark}
+
+% snippet of code to be inserted `locale iso_presheaves_of_rings`
+
+Now, we introduce the notion of a \emph{sheaf of rings}. 			
+
+\begin{definition}[sheaf of rings]
+	A sheaf of rings on a topological space $X$ is a presheaf on $X$ that satisfies the following additional properties:
+	\begin{enumerate}
+	%\setcounter{enumi}{3}
+		\item[(locality)] Given an open set $U$, $\lbrace V_i \rbrace$ an open covering of $U$ and $s \in \mathscr{F}(U)$ such that $s \restriction V_i = 0$ for all $i$, then one has $s = 0$.
+		\item[(glueing)] Given an open set $U$, $\lbrace V_i \rbrace$ an open covering of $U$ and elements $s_i \in \mathscr{F}(V_i)$ satisfying the property $s_i \restriction V_i \cap V_j = s_j \restriction V_i \cap V_j$ for all $i$ and $j$, then there exists an element $s \in \mathscr{F}(U)$ such that $s \restriction V_i = s_i$ for all $i$.  
+	\end{enumerate}	
+\end{definition}
+
+% snippet of code to be inserted for `locale sheaf_of_rings`
+ 
+At this point, let me quote the mathematician Kevin Buzzard:
+\begin{quote}
+	I am not sure that it is even possible to write this code in Isabelle/HOL in such a way that it will run in finite time, [\dots], and a sheaf is a dependent type, and your clever HOL workarounds will not let you use typeclasses [\dots]\footnote{\url{https://xenaproject.wordpress.com/2020/02/09/where-is-the-fashionable-mathematics/}. See the section entitled \textit{Isabelle/HOL users}.}
+\end{quote}
+
+We do not use typeclasses, we do use locales. We encapsulated within the locale dedicated to a preasheaf of rings $\mathscr{F}$ the ring structures on the underlying sets $\mathscr{F}(U)$'s simply using the functional \textit{add\_str} (\textit{resp.} \textit{mult\_str}, \textit{zero\_str}, \textit{one\_str}) that takes an open subset $U$ and outputs the multiplication (\textit{resp.} the addition, the additive unit, the multiplicative unit) on the set $\mathscr{F}(U)$. The resulting formalization of sheaves of rings in Isabelle is not only possible, but it is concise (6 lines), very neat and tidy, almost transparent with respect to the pen-and-paper definition. \\
+It will not be any more difficult to define (pre)sheaves valued in any category of structured sets (groups, modules \dots) or even to define in Isabelle a general notion of $\mathscr{C}$-valued (pre)sheaves by embarking the category $\mathscr{C}$ as part of the data within the locale.  	
+
+
+A morphism (\textit{resp.} an isomorphism) of sheaves of rings is nothing but a morphism (\textit{resp.} an isomorphism) of presheaves of rings, hence the following locale in Isabelle.
+
+% snippet of code to be inserted `locale morphism_sheaves_of_rings` 
+
+Let $X$ be a topological space, $\mathscr{F}$ a sheaf of rings on $X$ and $U$ an open subset of $X$,  one proves that $\mathscr{F}|_U$, defined by $\mathscr{F}|_U(V) \coloneqq \mathscr{F}(U \cap V)$, is a sheaf of rings on $U$ for the induced topology. \\
+We encapsulate the relevant mathematical context (the ``let be'' part) in a dedicated locale and formalize within this locale the relevant definitions and we eventually prove  that the \emph{induced sheaf $\mathscr{F}|_U$} is indeed a sheaf of rings.
+
+% snippet of code to be inserted here `locale cxt_ind_sheaf` and the following definitions and lemma		
+
+We introduce a second construction that takes as input a given sheaf of rings and outputs a new sheaf of rings. Let $f: X \rightarrow Y$ be a continuous map between topological spaces and $\mathscr{F}$ a sheaf of rings on $X$. Given an open subset $V$ of $Y$, define $(f_{*} \mathscr{F})(V)$ to be $\mathscr{F} (f^{-1}(V))$. We then prove $f_{*} \mathscr{F}$, the so-called \emph{direct image of  $\mathscr{F}$}, is a sheaf of rings on the topological space $Y$.  
+
+% snippet of code to be inserted `locale cxt_direct_im_sheaf` 
+
+As can been seen in the snippet of code above, we encapsulate again the context of the construction in a dedicated locale and this lets us formalize the relevant definitions in this context and we eventually prove the direct image of a sheaf is again a sheaf. 
+
+Next, we take a detour into the localization of commutative rings. This construction was already formalized by the first author in \cite{bordg18}, but we give a more concise formalization here since the first author gained a better knowledge of the locale mechanism in the meantime. \\
+Let $S$ be a multiplicative submonoid of $R$. We consider pairs $(r, s)$ with $r \in R$ and $s \in S$ and we define the following relation on them
+	\[
+	(r, s) \sim (r', s')
+	\]
+if and only if there exists $s_1 \in S$ such that $s_1(s' r - s r') = 0$. One checks that the relation $\sim$ is an equivalence relation. The equivalence class of a pair $(r, s)$ is denoted by $r/s$ and the set of equivalence classes is denoted by $S^{-1} R$. \\
+We define the following addition on $S^{-1} R$.
+	\[
+	\frac{r}{s} + \frac{r'}{s'} = \frac{r s' + r' s}{s s'}
+	\]
+We also define the following multiplication on $S^{-1} R$. 
+	\[
+	\frac{r}{s} \times \frac{r'}{s'} = \frac{r r'}{s s'}
+	\]
+One checks $(S^{-1} R, 0/1, +, 1/1, \times)$ is a ring. The new ring $S^{-1} R$ is called the \emph{quotient ring of $R$ by $S$}. \\
+This construction translates into the following very legible locale.
+
+% snippet of code to be inserted for `locale cxt_quotient_ring`	
+
+Remember that the complement of a prime ideal $\mathfrak{p}$ in $R$ is a multiplicative submonoid, hence we can apply the previous construction with $S \coloneqq R - \mathfrak{p}$. The resulting ring  $S^{-1} R$ is called the \emph{local ring of $R$ at $\mathfrak{p}$}. \\
+
+% snippet of code to be inserted for the subsection <Local Rings at Prime Ideals>
+
+This allows us to introduce the next construction.	\\
+Let $U$ be an open subset of Spec $R$. We define $\mathscr{O}_R(U)$ to be the set of all functions 
+	\[
+	s: U \rightarrow \bigcup \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
+	\]
+such that $s(\mathfrak{p}) \in R_{\mathfrak{p}}$ for every $\mathfrak{p} \in U$ and such that for every $\mathfrak{p} \in U$, there exist a neighborhood $V$ of $\mathfrak{p}$, contained in $U$, and elements $r, f \in R$, such that for each $\mathfrak{q} \in V$, $f \notin \mathfrak{q}$ and $s(\mathfrak{q}) = r/f$. \\
+We endow $\mathscr{O}_R(U)$ with the sum and product of such functions and we take for the multiplicative unit the function that maps each $\mathfrak{p}$ on the multiplicative unit of $R_{\mathfrak{p}}$. \\
+Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}_R(U) \rightarrow \mathscr{O}_R(V)$ maps each $s \in \mathscr{O}_R(U)$ on its restriction to $V$. \\
+One checks $\mathscr{O}_R$ is a sheaf of rings on Spec $R$ and the pair $(\text{Spec}\, R, \mathscr{O}_R)$	is called the \emph{spectrum of the ring $R$}. \\
+This last construction translates smoothly in Isabelle. 
+% snippet of code corresponding to the subsection <Spectrum of a ring> to be inserted here. 		
+
+Next, we introduce ringed spaces and their morphisms.
+
+\begin{definition}[ringed space]
+	A ringed space is a pair $(X, \mathscr{O}_X)$, where $X$ is a topological space and $\mathscr{O}_X$ is a sheaf of rings on $X$.
+\end{definition}
+
+% snippet of code `locale ringed_space` to be inserted here.
+
+\begin{definition}[morphism of ringed spaces]
+	A morphism of ringed spaces from $(X, \mathscr{O}_X)$ to $(Y, \mathscr{O}_Y)$ is a pair $(f, \phi_f)$ consisting of a continuous map $f: X \rightarrow Y$ between topological spaces and a morphism $\phi_f: \mathscr{O}_Y \rightarrow f_{*} \mathscr{O}_X$ of sheaves of rings.   
+\end{definition}
+
+% snippet of code `locale morphism_ringed-spaces` to be inserted here
+
+A classic and ubiquitous notion in mathematics is the \emph{direct limit} of a family of structured sets, here a family of rings. \\
+Let $X$ be a topological space and $\mathscr{F}$ a presheaf of rings on $X$. The set $I$ will denote a subset of the set of all open subsets of $X$ such that for every $U$ and $V$ in $I$ there exists $W$ in $I$ with $W \subseteq U \cap V$. \\
+Given $U, V \in I$, $s \in \mathscr{F}(U)$ and $t \in \mathscr{F}(V)$,  we says that 
+$s \sim t$ if and only if there exists $W \in I$ such that $W \subseteq U \cap V$ and $s \restriction W = t \restriction W$. One checks that $\sim$ is an equivalence relation. \\
+Now, we consider the quotient of the disjoint union of the $\mathscr{F}(U)$'s.
+	\[
+	\varinjlim_I \mathscr{F}(U) \coloneqq \coprod_{U \in I} \mathscr{F}(U) \bigg/ \sim 
+	\]
+Last, we define the following binary operations on $\displaystyle \varinjlim_{I} \mathscr{F}(U)$:
+	\begin{align*}
+	[(U, s)] + [(V, t)] & = [(W, s \restriction W + t \restriction W)] \\
+	[(U, s)] \times [(V, t)] & = [(W, s \restriction W \times t \restriction W)]
+	\end{align*}
+for some $W \in I$ such that $W \subseteq U \cap V$ and where the symbol $[\_]$ denotes the equivalence class of an element. \\
+Assuming $I \neq \emptyset$ and $V \in I$, as an exercise one may want to prove that  
+	\[
+	(\varinjlim_I \mathscr{F}(U), [(V, 0_V)], +, [(V, 1_V)], \times)
+	\]
+is a ring. 
+
+\begin{definition}[direct limit]
+	Let $X$ be a topological space, $\mathscr{F}$ a presheaf of rings on $X$ and $I$ a set of open subsets of $X$. The direct limit of $\mathscr{F}$ over $I$ is the ring $\displaystyle \varinjlim_I \mathscr{F}(U)$, denoted simply $\varinjlim \mathscr{F}(U)$ if $I$ is clear from the context.
+\end{definition}
+
+The definition above which could naively appear as a dependent type gives raise to a smooth translation in Isabelle using the locale mechanism.
+
+% snippet of code to be inserte here for the subsection <Direct Limits of Rings>
+
+One can instantiate direct limits in the following particular case.
+
+\begin{definition}[stalks of a presheaf]
+	Let $X$ be a topological space, $\mathscr{F}$ a presheaf of rings on $X$ and $x$ an element of $X$. \\
+	The stalk $\mathscr{F}_x$ of $\mathscr{F}$ at $x$ is the direct limit over the set of all the open neighborhoods of $x$.   
+\end{definition}
+
+% snippet of code to be inserted here for subsubsection <Stalks of a Presheaf>
+
+One further step towards schemes consists in introducing local rings, but first one needs to teach Isabelle simple facts about \emph{maximal ideals} starting with their definition. 
+
+\begin{definition}[maximal ideal]
+	Let $\mathfrak{m}$ be an ideal of $R$. The ideal $\mathfrak{m}$ is maximal if $\mathfrak{m} \neq R$ and there is no ideal $\mathfrak{a} \neq R$ such that $\mathfrak{m} \subset \mathfrak{a}$.
+\end{definition}
+
+% snippet of code to be inserted here for `locale max_ideal`
+
+Classic facts about maximal ideals include the fact that every maximal ideal is prime and the fact that given any ideal $\mathfrak{a}$ of $R$ there exists a maximal ideal containing $\mathfrak{a}$.
+
+% snippets of code to be included for the two facts above?
+	
+We then introduce the notion of a \emph{local ring}.
+
+\begin{definition}[local ring]
+	A ring is a local ring if it is commutative and it has a unique maximal ideal. 	
+\end{definition}
+
+% snippet of code to be included here for `locale local_ring`
+
+In particular, we prove as expected that the local ring of $R$ at $\mathfrak{p}$, previously denoted $R_{\mathfrak{p}}$, is a local ring.
+
+% snippet of code to be included for the corresponding lemma.
+
+Local rings have their corresponding notion of morphisms. 
+
+\begin{definition}[local homomorphism]
+	Let $A$ and $B$ be two local rings and $\mathfrak{m}_A$, $\mathfrak{m}_B$ their respective maximal ideals. \\
+	A local homomorphism $f: A \rightarrow B$ is a morphism of rings such that $f^{-1} (\mathfrak{m}_B) = \mathfrak{m}_A$. 
+\end{definition}
+
+% snippet of code to be inserted here `locale local_ring_morphism`		
+
+Finally, we are able to introduce \emph{locally ringed spaces}.
+
+\begin{definition}[locally ringed space]
+	A locally ringed space is a ringed space $(X, \mathscr{O}_X)$ such that the stalk $(\mathscr{O}_X)_x$ is a local ring for every $x \in X$.
+\end{definition}
+
+% snippet of code to be introduced here for `locale locally_ringed_space`
+
+Moreover, on has the following result.
+
+\begin{proposition}
+	Prove $(Spec R, \mathscr{O}_R)$ is a locally ringed space.
+\end{proposition}
+
+% snippet of code to be inserted here for the corresponding lemma in Isabelle
+
+Now, we introduce our last construction. \\
+	Let $(X, \mathscr{O}_X)$, $(Y, \mathscr{O}_Y)$ be two ringed spaces and $(f, \phi_f)$ a morphism between them. Given $x \in X$, consider 
+	\[
+	I \coloneqq \lbrace V \mid V \, \text{is an open neighborhhood of}\, f(x) \rbrace .
+	\]
+	Since we have a morphism $\phi_f: \mathscr{O}_Y \rightarrow f_* \mathscr{O}_X $ of sheaves on $Y$, we get a map between the direct limits over $I$. 
+	\[
+	(\mathscr{O}_Y)_{f(x)} \rightarrow \displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)
+	\]
+	Last, there is a natural inclusion from $\displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)$ to $(\mathscr{O}_X)_x$, so eventually we get an induced morphism of rings from $(\mathscr{O}_Y)_{f(x)}$ to $(\mathscr{O}_X)_x$ which we will denote $\phi_{f, x}$. \\	
+As usual we embed this construction into a dedicated locale in Isabelle.
+
+% snippet of code to be inserted here for `locale cxt_ind_morphism_bwt_lim`	
+
+This last construction is required to define morphisms between locally ringed spaces.
+			
+\begin{definition}[morphism of locally ringed spaces]
+	A morphism of locally ringed spaces from $(X, \mathscr{O}_X)$ to $(Y, \mathscr{O}_Y)$ is a morphism $(f, \phi_f)$ between locally ringed spaces such that the induced map of local rings $\phi_{f, x}: (\mathscr{O}_Y)_{f(x)} \rightarrow (\mathscr{O}_X)_x$ is a local homomorphism for every $x \in X$.  
+\end{definition}
+
+% snippet of code to be introduced here for `locale morphism_locally_ringed_spaces`
+
+\begin{remark}
+	A morphism $(f, \phi_f)$ between locally ringed spaces is an isomorphism if and only if $f$ is an isomorphism between topological spaces, \textit{i.e.} a homeomorphism, and $\phi_f$ is an isomorphism between sheaves of rings.
+\end{remark}
+
+% snippet of code to be introduced for `iso_locally_ringed_spaces`
+
+Ultimately, we reach our goal: teaching schemes to Isabelle.	
+
+\begin{definition}[affine scheme]
+	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic (as a locally ringed space) to the spectrum $(Spec R, \mathscr{O}_R)$ for some commutative ring $R$. 
+\end{definition}
+
+% snippet of code to be introduced for `locale affine_scheme`
+
+\begin{definition}[scheme]
+	A scheme is a locally ringed space $(X, \mathscr{O}_X)$ in which every point has an open neighborhood $U$ such that the topological space $U$, together with the sheaf $\mathscr{O}_X | _U$, is an affine scheme.
+\end{definition}
+
+% snippet of code to be inserted here for `locale schemes`
+
+As sanity checks and to catch on the state of the art in the Lean theorem prover, we prove in Isabelle that an affine scheme is a scheme and we give the example of the empty scheme $(\emptyset, \mathscr{O}_\emptyset)$, where $\mathscr{O}_\emptyset(\emptyset)$ is the zero ring $\lbrace 0 \rbrace$. 
+
+% snippets of code to be inserted here for `lemma affine_scheme_is_scheme` and for `empty_scheme_is_affine_scheme`
+
+
+\section{Concluding Thoughts}
+
+For our formalization we built upon Ballarin's work \cite{ballarin20} formalizing parts of Jacobson's \textit{Basic Algebra} textbook. We believe Ballarin's nice formalization could serve as a first stepping stone to a new algebra library for Isabelle. We also hope the present work could serve as a second stepping stone in that direction. Our work demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. 
+Actually, it seems that our experience in Isabelle to formalize schemes was much smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
+\begin{quote}
+	The project is completely incompatible with modern Lean and mathlib, but if you compile it then you get a sorry-free proof that an affine scheme is a scheme. During our proof we ran into a huge problem because our blueprint, the Stacks Project, assumed that $R[1/f][1/g]=R[1/fg]$, and this turns out to be unprovable for Lean’s version of equality [\dots]. The Lean community wrestled with this idea, and has ultimately come up with a beefed-up notion of equality for which the identity is now true.\footnote{\url{https://xenaproject.wordpress.com/2020/06/05/the-sphere-eversion-project/}}
+\end{quote}	
+For the first author of the present work, well-versed in dependent type theory, it raises the question of whether dependent types could be, at least in some situations, more of a burden than an advantage. Indeed, in the age of machine learning one may suspect there is a trade-off between the expressiveness of a type theory and one's ability to subject it to automation, for instance through SMT solvers and the so-called hammers embedded in some proof assistants. A dual question is to know how deep one can go formalizing mathematics in a simple type theory. This work provides a first hint at an answer that should not be ruled out: simple type theory is not too simple.       
+
+\section*{Acknowledgments}  			
+
+
+\begin{thebibliography}{}
+	
+	\bibitem{Group-Ring-Module-AFP}
+	Kobayashi H., Chen L. and Murao H.:
+	\newblock \textit{Groups, Rings and Modules}.
+	\newblock Archive of Formal Proofs (2004)
+	
+	\bibitem{VectorSpace-AFP}
+	Lee H.:
+	\newblock \textit{Vector Spaces}.
+	\newblock Archive of Formal Proofs (2014)
+	
+	\bibitem{ballarin2014}
+	Ballarin, C.: 
+	\newblock \textit{Locales: A Module System for Mathematical Theories}.
+	\newblock J. Autom. Reason. 52, 123–153 (2014)
+	
+	\bibitem{ballarin20}
+	Ballarin, C.:
+	\newblock \textit{Exploring the Structure of an Algebra Text with Locales}. 
+	\newblock J. Autom. Reason. 64(6), 1093–1121 (2020)
+	
+	\bibitem{chiclithesis}
+	Chicli L.:
+	\newblock \textit{Sur la formalisation des math\'ematiques dans le Calcul des Constructions Inductives}.
+	\newblock doctoral thesis (2003)
+	
+	\bibitem{hartshorne}
+	Hartshorne, R.:
+	\newblock \textit{Algebraic Geometry}.
+	\newblock Graduate Texts in Mathematics, Springer (1977)
+	
+	\bibitem{bordg18}
+	Bordg A.:
+	\newblock \textit{The Localization of a Commutative Ring}.
+	\newblock Archive of Formal Proofs (2018)
+	
+\end{thebibliography}
+
+					
+
+		
+\end{document}
