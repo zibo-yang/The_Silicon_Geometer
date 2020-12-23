@@ -1,15 +1,11 @@
 theory Group_Further_Theory
   imports Main 
-          (*"HOL-Algebra.FiniteProduct"*)
           "Jacobson_Basic_Algebra.Group_Theory"
 
 begin
 
 section \<open>Fold operator with a subdomain\<close>
 
-(* The following material is taken from HOL-Algebra.FiniteProduct. I could simply import
-"HOL-Algebra.FiniteProduct" but then it creates ambiguities in our other theories.  
-*)
 inductive_set
   foldSetD :: "['a set, 'b \<Rightarrow> 'a \<Rightarrow> 'a, 'a] \<Rightarrow> ('b set * 'a) set"
   for D :: "'a set" and f :: "'b \<Rightarrow> 'a \<Rightarrow> 'a" and e :: 'a
