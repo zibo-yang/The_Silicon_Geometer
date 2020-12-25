@@ -434,9 +434,19 @@ locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> 
                       (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)" 
 
 (* Identity presheaf *)
-lemma (in presheaf_of_rings)
+lemma
+  assumes "presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str"
   shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF> \<rho> b add_str mult_str zero_str one_str (\<lambda>U. id)"
-  sorry
+proof-
+  have "\<And>U. is_open U \<Longrightarrow> ring_homomorphism ((\<lambda>U. id) U) 
+                                           (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
+                                           (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U)"
+    using assms presheaf_of_rings.identity_map presheaf_of_rings.is_ring_morphism by fastforce
+  moreover have "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
+                      (\<rho> U V) \<circ> (\<lambda>U. id) U = (\<lambda>U. id) V \<circ> (\<rho> U V)" by simp
+  thus ?thesis
+    by (simp add: morphism_presheaves_of_rings_def assms calculation morphism_presheaves_of_rings_axioms_def)
+qed
 
 (* Composition of presheaves *)
 lemma 
@@ -483,10 +493,10 @@ definition ind_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \
   where "ind_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
 
 definition ind_add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
-  where "ind_add_str V x y \<equiv> add_str (U\<inter>V) x y"
+  where "ind_add_str V x y \<equiv> add_str (U \<inter> V) x y"
 
 definition ind_mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
-  where "ind_mult_str V x y \<equiv> mult_str (U\<inter>V) x y"
+  where "ind_mult_str V x y \<equiv> mult_str (U \<inter> V) x y"
 
 definition ind_zero_str:: "'a set \<Rightarrow> 'b"
   where "ind_zero_str V \<equiv> \<zero>\<^bsub>(U\<inter>V)\<^esub>"
@@ -956,7 +966,7 @@ subsection \<open>Schemes\<close>
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + comm_ring +
   assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U \<and> 
-affine_scheme U (ind_topology.ind_is_open is_open U) (cxt_ind_sheaf.ind_sheaf \<O> U) 
+affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O> U) 
 (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
 (cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
 (cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>
