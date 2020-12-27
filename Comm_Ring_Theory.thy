@@ -452,7 +452,9 @@ lemma comp_ring_morphisms:
   assumes "ring_homomorphism \<eta> A addA multA zeroA oneA B addB multB zeroB oneB" 
 and "ring_homomorphism \<theta> B addB multB zeroB oneB C addC multC zeroC oneC"
 shows "ring_homomorphism (\<theta> \<circ> \<eta>) A addA multA zeroA oneA C addC multC zeroC oneC"
-  sorry
+  using comp_monoid_morphisms comp_group_morphisms assms 
+  by (metis monoid_homomorphism_def ring_homomorphism_def)
+
 
 (* Composition of presheaves *)
 lemma 
