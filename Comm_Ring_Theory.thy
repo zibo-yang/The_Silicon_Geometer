@@ -393,8 +393,8 @@ subsection \<open>Presheaves of Rings\<close>
 (* def 0.17 *)
 locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'b set"
   and \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)" and b:: "'b" 
-  and add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" (infixl "+\<^bsub>_\<^esub>" 65) 
-  and mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
+  and add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" ("+\<^bsub>_\<^esub>") 
+  and mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" ("\<cdot>\<^bsub>_\<^esub>") 
   and zero_str:: "'a set \<Rightarrow> 'b" ("\<zero>\<^bsub>_\<^esub>") and one_str:: "'a set \<Rightarrow> 'b" ("\<one>\<^bsub>_\<^esub>")
 assumes is_ring_morphism: 
   "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
@@ -422,9 +422,9 @@ end (* presheaf_of_rings *)
 locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
   + target: presheaf_of_rings X is_open \<FF>' \<rho>' c add_str' mult_str' zero_str' one_str'
   for X and is_open 
-    and \<FF> and \<rho> and b and add_str (infixl "+\<^bsub>_\<^esub>" 65) and mult_str (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
+    and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") 
     and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") 
-    and \<FF>' and \<rho>' and c and add_str' (infixl "+''\<^bsub>_\<^esub>" 65) and mult_str' (infixl "\<cdot>''\<^bsub>_\<^esub>" 70) 
+    and \<FF>' and \<rho>' and c and add_str' ("+''\<^bsub>_\<^esub>") and mult_str' ("\<cdot>''\<^bsub>_\<^esub>") 
     and zero_str' ("\<zero>''\<^bsub>_\<^esub>") and one_str' ("\<one>''\<^bsub>_\<^esub>") + 
   fixes fam_morphisms:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
   assumes is_ring_morphism: "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (fam_morphisms U) 
@@ -512,7 +512,7 @@ locale iso_sheaves_of_rings = iso_presheaves_of_rings
 (* ex. 0.21 *)
 locale cxt_ind_sheaf = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str + 
 ind_topology X is_open U
-for X and is_open and \<FF> and \<rho> and b and add_str (infixl "+\<^bsub>_\<^esub>" 65) and mult_str (infixl "\<cdot>\<^bsub>_\<^esub>" 70) 
+for X and is_open and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") 
 and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") and U +
   assumes is_open_subset: "is_open U"
 begin
@@ -524,10 +524,10 @@ definition ind_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \
   where "ind_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
 
 definition ind_add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
-  where "ind_add_str V x y \<equiv> add_str (U \<inter> V) x y"
+  where "ind_add_str V x y \<equiv> +\<^bsub>(U \<inter> V)\<^esub> x y"
 
 definition ind_mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
-  where "ind_mult_str V x y \<equiv> mult_str (U \<inter> V) x y"
+  where "ind_mult_str V x y \<equiv> \<cdot>\<^bsub>(U \<inter> V)\<^esub> x y"
 
 definition ind_zero_str:: "'a set \<Rightarrow> 'b"
   where "ind_zero_str V \<equiv> \<zero>\<^bsub>(U\<inter>V)\<^esub>"
