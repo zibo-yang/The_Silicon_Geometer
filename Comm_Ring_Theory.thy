@@ -500,10 +500,10 @@ subsection \<open>Sheaves of Rings\<close>
 
 (* def 0.19 *)
 locale sheaf_of_rings = presheaf_of_rings + 
-  assumes locality: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U) \<longrightarrow> 
-s \<in> \<FF> U \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> \<rho> U (V i) s = zero_str (V i)) \<longrightarrow> s = \<zero>\<^bsub>U\<^esub>" and
-glueing: "\<forall>U I V s. open_cover_of_open_subset X is_open U I V \<longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<FF> (V i)) \<longrightarrow> 
-(\<forall>i j. i\<in>I \<longrightarrow> j\<in>I \<longrightarrow> \<rho> (V i) (V i \<inter> V j) (s i) = \<rho> (V j) (V i \<inter> V j) (s j)) \<longrightarrow> 
+  assumes locality: "\<And>U I V s. open_cover_of_open_subset X is_open U I V \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> V i \<subseteq> U) \<Longrightarrow> 
+s \<in> \<FF> U \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> \<rho> U (V i) s = zero_str (V i)) \<Longrightarrow> s = \<zero>\<^bsub>U\<^esub>" and
+glueing: "\<And>U I V s. open_cover_of_open_subset X is_open U I V \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<FF> (V i)) \<Longrightarrow> 
+(\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> \<rho> (V i) (V i \<inter> V j) (s i) = \<rho> (V j) (V i \<inter> V j) (s j)) \<Longrightarrow> 
 (\<exists>t. t \<in> \<FF> U \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> U (V i) t = s i))"
 
 (* def. 0.20 *)
@@ -537,10 +537,35 @@ definition ind_zero_str:: "'a set \<Rightarrow> 'b"
 definition ind_one_str:: "'a set \<Rightarrow> 'b"
   where "ind_one_str V \<equiv> \<one>\<^bsub>(U\<inter>V)\<^esub>"
 
+lemma ind_sheaf_is_presheaf:
+  shows "presheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
+ind_add_str ind_mult_str ind_zero_str ind_one_str"
+proof-
+  have "topological_space U ind_is_open" by (simp add: ind_space_is_top_space)
+  moreover have "\<And>U V. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (ind_ring_morphisms U V) 
+                     (ind_sheaf U) (ind_add_str U) (ind_mult_str U) (ind_zero_str U) (ind_one_str U) 
+                     (ind_sheaf V) (ind_add_str V) (ind_mult_str V) (ind_zero_str V) (ind_one_str V)"
+    sorry
+  moreover have "ind_sheaf {} = {b}" sorry
+  moreover have "\<And>U. ind_is_open U \<Longrightarrow> ind_ring_morphisms U U = id" sorry
+  moreover have "\<And>U V W. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> 
+ind_ring_morphisms U W = ind_ring_morphisms V W \<circ> ind_ring_morphisms U V" sorry
+  ultimately show ?thesis using presheaf_of_rings_def presheaf_of_rings_axioms_def sorry
+qed
+
 lemma ind_sheaf_is_sheaf:
   shows "sheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
 ind_add_str ind_mult_str ind_zero_str ind_one_str"
-  sorry
+proof-
+  have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V) \<Longrightarrow> 
+s \<in> ind_sheaf V \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i)) \<Longrightarrow> s = ind_zero_str V"
+    sorry
+  moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i)) \<Longrightarrow> 
+(\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j)) \<Longrightarrow> 
+(\<exists>t. t \<in> ind_sheaf V \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i))"
+    sorry
+  ultimately show ?thesis using sheaf_of_rings_def ind_sheaf_is_presheaf sorry
+qed
 
 end (* cxt_ind_sheaf*)
 
