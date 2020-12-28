@@ -56,7 +56,7 @@ begin
 definition ind_is_open:: "'a set \<Rightarrow> bool"
   where "ind_is_open U \<equiv> U \<subseteq> S \<and> (\<exists>V. V \<subseteq> X \<and> is_open V \<and> U = S \<inter> V)"
 
-lemma 
+lemma ind_space_is_top_space:
   shows "topological_space S (ind_is_open)"
 proof-
   have "ind_is_open S" using ind_is_open_def is_subset (* take V = X *) by auto
