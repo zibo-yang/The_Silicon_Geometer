@@ -26,4 +26,17 @@ proof
     using assms by (simp add: bij_betw_inv_into bijective_def bijective_map_def inverse_map_def)
 qed
 
+lemma comp_maps:
+  assumes "Set_Theory.map \<eta> A B" and "Set_Theory.map \<theta> B C"
+  shows "Set_Theory.map (\<theta> \<circ> \<eta>) A C"
+proof-
+  have "\<theta> \<circ> \<eta> \<in> A \<rightarrow>\<^sub>E C"
+  proof-
+    have "\<theta> \<circ> \<eta> \<in> A \<rightarrow> C" using assms by (metis comp_apply funcsetI map.map_closed)
+    moreover have "\<theta> \<circ> \<eta> \<in> extensional A" sorry
+    ultimately show ?thesis by (simp add: PiE_def)
+  qed
+  thus ?thesis by (simp add: Set_Theory.map_def)
+qed
+
 end
