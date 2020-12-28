@@ -3,6 +3,8 @@ theory Set_Further_Theory
 
 begin
 
+text \<open>Some new notation for built-in primitives\<close>
+
 section \<open>Sets\<close>
 
 abbreviation complement_in_of:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" ("_\<setminus>_" [65,65]65)
