@@ -410,6 +410,22 @@ lemma is_ring_from_is_homomorphism:
   shows "\<And>U. is_open U \<Longrightarrow> ring (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub>"
   using is_ring_morphism ring_homomorphism.axioms(2) by fastforce
 
+lemma is_map_from_is_homomorphism:
+  assumes "is_open U" and "is_open V" and "V \<subseteq> U"
+  shows "Set_Theory.map (\<rho> U V) (\<FF> U) (\<FF> V)"
+  using assms by (meson is_ring_morphism ring_homomorphism.axioms(1))
+
+lemma id_is_identity:
+  assumes "is_open U"
+  shows "\<rho> U U = identity (\<FF> U)"
+  using assms identity_map
+  by (metis PiE_restrict Set_Theory.map_def eq_id_iff is_map_from_is_homomorphism subset_refl)
+
+lemma 
+  assumes "is_open U" and "is_open V" and "is_open W" and "V \<subseteq> U" and "W \<subseteq> V"
+  shows "\<And>x. x \<in> (\<FF> U) \<Longrightarrow> \<rho> U W x = (\<rho> V W \<circ> \<rho> U V) x"
+  using assms assoc_comp by presburger
+
 (* The small lemma below should be useful later in various places. *)
 lemma eq_\<rho>:
   assumes "is_open U" and "is_open V" and "is_open W" and "W \<subseteq> U \<inter> V" 
@@ -431,7 +447,20 @@ locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> 
                                                                 (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
                                                                 (\<FF>' U) (+'\<^bsub>U\<^esub>) (\<cdot>'\<^bsub>U\<^esub>) \<zero>'\<^bsub>U\<^esub> \<one>'\<^bsub>U\<^esub>"
     and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
-                      (\<rho>' U V) \<circ> fam_morphisms U \<down> \<FF> U = fam_morphisms V \<circ> (\<rho> U V) \<down> \<FF> U" 
+                      (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)"
+begin
+
+lemma fam_morphisms_are_maps:
+  assumes "is_open U"
+  shows "Set_Theory.map (fam_morphisms U) (\<FF> U) (\<FF>' U)"
+  using assms is_ring_morphism by (simp add: ring_homomorphism_def)
+
+lemma
+  assumes "is_open U" and "is_open V" and "V \<subseteq> U"
+  shows "(\<rho>' U V) \<circ> fam_morphisms U \<down> (\<FF> U) = fam_morphisms V \<circ> (\<rho> U V) \<down> (\<FF> U)"
+  using assms comm_diagrams by (smt comp_eq_elim compose_def restrict_ext)
+
+end (* morphism_presheaves_of_rings *)
 
 (* Identity presheaf *)
 lemma
@@ -443,8 +472,7 @@ proof-
                                            (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U)"
     using assms presheaf_of_rings.identity_map presheaf_of_rings.is_ring_morphism by fastforce
   moreover have "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
-                      (\<rho> U V) \<circ> id \<down> \<FF> U = id \<circ> (\<rho> U V) \<down> \<FF> U"
-    by (simp add: compose_def)
+                      (\<rho> U V) \<circ> id = id \<circ> (\<rho> U V)" by simp
   thus ?thesis
     by (simp add: morphism_presheaves_of_rings_def assms calculation morphism_presheaves_of_rings_axioms_def)
 qed
@@ -463,7 +491,7 @@ lemma
 "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>"
   and 
 "morphism_presheaves_of_rings X is_open \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<FF>'' \<rho>'' b'' add_str'' mult_str'' zero_str'' one_str'' \<phi>'"
-  shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>'' \<rho>'' b'' add_str'' mult_str'' zero_str'' one_str'' (\<lambda>U. ((\<phi>' U) \<circ> (\<phi> U) \<down> \<FF> U))"
+  shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>'' \<rho>'' b'' add_str'' mult_str'' zero_str'' one_str'' (\<lambda>U. (\<phi>' U \<circ> \<phi> U \<down> \<FF> U))"
 proof-
   have "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (\<phi>' U \<circ> \<phi> U \<down> \<FF> U) 
                                               (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
@@ -493,7 +521,17 @@ locale iso_presheaves_of_rings =
 f: morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>  
 for X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>
 + assumes is_inv: "\<exists>\<psi>. morphism_presheaves_of_rings X is_open \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<FF> \<rho> b add_str mult_str zero_str one_str \<psi> 
-\<and> (\<forall>U. is_open U \<longrightarrow> \<phi> U \<circ> \<psi> U \<down> \<FF>' U = id \<and> \<psi> U \<circ> \<phi> U \<down> \<FF> U = id)"
+\<and> (\<forall>U. is_open U \<longrightarrow> \<phi> U \<circ> \<psi> U = id \<and> \<psi> U \<circ> \<phi> U = id)"
+begin
+
+lemma 
+  fixes \<psi>:: "'a set \<Rightarrow> 'c \<Rightarrow> 'b"
+  assumes "\<phi> U \<circ> \<psi> U = id" and "\<psi> U \<circ> \<phi> U = id"
+  shows "\<phi> U \<circ> \<psi> U \<down> (\<FF>' U) = identity (\<FF>' U)" and "\<psi> U \<circ> \<phi> U \<down> (\<FF> U) = identity (\<FF> U)"
+  apply (metis assms(1) comp_apply compose_def eq_id_iff)
+  by (metis assms(2) comp_apply compose_def eq_id_iff) 
+ 
+end (* iso_presheaves_of_rings*)
 
 
 subsection \<open>Sheaves of Rings\<close>
@@ -565,7 +603,7 @@ proof-
   moreover have "ind_sheaf {} = {b}"
     by (simp add: ind_sheaf_def ring_of_empty)     
   moreover have "\<And>U. ind_is_open U \<Longrightarrow> ind_ring_morphisms U U = id"
-    using identity_map ind_is_open_def ind_ring_morphisms_def is_open_subset is_subset open_inter by force
+    using identity_map ind_is_open_def ind_ring_morphisms_def is_open_subset is_subset open_inter by auto
   moreover have "\<And>U V W. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V 
              \<Longrightarrow> ind_ring_morphisms U W = ind_ring_morphisms V W \<circ> ind_ring_morphisms U V"
     using assoc_comp ind_is_open_def ind_ring_morphisms_def is_open_subset is_subset open_inter by force
@@ -577,15 +615,17 @@ lemma ind_sheaf_is_sheaf:
   shows "sheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
 ind_add_str ind_mult_str ind_zero_str ind_one_str"
 proof-
-  have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V) \<Longrightarrow> 
-s \<in> ind_sheaf V \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i)) \<Longrightarrow> s = ind_zero_str V"
-
+  have "presheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
+ind_add_str ind_mult_str ind_zero_str ind_one_str" 
+    using ind_sheaf_is_presheaf by simp
+  moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V) \<Longrightarrow> 
+s \<in> (ind_sheaf V) \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i)) \<Longrightarrow> s = ind_zero_str V"
     sorry
   moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i)) \<Longrightarrow> 
 (\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j)) \<Longrightarrow> 
-(\<exists>t. t \<in> ind_sheaf V \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i))"
+(\<exists>t. t \<in> (ind_sheaf V) \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i))"
     sorry
-  ultimately show ?thesis using sheaf_of_rings_def ind_sheaf_is_presheaf sorry
+  ultimately show ?thesis unfolding sheaf_of_rings_def sheaf_of_rings_axioms_def sorry
 qed
 
 end (* cxt_ind_sheaf*)
