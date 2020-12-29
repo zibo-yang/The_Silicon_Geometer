@@ -89,6 +89,22 @@ lemma is_open_from_ind_is_open:
   shows "is_open U"
   using assms open_inter ind_is_open_def is_subset by auto
 
+lemma open_cover_from_ind_open_cover:
+  assumes "is_open S" and "open_cover_of_open_subset S ind_is_open U I C"
+  shows "open_cover_of_open_subset X is_open U I C"
+proof-
+  have "is_open U" 
+    using assms is_open_from_ind_is_open open_cover_of_open_subset.is_open_subset by blast
+  moreover have "\<And>i. i \<in> I \<Longrightarrow> is_open (C i)" 
+    using assms is_open_from_ind_is_open open_cover_of_open_subset_def open_cover_of_subset.are_open_subspaces by blast
+  moreover have "\<And>i. i \<in> I \<Longrightarrow> C i \<subseteq> X" 
+    using assms(2) is_subset
+    by (meson cover_of_subset_def open_cover_of_open_subset_def open_cover_of_subset_def subset_trans)
+  ultimately show ?thesis 
+    unfolding open_cover_of_open_subset_def open_cover_of_open_subset_axioms_def
+    by (metis (no_types, hide_lams) assms(2) cover_of_subset.covering cover_of_subset.intro dual_order.trans ind_is_open_def is_subset open_cover_of_open_subset.is_open_subset open_cover_of_open_subset_def open_cover_of_subset_axioms_def open_cover_of_subset_def topological_space_axioms)
+qed
+
 end (* induced topology *)
 
 
