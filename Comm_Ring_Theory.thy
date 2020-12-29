@@ -526,16 +526,21 @@ definition ind_ring_morphisms:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \
   where "ind_ring_morphisms V W \<equiv> \<rho> (U \<inter> V) (U \<inter> W)"
 
 definition ind_add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
-  where "ind_add_str V x y \<equiv> +\<^bsub>(U \<inter> V)\<^esub> x y"
+  where "ind_add_str V \<equiv> \<lambda>x y. +\<^bsub>(U \<inter> V)\<^esub> x y"
 
 definition ind_mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)"
-  where "ind_mult_str V x y \<equiv> \<cdot>\<^bsub>(U \<inter> V)\<^esub> x y"
+  where "ind_mult_str V \<equiv> \<lambda>x y. \<cdot>\<^bsub>(U \<inter> V)\<^esub> x y"
 
 definition ind_zero_str:: "'a set \<Rightarrow> 'b"
   where "ind_zero_str V \<equiv> \<zero>\<^bsub>(U\<inter>V)\<^esub>"
 
 definition ind_one_str:: "'a set \<Rightarrow> 'b"
   where "ind_one_str V \<equiv> \<one>\<^bsub>(U\<inter>V)\<^esub>"
+
+lemma ind_is_open_imp_ring: 
+  "\<And>U. ind_is_open U
+   \<Longrightarrow> ring (ind_sheaf U) (ind_add_str U) (ind_mult_str U) (ind_zero_str U) (ind_one_str U)"
+    using ind_add_str_def ind_is_open_def ind_mult_str_def ind_one_str_def ind_sheaf_def ind_zero_str_def is_open_subset is_ring_from_is_homomorphism is_subset open_inter by force
 
 lemma ind_sheaf_is_presheaf:
   shows "presheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
@@ -545,12 +550,27 @@ proof-
   moreover have "\<And>U V. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (ind_ring_morphisms U V) 
                      (ind_sheaf U) (ind_add_str U) (ind_mult_str U) (ind_zero_str U) (ind_one_str U) 
                      (ind_sheaf V) (ind_add_str V) (ind_mult_str V) (ind_zero_str V) (ind_one_str V)"
-    sorry
-  moreover have "ind_sheaf {} = {b}" sorry
-  moreover have "\<And>U. ind_is_open U \<Longrightarrow> ind_ring_morphisms U U = id" sorry
-  moreover have "\<And>U V W. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> 
-ind_ring_morphisms U W = ind_ring_morphisms V W \<circ> ind_ring_morphisms U V" sorry
-  ultimately show ?thesis using presheaf_of_rings_def presheaf_of_rings_axioms_def sorry
+  proof (intro ring_homomorphism.intro ind_is_open_imp_ring)
+    fix W V
+    assume \<section>: "ind_is_open W" "ind_is_open V" "V \<subseteq> W"
+    then show "Set_Theory.map (ind_ring_morphisms W V) (ind_sheaf W) (ind_sheaf V)"
+      by (metis ind_is_open_def ind_ring_morphisms_def ind_sheaf_def inf.left_idem is_open_subset is_ring_morphism is_subset open_inter ring_homomorphism_def)
+    obtain o: "is_open (U \<inter> V)" "is_open (U \<inter> W)" "U \<inter> V \<subseteq> U \<inter> W"
+      by (metis (no_types) "\<section>" ind_is_open_def inf.absorb_iff2 is_open_subset is_subset open_inter)
+    then show "group_homomorphism (ind_ring_morphisms W V) (ind_sheaf W) (ind_add_str W) (ind_zero_str W) (ind_sheaf V) (ind_add_str V) (ind_zero_str V)"
+      by (metis cxt_ind_sheaf.ind_add_str_def cxt_ind_sheaf_axioms ind_ring_morphisms_def ind_sheaf_def ind_zero_str_def is_ring_morphism ring_homomorphism.axioms(4))
+    show "monoid_homomorphism (ind_ring_morphisms W V) (ind_sheaf W) (ind_mult_str W) (ind_one_str W) (ind_sheaf V) (ind_mult_str V) (ind_one_str V)"
+      using o by (metis ind_mult_str_def ind_one_str_def ind_ring_morphisms_def ind_sheaf_def is_ring_morphism ring_homomorphism_def) 
+  qed
+  moreover have "ind_sheaf {} = {b}"
+    by (simp add: ind_sheaf_def ring_of_empty)     
+  moreover have "\<And>U. ind_is_open U \<Longrightarrow> ind_ring_morphisms U U = id"
+    using identity_map ind_is_open_def ind_ring_morphisms_def is_open_subset is_subset open_inter by force
+  moreover have "\<And>U V W. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V 
+             \<Longrightarrow> ind_ring_morphisms U W = ind_ring_morphisms V W \<circ> ind_ring_morphisms U V"
+    using assoc_comp ind_is_open_def ind_ring_morphisms_def is_open_subset is_subset open_inter by force
+  ultimately show ?thesis 
+    unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def by blast
 qed
 
 lemma ind_sheaf_is_sheaf:
@@ -559,6 +579,7 @@ ind_add_str ind_mult_str ind_zero_str ind_one_str"
 proof-
   have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V) \<Longrightarrow> 
 s \<in> ind_sheaf V \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i)) \<Longrightarrow> s = ind_zero_str V"
+
     sorry
   moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i)) \<Longrightarrow> 
 (\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j)) \<Longrightarrow> 
