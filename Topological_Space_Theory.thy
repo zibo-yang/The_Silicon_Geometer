@@ -84,6 +84,10 @@ proof-
     by (simp add: calculation(1-3) topological_space_def)
 qed
 
+lemma is_open_from_ind_is_open:
+  assumes "is_open S" and "ind_is_open U"
+  shows "is_open U"
+  using assms open_inter ind_is_open_def is_subset by auto
 
 end (* induced topology *)
 
