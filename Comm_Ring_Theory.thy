@@ -677,12 +677,20 @@ definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> 
   where "x \<sim> y \<equiv> \<exists>s1. s1 \<in> S \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
 
 lemma rel_is_equivalence:
-  shows "equivalence (R \<times> S) {(x,y). x \<sim> y}" sorry
+  shows "equivalence (R \<times> S) {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}"
+proof-
+  have "{(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<subseteq> (R \<times> S) \<times> (R \<times> S)" by auto
+  moreover have "\<And>x. x \<in> (R \<times> S) \<Longrightarrow> (x, x) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
+  moreover have "\<And>x y. (x,y) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<Longrightarrow> (y,x) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
+  moreover have "\<And>x y z. (x,y) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<Longrightarrow> (y,z) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} 
+\<Longrightarrow> (x,z) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
+  ultimately show ?thesis unfolding equivalence_def by blast
+qed
 
 notation equivalence.Partition (infixl "'/" 75)
 
 definition frac:: "'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set" (infixl "'/" 75)
-  where "r / s \<equiv> equivalence.Class (R \<times> S) {(x,y). x \<sim> y} (r, s)"
+  where "r / s \<equiv> equivalence.Class (R \<times> S) {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} (r, s)"
 
 definition add_rel_aux:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set"
   where "add_rel_aux r s r' s' \<equiv> (r\<cdot>s' + r'\<cdot>s) / (s\<cdot>s')"
@@ -703,7 +711,7 @@ definition mult_rel:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \
   mult_rel_aux (fst x) (snd x) (fst y) (snd y)"
 
 definition carrier_quotient_ring:: "('a \<times> 'a) set set"
-  where "carrier_quotient_ring \<equiv> equivalence.Partition (R \<times> S) {(x,y). x \<sim> y}"
+  where "carrier_quotient_ring \<equiv> equivalence.Partition (R \<times> S) {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}"
 
 (* ex. 0.26 *)
 lemma
