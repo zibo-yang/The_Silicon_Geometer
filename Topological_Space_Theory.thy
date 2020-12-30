@@ -87,6 +87,11 @@ qed
 
 end (* induced topology *)
 
+lemma (in topological_space) ind_topology_is_open_self [iff]: "ind_topology S is_open S"
+  by (simp add: ind_topology_axioms_def ind_topology_def topological_space_axioms)
+
+lemma (in topological_space) ind_topology_is_open_empty [iff]: "ind_topology S is_open {}"
+  by (simp add: ind_topology_axioms_def ind_topology_def topological_space_axioms)
 
 subsection \<open>Continuous Maps\<close>
 
