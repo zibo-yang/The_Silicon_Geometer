@@ -620,11 +620,27 @@ ind_add_str ind_mult_str ind_zero_str ind_one_str"
     using ind_sheaf_is_presheaf by simp
   moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V) \<Longrightarrow> 
 s \<in> (ind_sheaf V) \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i)) \<Longrightarrow> s = ind_zero_str V"
-    sorry
+  proof-
+    fix V I W s assume "open_cover_of_open_subset U ind_is_open V I W" and "(\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V)"
+and "s \<in> (ind_sheaf V)" and "(\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i))"
+    have "is_open V" using is_open_from_ind_is_open is_open_subset sorry
+    moreover have "open_cover_of_open_subset X is_open V I W" using open_cover_from_ind_open_cover sorry
+    moreover have "\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V" sorry
+    moreover have "s \<in> \<FF> V" sorry (* note that U \<inter> V = V *)
+    ultimately have "s = \<zero>\<^bsub>V\<^esub>" using locality sorry
+    thus "s = ind_zero_str V" using ind_zero_str_def sorry
+  qed
   moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i)) \<Longrightarrow> 
 (\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j)) \<Longrightarrow> 
 (\<exists>t. t \<in> (ind_sheaf V) \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i))"
-    sorry
+  proof-
+    fix V I W s assume "open_cover_of_open_subset U ind_is_open V I W" and "(\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i))"
+and "(\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j))"
+    have "is_open V" using is_open_from_ind_is_open is_open_subset sorry
+    moreover have "open_cover_of_open_subset X is_open V I W" using open_cover_from_ind_open_cover sorry
+    ultimately show "\<exists>t. t \<in> (ind_sheaf V) \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i)"
+      using glueing sorry
+  qed
   ultimately show ?thesis unfolding sheaf_of_rings_def sheaf_of_rings_axioms_def sorry
 qed
 
@@ -661,12 +677,20 @@ definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> 
   where "x \<sim> y \<equiv> \<exists>s1. s1 \<in> S \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
 
 lemma rel_is_equivalence:
-  shows "equivalence (R \<times> S) {(x,y). x \<sim> y}" sorry
+  shows "equivalence (R \<times> S) {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}"
+proof-
+  have "{(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<subseteq> (R \<times> S) \<times> (R \<times> S)" by auto
+  moreover have "\<And>x. x \<in> (R \<times> S) \<Longrightarrow> (x, x) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
+  moreover have "\<And>x y. (x,y) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<Longrightarrow> (y,x) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
+  moreover have "\<And>x y z. (x,y) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<Longrightarrow> (y,z) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} 
+\<Longrightarrow> (x,z) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
+  ultimately show ?thesis unfolding equivalence_def by blast
+qed
 
 notation equivalence.Partition (infixl "'/" 75)
 
 definition frac:: "'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set" (infixl "'/" 75)
-  where "r / s \<equiv> equivalence.Class (R \<times> S) {(x,y). x \<sim> y} (r, s)"
+  where "r / s \<equiv> equivalence.Class (R \<times> S) {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} (r, s)"
 
 definition add_rel_aux:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set"
   where "add_rel_aux r s r' s' \<equiv> (r\<cdot>s' + r'\<cdot>s) / (s\<cdot>s')"
@@ -687,7 +711,7 @@ definition mult_rel:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \
   mult_rel_aux (fst x) (snd x) (fst y) (snd y)"
 
 definition carrier_quotient_ring:: "('a \<times> 'a) set set"
-  where "carrier_quotient_ring \<equiv> equivalence.Partition (R \<times> S) {(x,y). x \<sim> y}"
+  where "carrier_quotient_ring \<equiv> equivalence.Partition (R \<times> S) {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}"
 
 (* ex. 0.26 *)
 lemma
