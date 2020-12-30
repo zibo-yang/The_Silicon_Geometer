@@ -400,8 +400,8 @@ assumes is_ring_morphism:
   "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
                                                   (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
                                                   (\<FF> V) (+\<^bsub>V\<^esub>) (\<cdot>\<^bsub>V\<^esub>) \<zero>\<^bsub>V\<^esub> \<one>\<^bsub>V\<^esub>"
-  and ring_of_empty: "\<FF> {} = {b}"
-  and identity_map: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
+  and ring_of_empty [simp]: "\<FF> {} = {b}"
+  and identity_map [simp]: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
   and assoc_comp: 
   "\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
 begin
@@ -615,33 +615,46 @@ lemma ind_sheaf_is_sheaf:
   shows "sheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
 ind_add_str ind_mult_str ind_zero_str ind_one_str"
 proof-
-  have "presheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
+  have 1: "presheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
 ind_add_str ind_mult_str ind_zero_str ind_one_str" 
     using ind_sheaf_is_presheaf by simp
-  moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V) \<Longrightarrow> 
-s \<in> (ind_sheaf V) \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i)) \<Longrightarrow> s = ind_zero_str V"
-  proof-
-    fix V I W s assume "open_cover_of_open_subset U ind_is_open V I W" and "(\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V)"
-and "s \<in> (ind_sheaf V)" and "(\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i))"
-    have "is_open V" using is_open_from_ind_is_open is_open_subset sorry
-    moreover have "open_cover_of_open_subset X is_open V I W" using open_cover_from_ind_open_cover sorry
-    moreover have "\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V" sorry
-    moreover have "s \<in> \<FF> V" sorry (* note that U \<inter> V = V *)
-    ultimately have "s = \<zero>\<^bsub>V\<^esub>" using locality sorry
-    thus "s = ind_zero_str V" using ind_zero_str_def sorry
+  have 2: "s = ind_zero_str V"
+    if oc: "open_cover_of_open_subset U ind_is_open V I W"
+      and WV: "(\<And>i. i\<in>I \<Longrightarrow> W i \<subseteq> V)" and s: "s \<in> ind_sheaf V" 
+      and eq0: "(\<And>i. i\<in>I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i))" for V I W s
+  proof -
+    have "is_open V" using is_open_from_ind_is_open is_open_subset
+      using oc open_cover_of_open_subset.is_open_subset by blast
+    moreover have "open_cover_of_open_subset X is_open V I W" using open_cover_from_ind_open_cover
+      by (simp add: is_open_subset oc)
+    moreover have "s \<in> \<FF> V"
+      by (metis ind_is_open_def ind_sheaf_def inf_absorb2 oc open_cover_of_open_subset.is_open_subset s) 
+    ultimately have "s = \<zero>\<^bsub>V\<^esub>" 
+      using locality WV
+      by (smt (verit, best) Int_absorb1 cxt_ind_sheaf.ind_zero_str_def cxt_ind_sheaf_axioms eq0 ind_ring_morphisms_def ind_topology.ind_is_open_def ind_topology_axioms inf.orderE inf_left_commute oc open_cover_of_open_subset.is_open_subset)
+    thus "s = ind_zero_str V" using ind_zero_str_def
+      by (metis ind_is_open_def inf_absorb2 oc open_cover_of_open_subset.is_open_subset)
   qed
-  moreover have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i)) \<Longrightarrow> 
+  have "\<And>V I W s. open_cover_of_open_subset U ind_is_open V I W \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i)) \<Longrightarrow> 
 (\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j)) \<Longrightarrow> 
 (\<exists>t. t \<in> (ind_sheaf V) \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i))"
   proof-
-    fix V I W s assume "open_cover_of_open_subset U ind_is_open V I W" and "(\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i))"
-and "(\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j))"
-    have "is_open V" using is_open_from_ind_is_open is_open_subset sorry
-    moreover have "open_cover_of_open_subset X is_open V I W" using open_cover_from_ind_open_cover sorry
-    ultimately show "\<exists>t. t \<in> (ind_sheaf V) \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i)"
-      using glueing sorry
+    fix V I W s 
+    assume "open_cover_of_open_subset U ind_is_open V I W" and "(\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i))"
+      and "(\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j))"
+    have "is_open V" using is_open_from_ind_is_open is_open_subset
+      by (meson \<open>open_cover_of_open_subset U ind_is_open V I W\<close> open_cover_of_open_subset.is_open_subset)
+    have "open_cover_of_open_subset X is_open V I W" using open_cover_from_ind_open_cover
+      using \<open>open_cover_of_open_subset U ind_is_open V I W\<close> is_open_subset by presburger 
+    show "\<exists>t. t \<in> (ind_sheaf V) \<and> (\<forall>i. i\<in>I \<longrightarrow> ind_ring_morphisms V (W i) t = s i)"
+      using glueing
+      sorry
   qed
-  ultimately show ?thesis unfolding sheaf_of_rings_def sheaf_of_rings_axioms_def sorry
+  show ?thesis unfolding sheaf_of_rings_def sheaf_of_rings_axioms_def 
+     apply (intro conjI strip)
+       apply (blast intro: 1 elim: )
+     apply (rule 2)
+    sorry
 qed
 
 end (* cxt_ind_sheaf*)
@@ -661,6 +674,13 @@ definition direct_im_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Right
 lemma 
   shows "sheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b
 (\<lambda>V x y. add_str (f\<^sup>\<inverse> V) x y) (\<lambda>V x y. mult_str (f\<^sup>\<inverse> V) x y) (\<lambda>V. zero_str (f\<^sup>\<inverse> V)) (\<lambda>V. one_str (f\<^sup>\<inverse> V))"
+  apply (intro presheaf_of_rings.intro sheaf_of_rings.intro)
+  using target.topological_space_axioms apply blast
+   apply (auto simp: presheaf_of_rings_axioms_def direct_im_sheaf_ring_morphisms_def direct_im_sheaf_def)
+     apply (metis continuous_map.is_continuous continuous_map_axioms is_ring_morphism vimage_def vimage_mono)
+    apply (simp add: is_continuous vimage_def)
+   apply (metis assoc_comp is_continuous vimage_def vimage_mono)
+  apply (auto simp: sheaf_of_rings_axioms_def direct_im_sheaf_ring_morphisms_def direct_im_sheaf_def)
   sorry
 
 end (* cxt_direct_im_sheaf *)
@@ -677,14 +697,27 @@ definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> 
   where "x \<sim> y \<equiv> \<exists>s1. s1 \<in> S \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
 
 lemma rel_is_equivalence:
-  shows "equivalence (R \<times> S) {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}"
+  shows "equivalence (R \<times> S) {(x,y) \<in> (R\<times>S)\<times>(R\<times>S). x \<sim> y}"
 proof-
+  have 0: "\<And>r s r1 s2 s1.
+       \<lbrakk>r \<in> R; s \<in> S; r1 \<in> R; s2 \<in> S; s1 \<in> S; s1 \<cdot> (s2 \<cdot> r - s \<cdot> r1) = \<zero>\<rbrakk> \<Longrightarrow> s1 \<cdot> (s \<cdot> r1 - s2 \<cdot> r) = \<zero>"
+    by (smt (verit, best) additive.composition_closed additive.inverse_composition_commute additive.inverse_unit additive.invertible additive.invertible_inverse_closed additive.invertible_inverse_inverse local.right_minus multiplicative.composition_closed sub)
   have "{(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<subseteq> (R \<times> S) \<times> (R \<times> S)" by auto
-  moreover have "\<And>x. x \<in> (R \<times> S) \<Longrightarrow> (x, x) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
-  moreover have "\<And>x y. (x,y) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<Longrightarrow> (y,x) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
-  moreover have "\<And>x y z. (x,y) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<Longrightarrow> (y,z) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} 
-\<Longrightarrow> (x,z) \<in> {(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y}" sorry
-  ultimately show ?thesis unfolding equivalence_def by blast
+  moreover have 1: "\<And>x. x \<in> R \<times> S \<Longrightarrow> x \<sim> x"
+    by (auto simp: rel_def)
+  moreover have 2: "\<And>x y. x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y \<Longrightarrow> y \<sim> x"
+    by (metis 0 SigmaE prod.sel rel_def)
+  moreover have 3: "\<And>x y z. \<lbrakk>x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y; z \<in> R \<times> S \<and> y \<sim> z\<rbrakk> \<Longrightarrow> x \<sim> z"
+  proof (clarsimp simp: rel_def)
+    show "\<exists>u. u \<in> S \<and> u \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>"
+      if "r \<in> R" "s \<in> S" "r1 \<in> R" "s1 \<in> S" "sx \<in> S" "r2 \<in> R" "s2 \<in> S" "sy \<in> S"
+        and "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
+      for r s r2 s2 r1 s1 sx sy
+      using that
+      sorry
+  qed
+  show ?thesis 
+    by (simp add: equivalence_def) (blast intro: 1 2 3)
 qed
 
 notation equivalence.Partition (infixl "'/" 75)
