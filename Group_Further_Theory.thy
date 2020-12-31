@@ -230,16 +230,16 @@ section \<open>Monoids\<close>
 
 lemma comp_monoid_morphisms:
   assumes "monoid_homomorphism \<eta> A multA oneA B multB oneB" and
-"monoid_homomorphism \<theta> B multB oneB C multC oneC"
+          "monoid_homomorphism \<theta> B multB oneB C multC oneC"
 shows "monoid_homomorphism (\<theta> \<circ> \<eta> \<down> A) A multA oneA C multC oneC"
 proof-
   have "map (\<theta> \<circ> \<eta> \<down> A) A C" using assms comp_maps by (metis monoid_homomorphism.axioms(1))
   moreover have "(\<theta> \<circ> \<eta> \<down> A) oneA = oneC" 
     using assms 
     by (metis compose_eq monoid.unit_closed monoid_homomorphism.axioms(2) monoid_homomorphism.commutes_with_unit)
-  moreover have "\<And>x y. x \<in> A \<Longrightarrow> y \<in> A \<Longrightarrow> 
-\<theta> \<circ> \<eta> \<down> A (multA x y) = multC (\<theta> \<circ> \<eta> \<down> A x) (\<theta> \<circ> \<eta> \<down> A y)" 
-    using assms monoid_homomorphism.commutes_with_composition 
+  moreover have "(\<theta> \<circ> \<eta> \<down> A) (multA x y) = multC ((\<theta> \<circ> \<eta> \<down> A) x) ((\<theta> \<circ> \<eta> \<down> A) y)" 
+      if "x \<in> A" "y \<in> A" for x y
+    using that assms monoid_homomorphism.commutes_with_composition 
     by (smt compose_eq map.map_closed monoid.composition_closed monoid_homomorphism.axioms)
   ultimately show ?thesis
     using monoid_homomorphism_def assms comp_maps by (smt monoid_homomorphism_axioms.intro)
