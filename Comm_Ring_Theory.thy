@@ -630,9 +630,15 @@ next
     using is_open_from_ind_is_open is_open_subset oc open_cover_of_open_subset.is_open_subset by blast
   moreover have "open_cover_of_open_subset X is_open V I W" 
     using open_cover_from_ind_open_cover oc ind_topology.intro ind_topology_axioms_def is_open_subset is_subset topological_space_axioms by blast
-  moreover have "\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> \<rho> (W i) (W i \<inter> W j) (s i) = \<rho> (W j) (W i \<inter> W j) (s j)"
-    using WV ind_ring_morphisms_def
-    by (smt (verit, ccfv_SIG) eq ind_is_open_def inf.orderE inf_aci oc open_cover_of_open_subset.is_open_subset)
+  moreover have "\<rho> (W i) (W i \<inter> W j) (s i) = \<rho> (W j) (W i \<inter> W j) (s j)"
+    if "i\<in>I" "j\<in>I" for i j
+  proof -
+    have "U \<inter> W i = W i" and "U \<inter> W j = W j"
+      by (metis Int_absorb1 WV ind_is_open_def oc open_cover_of_open_subset.is_open_subset 
+            subset_trans that)+
+    then show ?thesis 
+      using eq[unfolded ind_ring_morphisms_def,OF that] by (metis inf_sup_aci(2)) 
+  qed
   moreover have "\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> \<FF> (W i)"
     by (metis WV ind_is_open_def ind_sheaf_def inf.orderE inf_idem inf_aci(3) oc open_cover_of_open_subset.is_open_subset)
   ultimately 
