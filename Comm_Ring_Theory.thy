@@ -741,7 +741,8 @@ definition carrier_quotient_ring:: "('a \<times> 'a) set set"
 
 (* ex. 0.26 *)
 lemma
-  shows "ring carrier_quotient_ring add_rel mult_rel (\<zero> / \<one>) (\<one> / \<one>)" sorry
+  shows "ring carrier_quotient_ring add_rel mult_rel (\<zero> / \<one>) (\<one> / \<one>)"
+  sorry
 
 end (* cxt_quotient_ring *)
 
@@ -753,8 +754,14 @@ subsection \<open>Local Rings at Prime Ideals\<close>
 context prime_ideal 
 begin
 
-lemma
-  shows "submonoid (R \<setminus> I) R (\<cdot>) \<one>" sorry
+lemma submonoid_prime_ideal:
+  shows "submonoid (R \<setminus> I) R (\<cdot>) \<one>"
+proof
+  show "a \<cdot> b \<in> R\<setminus>I" if "a \<in> R\<setminus>I" "b \<in> R\<setminus>I" for a b
+    using that by (metis Diff_iff absorbent multiplicative.composition_closed)
+  show "\<one> \<in> R\<setminus>I"
+    using ideal.ideal(2) ideal_axioms prime_ideal.carrier_neq prime_ideal_axioms by fastforce
+qed auto
 
 (* definition 0.28 *)
 definition carrier_local_ring_at:: "('a \<times> 'a) set set"
@@ -806,7 +813,8 @@ definition add_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow>
 
 lemma
   assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
-  shows "is_regular (add_sheaf_on_spec U s s') U" sorry
+  shows "is_regular (add_sheaf_on_spec U s s') U"
+  sorry
 
 definition mult_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "mult_sheaf_on_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.mult_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
