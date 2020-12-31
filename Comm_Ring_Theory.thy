@@ -910,7 +910,10 @@ b
 subsection \<open>Direct Limits of Rings\<close>
 
 (* construction 0.34 *)
-locale cxt_direct_lim = sheaf_of_rings + fixes I:: "'a set set"
+locale cxt_direct_lim = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
+  for X and is_open and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") and 
+zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") + 
+  fixes I:: "'a set set"
   assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U" and 
 has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
 begin
