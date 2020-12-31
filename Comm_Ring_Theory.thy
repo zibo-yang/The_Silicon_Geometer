@@ -447,7 +447,7 @@ locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> 
                                                                 (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
                                                                 (\<FF>' U) (+'\<^bsub>U\<^esub>) (\<cdot>'\<^bsub>U\<^esub>) \<zero>'\<^bsub>U\<^esub> \<one>'\<^bsub>U\<^esub>"
     and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
-                      (\<rho>' U V) \<circ> fam_morphisms U = fam_morphisms V \<circ> (\<rho> U V)"
+                      (\<rho>' U V) \<circ> fam_morphisms U \<down> \<FF> U = fam_morphisms V \<circ> (\<rho> U V) \<down> \<FF> U"
 begin
 
 lemma fam_morphisms_are_maps:
@@ -466,16 +466,15 @@ end (* morphism_presheaves_of_rings *)
 lemma
   assumes "presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str"
   shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF> \<rho> b add_str mult_str zero_str one_str (\<lambda>U. id)"
-proof-
-  have "\<And>U. is_open U \<Longrightarrow> ring_homomorphism id 
+proof (intro morphism_presheaves_of_rings.intro morphism_presheaves_of_rings_axioms.intro)
+  show "\<And>U. is_open U \<Longrightarrow> ring_homomorphism id 
                                            (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
                                            (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U)"
     using assms presheaf_of_rings.identity_map presheaf_of_rings.is_ring_morphism by fastforce
-  moreover have "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
-                      (\<rho> U V) \<circ> id = id \<circ> (\<rho> U V)" by simp
-  thus ?thesis
-    by (simp add: morphism_presheaves_of_rings_def assms calculation morphism_presheaves_of_rings_axioms_def)
-qed
+  show "\<And>U V. \<lbrakk>is_open U; is_open V; V \<subseteq> U\<rbrakk>
+           \<Longrightarrow> \<rho> U V \<circ> id \<down> \<FF> U = id \<circ> \<rho> U V \<down> \<FF> U"
+    by (auto simp: compose_def fun_eq_iff)
+qed (use assms in auto)
 
 lemma comp_ring_morphisms:
   assumes "ring_homomorphism \<eta> A addA multA zeroA oneA B addB multB zeroB oneB" 
@@ -486,36 +485,27 @@ shows "ring_homomorphism (compose A \<theta> \<eta>) A addA multA zeroA oneA C a
 
 
 (* Composition of presheaves *)
-lemma 
-  assumes 
-"morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>"
-  and 
-"morphism_presheaves_of_rings X is_open \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<FF>'' \<rho>'' b'' add_str'' mult_str'' zero_str'' one_str'' \<phi>'"
+lemma composition_of_presheaves:
+  assumes 1: "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>"
+    and 2: "morphism_presheaves_of_rings X is_open \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<FF>'' \<rho>'' b'' add_str'' mult_str'' zero_str'' one_str'' \<phi>'"
   shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>'' \<rho>'' b'' add_str'' mult_str'' zero_str'' one_str'' (\<lambda>U. (\<phi>' U \<circ> \<phi> U \<down> \<FF> U))"
-proof-
-  have "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (\<phi>' U \<circ> \<phi> U \<down> \<FF> U) 
-                                              (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
-                                              (\<FF>'' U) (add_str'' U) (mult_str'' U) (zero_str'' U) (one_str'' U)"
-  proof-
-    fix U assume "is_open U" obtain F1:"ring_homomorphism (\<phi> U) 
-                                                          (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
-                                                          (\<FF>' U) (add_str' U) (mult_str' U) (zero_str' U) (one_str' U)"
-and F2:"ring_homomorphism (\<phi>' U) 
-                          (\<FF>' U) (add_str' U) (mult_str' U) (zero_str' U) (one_str' U) 
-                          (\<FF>'' U) (add_str'' U) (mult_str'' U) (zero_str'' U) (one_str'' U)"
-      by (meson \<open>is_open U\<close> assms morphism_presheaves_of_rings.is_ring_morphism)
-    thus "ring_homomorphism (\<phi>' U \<circ> \<phi> U \<down> \<FF> U) 
-                              (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
-                              (\<FF>'' U) (add_str'' U) (mult_str'' U) (zero_str'' U) (one_str'' U)"
-      using comp_ring_morphisms by fastforce
-  qed
-  moreover have "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
-                      (\<rho>'' U V) \<circ> (\<phi>' U \<circ> \<phi> U \<down> \<FF> U) = (\<phi>' V \<circ> \<phi> V \<down> \<FF> V) \<circ> (\<rho> U V)"
-    using assms compose_assoc morphism_presheaves_of_rings.comm_diagrams compose_def sorry
-  thus ?thesis 
-    using assms calculation
-    by (smt comp_eq_dest compose_def morphism_presheaves_of_rings.axioms morphism_presheaves_of_rings.intro morphism_presheaves_of_rings_axioms.intro restrict_ext)
-qed
+proof (intro morphism_presheaves_of_rings.intro morphism_presheaves_of_rings_axioms.intro)
+  show "ring_homomorphism (\<phi>' U \<circ> \<phi> U \<down> \<FF> U) (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) (\<FF>'' U) (add_str'' U) (mult_str'' U) (zero_str'' U) (one_str'' U)"
+    if "is_open U"
+    for U :: "'a set"
+    using that
+    by (metis assms comp_ring_morphisms morphism_presheaves_of_rings.is_ring_morphism)
+next
+  show "\<rho>'' U V \<circ> \<phi>' U \<circ> \<phi> U \<down> \<FF> U \<down> \<FF> U = (\<phi>' V \<circ> \<phi> V \<down> \<FF> V) \<circ> \<rho> U V \<down> \<FF> U"
+    if "is_open U" "is_open V" "V \<subseteq> U" for U V
+    using that 
+    using morphism_presheaves_of_rings.comm_diagrams [OF 1]
+    using morphism_presheaves_of_rings.comm_diagrams [OF 2]
+    using presheaf_of_rings.is_map_from_is_homomorphism [OF morphism_presheaves_of_rings.axioms(1) [OF 1]]
+    apply (auto simp add: fun_eq_iff compose_def)
+    apply (metis map.map_closed morphism_presheaves_of_rings.fam_morphisms_are_maps [OF 1])
+    by (meson map.map_closed)
+qed (use assms in \<open>auto simp: morphism_presheaves_of_rings_def\<close>)
 
 locale iso_presheaves_of_rings =
 f: morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>  

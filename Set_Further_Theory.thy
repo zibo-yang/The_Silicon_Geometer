@@ -28,7 +28,8 @@ proof
     using assms by (simp add: bij_betw_inv_into bijective_def bijective_map_def inverse_map_def)
 qed
 
-abbreviation composing ("_ \<circ> _ \<down> _") where "g \<circ> f \<down> D \<equiv> compose D g f"
+abbreviation composing ("_ \<circ> _ \<down> _" [60,0,60]59) 
+  where "g \<circ> f \<down> D \<equiv> compose D g f"
 
 lemma comp_maps:
   assumes "Set_Theory.map \<eta> A B" and "Set_Theory.map \<theta> B C"
