@@ -667,7 +667,10 @@ qed
 end (* cxt_ind_sheaf*)
 
 (* context for construction 0.22 *)
-locale cxt_direct_im_sheaf = continuous_map + sheaf_of_rings
+locale cxt_direct_im_sheaf = continuous_map X is_open X' is_open' f + 
+sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str
+for X and is_open and X' and is_open' and f and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and 
+mult_str ("\<cdot>\<^bsub>_\<^esub>") and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>")
 begin
 
 (* def 0.24 *)
@@ -680,7 +683,7 @@ definition direct_im_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Right
 (* ex 0.23 *)
 lemma 
   shows "sheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b
-(\<lambda>V x y. add_str (f\<^sup>\<inverse> V) x y) (\<lambda>V x y. mult_str (f\<^sup>\<inverse> V) x y) (\<lambda>V. zero_str (f\<^sup>\<inverse> V)) (\<lambda>V. one_str (f\<^sup>\<inverse> V))"
+(\<lambda>V x y. +\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V x y. \<cdot>\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V. \<zero>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>) (\<lambda>V. \<one>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>)"
   apply (intro presheaf_of_rings.intro sheaf_of_rings.intro)
   using target.topological_space_axioms apply blast
    apply (auto simp: presheaf_of_rings_axioms_def direct_im_sheaf_ring_morphisms_def direct_im_sheaf_def)
