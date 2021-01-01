@@ -667,13 +667,14 @@ definition direct_im_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Right
 lemma 
   shows "sheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b
 (\<lambda>V x y. +\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V x y. \<cdot>\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V. \<zero>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>) (\<lambda>V. \<one>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>)"
-  apply (intro presheaf_of_rings.intro sheaf_of_rings.intro)
+  apply (intro presheaf_of_rings.intro sheaf_of_rings.intro sheaf_of_rings_axioms.intro)
   using target.topological_space_axioms apply blast
    apply (auto simp: presheaf_of_rings_axioms_def direct_im_sheaf_ring_morphisms_def direct_im_sheaf_def)
      apply (metis continuous_map.is_continuous continuous_map_axioms is_ring_morphism vimage_def vimage_mono)
     apply (simp add: is_continuous vimage_def)
-   apply (metis assoc_comp is_continuous vimage_def vimage_mono)
-  apply (auto simp: sheaf_of_rings_axioms_def direct_im_sheaf_ring_morphisms_def direct_im_sheaf_def)
+    apply (metis assoc_comp is_continuous vimage_def vimage_mono)
+  subgoal for U I V s
+  sorry
   sorry
 
 end (* cxt_direct_im_sheaf *)
