@@ -455,11 +455,6 @@ lemma fam_morphisms_are_maps:
   shows "Set_Theory.map (fam_morphisms U) (\<FF> U) (\<FF>' U)"
   using assms is_ring_morphism by (simp add: ring_homomorphism_def)
 
-lemma
-  assumes "is_open U" and "is_open V" and "V \<subseteq> U"
-  shows "(\<rho>' U V) \<circ> fam_morphisms U \<down> (\<FF> U) = fam_morphisms V \<circ> (\<rho> U V) \<down> (\<FF> U)"
-  using assms comm_diagrams by (smt comp_eq_elim compose_def restrict_ext)
-
 end (* morphism_presheaves_of_rings *)
 
 (* Identity presheaf *)
@@ -669,18 +664,63 @@ definition direct_im_sheaf:: "'b set => 'c set"
 definition direct_im_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Rightarrow> ('c \<Rightarrow> 'c)"
   where "direct_im_sheaf_ring_morphisms U V \<equiv> \<rho> (f\<^sup>\<inverse> U) (f\<^sup>\<inverse> V)"
 
+lemma direct_im_sheaf_is_presheaf:
+"presheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b
+(\<lambda>V x y. +\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V x y. \<cdot>\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V. \<zero>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>) (\<lambda>V. \<one>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>)"
+proof-
+  have "topological_space X' is_open'"
+    by (simp add: target.topological_space_axioms)
+  moreover have "\<And>U V. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
+ring_homomorphism (direct_im_sheaf_ring_morphisms U V) 
+(direct_im_sheaf U) (+\<^bsub>(f\<^sup>\<inverse> U)\<^esub>) (\<cdot>\<^bsub>(f\<^sup>\<inverse> U)\<^esub>) (\<zero>\<^bsub>(f\<^sup>\<inverse> U)\<^esub>) (\<one>\<^bsub>(f\<^sup>\<inverse> U)\<^esub>) 
+(direct_im_sheaf V) (+\<^bsub>(f\<^sup>\<inverse> V)\<^esub>) (\<cdot>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>) (\<zero>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>) (\<one>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>)"
+    by (metis direct_im_sheaf_def direct_im_sheaf_ring_morphisms_def is_continuous is_ring_morphism vimage_def vimage_mono)
+  moreover have "direct_im_sheaf {} = {b}" using direct_im_sheaf_def by simp
+  moreover have "\<And>U. is_open' U \<Longrightarrow> direct_im_sheaf_ring_morphisms U U = id" 
+    using direct_im_sheaf_ring_morphisms_def by (simp add: is_continuous vimage_def)
+  moreover have "\<And>U V W. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> is_open' W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> 
+direct_im_sheaf_ring_morphisms U W = direct_im_sheaf_ring_morphisms V W \<circ> direct_im_sheaf_ring_morphisms U V"
+    by (metis (full_types) assoc_comp continuous_map.is_continuous continuous_map_axioms direct_im_sheaf_ring_morphisms_def vimage_def vimage_mono)
+  ultimately show ?thesis unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def by blast
+qed
+
 (* ex 0.23 *)
-lemma 
+lemma direct_im_sheaf_is_sheaf:
   shows "sheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b
 (\<lambda>V x y. +\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V x y. \<cdot>\<^bsub>(f\<^sup>\<inverse> V)\<^esub> x y) (\<lambda>V. \<zero>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>) (\<lambda>V. \<one>\<^bsub>(f\<^sup>\<inverse> V)\<^esub>)"
-  apply (intro presheaf_of_rings.intro sheaf_of_rings.intro)
-  using target.topological_space_axioms apply blast
-   apply (auto simp: presheaf_of_rings_axioms_def direct_im_sheaf_ring_morphisms_def direct_im_sheaf_def)
-     apply (metis continuous_map.is_continuous continuous_map_axioms is_ring_morphism vimage_def vimage_mono)
-    apply (simp add: is_continuous vimage_def)
-   apply (metis assoc_comp is_continuous vimage_def vimage_mono)
-  apply (auto simp: sheaf_of_rings_axioms_def direct_im_sheaf_ring_morphisms_def direct_im_sheaf_def)
-  sorry
+proof-
+  have "\<And>U I V s. open_cover_of_open_subset X' is_open' U I V \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> V i \<subseteq> U) \<Longrightarrow> 
+s \<in> (direct_im_sheaf U) \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> direct_im_sheaf_ring_morphisms U (V i) s = \<zero>\<^bsub>(f\<^sup>\<inverse> (V i))\<^esub>) \<Longrightarrow> s = \<zero>\<^bsub>(f\<^sup>\<inverse> U)\<^esub>"
+  proof-
+    fix U I V s assume H: "open_cover_of_open_subset X' is_open' U I V" "\<And>i. i\<in>I \<Longrightarrow> V i \<subseteq> U"
+"s \<in> (direct_im_sheaf U)" "\<And>i. i\<in>I \<Longrightarrow> direct_im_sheaf_ring_morphisms U (V i) s = \<zero>\<^bsub>(f\<^sup>\<inverse> (V i))\<^esub>"
+    then have "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> U) I (\<lambda>i. f\<^sup>\<inverse> (V i))" 
+      using open_cover_of_open_subset_from_target_to_source by simp
+    thus "s = \<zero>\<^bsub>(f\<^sup>\<inverse> U)\<^esub>" 
+      using locality by (metis (mono_tags, lifting) H(2-4) direct_im_sheaf_def direct_im_sheaf_ring_morphisms_def vimage_mono)
+  qed
+  moreover have "\<And>U I V s. open_cover_of_open_subset X' is_open' U I V \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> (direct_im_sheaf (V i))) \<Longrightarrow> 
+(\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> direct_im_sheaf_ring_morphisms (V i) (V i \<inter> V j) (s i) = direct_im_sheaf_ring_morphisms (V j) (V i \<inter> V j) (s j)) \<Longrightarrow> 
+(\<exists>t. t \<in> (direct_im_sheaf U) \<and> (\<forall>i. i\<in>I \<longrightarrow> direct_im_sheaf_ring_morphisms U (V i) t = s i))" 
+  proof-
+    fix U I V s assume H: "open_cover_of_open_subset X' is_open' U I V" "\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> (direct_im_sheaf (V i))"
+"\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> direct_im_sheaf_ring_morphisms (V i) (V i \<inter> V j) (s i) = direct_im_sheaf_ring_morphisms (V j) (V i \<inter> V j) (s j)"
+    then have F:"open_cover_of_open_subset X is_open (f\<^sup>\<inverse> U) I (\<lambda>i. f\<^sup>\<inverse> (V i))" 
+      by (simp add: open_cover_of_open_subset_from_target_to_source)
+    then obtain t where "t \<in> \<FF> (f\<^sup>\<inverse> U) \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> (f\<^sup>\<inverse> U) (f\<^sup>\<inverse> (V i)) t = s i)"
+    proof-
+      have "\<forall>i. i \<in> I \<longrightarrow> (f\<^sup>\<inverse> (V i)) \<subseteq> (f\<^sup>\<inverse> U) \<and> s i \<in> \<FF> (f\<^sup>\<inverse> (V i))"
+        using H(2) direct_im_sheaf_def by blast
+      moreover have "\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> \<rho> (f\<^sup>\<inverse> (V i)) (f\<^sup>\<inverse> (V i \<inter> V j)) (s i) = \<rho> (f\<^sup>\<inverse> (V j)) (f\<^sup>\<inverse> (V i \<inter> V j)) (s j)"
+        using H(3) direct_im_sheaf_ring_morphisms_def by auto
+      ultimately show ?thesis using glueing F sorry
+    qed
+    thus "\<exists>t. t \<in> (direct_im_sheaf U) \<and> (\<forall>i. i\<in>I \<longrightarrow> direct_im_sheaf_ring_morphisms U (V i) t = s i)"
+      using direct_im_sheaf_def direct_im_sheaf_ring_morphisms_def by auto
+  qed
+  ultimately show ?thesis
+    unfolding sheaf_of_rings_def sheaf_of_rings_axioms_def using direct_im_sheaf_is_presheaf by blast
+qed
 
 end (* cxt_direct_im_sheaf *)
 
