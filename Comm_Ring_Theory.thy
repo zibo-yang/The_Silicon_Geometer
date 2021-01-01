@@ -739,20 +739,55 @@ lemma rel_is_equivalence:
 proof-
   have 0: "\<And>r s r1 s2 s1.
        \<lbrakk>r \<in> R; s \<in> S; r1 \<in> R; s2 \<in> S; s1 \<in> S; s1 \<cdot> (s2 \<cdot> r - s \<cdot> r1) = \<zero>\<rbrakk> \<Longrightarrow> s1 \<cdot> (s \<cdot> r1 - s2 \<cdot> r) = \<zero>"
-    by (smt (verit, best) additive.composition_closed additive.inverse_composition_commute additive.inverse_unit additive.invertible additive.invertible_inverse_closed additive.invertible_inverse_inverse local.right_minus multiplicative.composition_closed sub)
+    by (smt additive.composition_closed additive.inverse_composition_commute additive.inverse_unit 
+        additive.invertible additive.monoid_axioms local.right_minus monoid.invertible_inverse_closed 
+        monoid.invertible_inverse_inverse multiplicative.composition_closed sub)  
   have "{(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<subseteq> (R \<times> S) \<times> (R \<times> S)" by auto
   moreover have 1: "\<And>x. x \<in> R \<times> S \<Longrightarrow> x \<sim> x"
     by (auto simp: rel_def)
   moreover have 2: "\<And>x y. x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y \<Longrightarrow> y \<sim> x"
     by (metis 0 SigmaE prod.sel rel_def)
-  moreover have 3: "\<And>x y z. \<lbrakk>x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y; z \<in> R \<times> S \<and> y \<sim> z\<rbrakk> \<Longrightarrow> x \<sim> z"
-  proof (clarsimp simp: rel_def)
-    show "\<exists>u. u \<in> S \<and> u \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>"
-      if "r \<in> R" "s \<in> S" "r1 \<in> R" "s1 \<in> S" "sx \<in> S" "r2 \<in> R" "s2 \<in> S" "sy \<in> S"
-        and "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
-      for r s r2 s2 r1 s1 sx sy
-      using that
-      sorry
+  moreover have 3: "x \<sim> z"
+    if "x \<in> R \<times> S" "y \<in> R \<times> S" "x \<sim> y" "z \<in> R \<times> S" "y \<sim> z" for x y z
+  proof -
+    obtain s1 where "s1 \<in> S" and xy0: "s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
+      using \<open>x \<sim> y\<close> unfolding rel_def by auto
+    obtain s2 where "s2 \<in> S" and yz0:"s2 \<cdot> (snd z \<cdot> fst y - snd y \<cdot> fst z) = \<zero>"
+      using \<open>y \<sim> z\<close> unfolding rel_def by auto
+    have [simp]:
+      "s1 \<in> R" "s2 \<in> R" "fst x \<in> R" "snd x\<in>R" "fst y\<in>R" "snd y\<in>R" "fst z\<in>R" "snd z\<in>R"
+      using that \<open>s1\<in>S\<close> \<open>s2\<in>S\<close> by auto
+
+    define s3 where "s3=s1 \<cdot> s2 \<cdot> snd y"
+    have "s3\<in>S" and [simp]:"s3\<in>R"
+    proof -
+      show "s3\<in>S" unfolding s3_def using \<open>s1 \<in> S\<close> \<open>s2 \<in> S\<close> that(2) by auto
+      then show "s3\<in>R" by simp
+    qed
+    have "s3 \<cdot> snd z \<cdot> fst x - s1 \<cdot> s2 \<cdot> snd x \<cdot> fst y \<cdot> snd z = \<zero>"
+    proof -
+      have "snd z \<cdot> s2 \<cdot> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
+        using xy0 by (simp add: multiplicative.associative)
+      then show ?thesis
+        unfolding s3_def 
+        using commutative_mult multiplicative.associative distributive right_minus
+        by auto
+    qed
+    moreover have "s1 \<cdot> s2 \<cdot> snd x \<cdot> fst y \<cdot> snd z - s3 \<cdot> snd x \<cdot> fst z = \<zero>"
+    proof -
+      have "snd x \<cdot> s1 \<cdot> s2 \<cdot> (snd z \<cdot> fst y - snd y \<cdot> fst z) = \<zero>"
+        using yz0 by (simp add: multiplicative.associative)
+      then show ?thesis 
+        unfolding s3_def 
+        using commutative_mult multiplicative.associative distributive right_minus
+        by auto
+    qed
+    ultimately have "s3 \<cdot> snd z \<cdot> fst x - s3 \<cdot> snd x \<cdot> fst z = \<zero>" 
+      by (simp add: additive.commutative additive.monoid_axioms monoid.inverse_equality s3_def)
+    then have "s3 \<cdot> (snd z \<cdot> fst x - snd x \<cdot> fst z) = \<zero>"
+      using distributive right_minus multiplicative.associative by auto
+    with \<open>s3\<in>S\<close> show ?thesis
+      unfolding rel_def by auto
   qed
   show ?thesis 
     by (simp add: equivalence_def) (blast intro: 1 2 3)
