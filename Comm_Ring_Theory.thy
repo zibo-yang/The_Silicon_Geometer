@@ -755,48 +755,44 @@ locale cxt_quotient_ring = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + su
 unit ("\<one>")
 begin
 
-
 definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> bool" (infix "\<sim>" 80)
   where "x \<sim> y \<equiv> \<exists>s1. s1 \<in> S \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
 
 lemma rel_is_equivalence:
   shows "equivalence (R \<times> S) {(x,y) \<in> (R\<times>S)\<times>(R\<times>S). x \<sim> y}"
-proof-
-  have 0: "\<And>r s r1 s2 s1.
-       \<lbrakk>r \<in> R; s \<in> S; r1 \<in> R; s2 \<in> S; s1 \<in> S; s1 \<cdot> (s2 \<cdot> r - s \<cdot> r1) = \<zero>\<rbrakk> \<Longrightarrow> s1 \<cdot> (s \<cdot> r1 - s2 \<cdot> r) = \<zero>"
-    by (smt (verit, best) additive.composition_closed additive.inverse_composition_commute additive.inverse_unit additive.invertible additive.invertible_inverse_closed additive.invertible_inverse_inverse local.right_minus multiplicative.composition_closed sub)
-  have "{(x,y)\<in>(R\<times>S)\<times>(R\<times>S). x \<sim> y} \<subseteq> (R \<times> S) \<times> (R \<times> S)" by auto
-  moreover have 1: "\<And>x. x \<in> R \<times> S \<Longrightarrow> x \<sim> x"
+proof (intro equivalence.intro; simp)
+  show "\<And>x. x \<in> R \<times> S \<Longrightarrow> x \<sim> x"
     by (auto simp: rel_def)
-  moreover have 2: "\<And>x y. x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y \<Longrightarrow> y \<sim> x"
-    by (metis 0 SigmaE prod.sel rel_def)
-  moreover have 3: "\<And>x y z. \<lbrakk>x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y; z \<in> R \<times> S \<and> y \<sim> z\<rbrakk> \<Longrightarrow> x \<sim> z"
+  have "\<And>r s r1 s2 s1.
+       \<lbrakk>r \<in> R; s \<in> S; r1 \<in> R; s2 \<in> S; s1 \<in> S; s1 \<cdot> (s2 \<cdot> r - s \<cdot> r1) = \<zero>\<rbrakk> \<Longrightarrow> s1 \<cdot> (s \<cdot> r1 - s2 \<cdot> r) = \<zero>"
+    by (metis inverse_distributive(1) additive.cancel_imp_equal multiplicative.composition_closed sub)
+  then show "\<And>x y. x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y \<Longrightarrow> y \<sim> x"
+    by (metis SigmaE prod.sel rel_def)
+  show  "\<And>x y z. \<lbrakk>x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y; z \<in> R \<times> S \<and> y \<sim> z\<rbrakk> \<Longrightarrow> x \<sim> z"
   proof (clarsimp simp: rel_def)
     fix r s r2 s2 r1 s1 sx sy
     assume \<section>: "r \<in> R" "s \<in> S" "r1 \<in> R" "s1 \<in> S" "sx \<in> S" "r2 \<in> R" "s2 \<in> S" "sy \<in> S"
-      and sx: "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" and sy: "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
+      and sx0: "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" and sy0: "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
     show "\<exists>u. u \<in> S \<and> u \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>"
     proof (intro exI conjI)
       show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S"
         using \<section> by blast
-      have "sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1" "sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2"
-        using sx sy \<section> additive.cancel_imp_equal inverse_distributive(1) multiplicative.associative multiplicative.composition_closed sub
-        by metis+
+      have sx: "sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1" and sy: "sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2"
+        using sx0 sy0 \<section> additive.cancel_imp_equal inverse_distributive(1) 
+              multiplicative.associative multiplicative.composition_closed sub by metis+
       then
       have "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s1 \<cdot> r - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
         using "\<section>" \<open>sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S\<close> inverse_distributive(1) multiplicative.associative multiplicative.composition_closed sub by presburger
       also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
-        using \<section> by (smt (z3) \<open>sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2\<close> commutative_mult multiplicative.associative multiplicative.composition_closed sub)
+        using \<section> by (smt (z3) sy commutative_mult multiplicative.associative multiplicative.composition_closed sub)
       also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s1 \<cdot> s \<cdot> r2"
-        using \<section> by (smt (z3) \<open>sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1\<close> commutative_mult multiplicative.associative multiplicative.composition_closed sub)
+        using \<section> by (smt (z3) sx commutative_mult multiplicative.associative multiplicative.composition_closed sub)
       also have "... = \<zero>"
         using \<section> by (simp add: ring_mult_ac)
       finally show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>" .
     qed
   qed
-  show ?thesis 
-    by (simp add: equivalence_def) (blast intro: 1 2 3)
-qed
+qed auto
 
 notation equivalence.Partition (infixl "'/" 75)
 
