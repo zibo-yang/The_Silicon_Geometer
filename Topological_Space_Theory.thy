@@ -119,6 +119,14 @@ locale continuous_map = source: topological_space X is_open + target: topologica
 + map f X X'
   for X and is_open and X' and is_open' and f +
   assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open {x. f x \<in> U}"
+begin
+
+lemma open_cover_of_open_subset_from_target_to_source:
+  assumes "open_cover_of_open_subset X' is_open' U I C"
+  shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> U) I (\<lambda>i. f\<^sup>\<inverse> (C i))"
+  sorry
+
+end (* continuous map *)
 
 
 subsection \<open>Homeomorphisms\<close>
