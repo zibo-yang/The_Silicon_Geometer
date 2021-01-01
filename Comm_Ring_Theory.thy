@@ -1,7 +1,7 @@
 theory Comm_Ring_Theory
   imports 
           "Group_Further_Theory"
-          "Topological_Space_Theory" Sketch_and_Explore
+          "Topological_Space_Theory" 
           "Jacobson_Basic_Algebra.Ring_Theory"
           "Set_Further_Theory"
 

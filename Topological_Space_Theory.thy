@@ -3,6 +3,7 @@ theory Topological_Space_Theory
           HOL.Real
           "Jacobson_Basic_Algebra.Set_Theory"
           Set_Further_Theory
+          Sketch_and_Explore 
 
 begin
 
@@ -124,7 +125,18 @@ begin
 lemma open_cover_of_open_subset_from_target_to_source:
   assumes "open_cover_of_open_subset X' is_open' U I C"
   shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> U) I (\<lambda>i. f\<^sup>\<inverse> (C i))"
-  sorry
+proof
+  show "f \<^sup>\<inverse> U \<subseteq> X"
+    sorry
+  show "f \<^sup>\<inverse> C i \<subseteq> X" if "i \<in> I" for i
+    using that sorry
+  show "is_open (f \<^sup>\<inverse> U)" "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> C i)"
+    using assms
+    by (auto simp: open_cover_of_open_subset_def open_cover_of_open_subset_axioms_def is_continuous open_cover_of_subset.are_open_subspaces vimage_def)
+  show "f \<^sup>\<inverse> U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> C i)"
+    using assms unfolding open_cover_of_open_subset_def cover_of_subset_def open_cover_of_subset_def
+    by blast
+qed
 
 end (* continuous map *)
 
