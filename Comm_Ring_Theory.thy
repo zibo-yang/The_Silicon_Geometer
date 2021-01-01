@@ -43,6 +43,11 @@ subsection \<open>Ideals\<close>
 
 context comm_ring begin
 
+lemma mult_left_assoc: "\<lbrakk> a \<in> R; b \<in> R; c \<in> R \<rbrakk> \<Longrightarrow> b \<cdot> (a \<cdot> c) = a \<cdot> (b \<cdot> c)"
+  using commutative_mult multiplicative.associative by auto
+
+lemmas ring_mult_ac = commutative_mult multiplicative.associative mult_left_assoc
+
 (* ex. 0.16 *)
 lemma ideal_R_R: "ideal R R (+) (\<cdot>) \<zero> \<one>"
 proof qed auto
@@ -726,10 +731,30 @@ end (* cxt_direct_im_sheaf *)
 
 subsection \<open>Quotient Ring\<close>
 
+(*Probably for Group_Theory*)
+context group begin
+
+lemma cancel_imp_equal:
+  "\<lbrakk> u \<cdot> inverse v = \<one>;  u \<in> G; v \<in> G \<rbrakk> \<Longrightarrow> u = v"
+  by (metis invertible invertible_inverse_closed invertible_right_cancel invertible_right_inverse)
+
+end
+
+(*Probably for Ring_Theory*)
+context ring begin
+
+lemma inverse_distributive: "\<lbrakk> a \<in> R; b \<in> R; c \<in> R \<rbrakk> \<Longrightarrow> a \<cdot> (b - c) = a \<cdot> b - a \<cdot> c"
+    "\<lbrakk> a \<in> R; b \<in> R; c \<in> R \<rbrakk> \<Longrightarrow> (b - c) \<cdot> a = b \<cdot> a - c \<cdot> a"
+  using additive.invertible additive.invertible_inverse_closed distributive 
+        local.left_minus local.right_minus by presburger+
+
+end
+
 locale cxt_quotient_ring = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + submonoid S R "(\<cdot>)" "\<one>" 
   for S and R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>")
 begin
+
 
 definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> bool" (infix "\<sim>" 80)
   where "x \<sim> y \<equiv> \<exists>s1. s1 \<in> S \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
@@ -747,12 +772,27 @@ proof-
     by (metis 0 SigmaE prod.sel rel_def)
   moreover have 3: "\<And>x y z. \<lbrakk>x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y; z \<in> R \<times> S \<and> y \<sim> z\<rbrakk> \<Longrightarrow> x \<sim> z"
   proof (clarsimp simp: rel_def)
+    fix r s r2 s2 r1 s1 sx sy
+    assume \<section>: "r \<in> R" "s \<in> S" "r1 \<in> R" "s1 \<in> S" "sx \<in> S" "r2 \<in> R" "s2 \<in> S" "sy \<in> S"
+      and sx: "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" and sy: "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
     show "\<exists>u. u \<in> S \<and> u \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>"
-      if "r \<in> R" "s \<in> S" "r1 \<in> R" "s1 \<in> S" "sx \<in> S" "r2 \<in> R" "s2 \<in> S" "sy \<in> S"
-        and "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
-      for r s r2 s2 r1 s1 sx sy
-      using that
-      sorry
+    proof (intro exI conjI)
+      show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S"
+        using \<section> by blast
+      have "sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1" "sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2"
+        using sx sy \<section> additive.cancel_imp_equal inverse_distributive(1) multiplicative.associative multiplicative.composition_closed sub
+        by metis+
+      then
+      have "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s1 \<cdot> r - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
+        using "\<section>" \<open>sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S\<close> inverse_distributive(1) multiplicative.associative multiplicative.composition_closed sub by presburger
+      also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
+        using \<section> by (smt (z3) \<open>sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2\<close> commutative_mult multiplicative.associative multiplicative.composition_closed sub)
+      also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s1 \<cdot> s \<cdot> r2"
+        using \<section> by (smt (z3) \<open>sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1\<close> commutative_mult multiplicative.associative multiplicative.composition_closed sub)
+      also have "... = \<zero>"
+        using \<section> by (simp add: ring_mult_ac)
+      finally show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>" .
+    qed
   qed
   show ?thesis 
     by (simp add: equivalence_def) (blast intro: 1 2 3)
