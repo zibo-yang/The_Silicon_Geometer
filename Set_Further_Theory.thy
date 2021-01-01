@@ -15,6 +15,17 @@ section \<open>Functions\<close>
 abbreviation preimage:: "('a \<Rightarrow> 'b) \<Rightarrow> 'b set \<Rightarrow> 'a set" (infixr " \<^sup>\<inverse>" 90)
   where "f\<^sup>\<inverse> V \<equiv> vimage f V"
 
+lemma preimage_is_subset:
+  fixes V:: "'b set"
+  assumes "map f X Y"
+  shows "f\<^sup>\<inverse> V \<subseteq> X"
+proof
+  fix x assume "x \<in> f\<^sup>\<inverse> V" then obtain y where F: "y \<in> V \<and> f x = y" by simp
+  have "f x = undefined" if "x \<notin> X" 
+    using that map.map_undefined[of "f" "X" "Y" "x"] assms(1) by blast
+  thus "x \<in> X" using F sorry
+qed
+
 definition inverse_map:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> ('b \<Rightarrow> 'a)" ("_\<^sup>\<inverse>")
   where "f\<^sup>\<inverse> S T \<equiv> restrict (inv_into S f) T"
 
