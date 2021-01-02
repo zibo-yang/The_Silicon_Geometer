@@ -119,21 +119,21 @@ subsection \<open>Continuous Maps\<close>
 locale continuous_map = source: topological_space X is_open + target: topological_space X' is_open' 
 + map f X X'
   for X and is_open and X' and is_open' and f +
-  assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open {x. f x \<in> U}"
+  assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open (f\<^sup>\<inverse> X U)"
 begin
 
 lemma open_cover_of_open_subset_from_target_to_source:
   assumes "open_cover_of_open_subset X' is_open' U I C"
-  shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> U) I (\<lambda>i. f\<^sup>\<inverse> (C i))"
+  shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> X U) I (\<lambda>i. f\<^sup>\<inverse> X (C i))"
 proof
-  show "f \<^sup>\<inverse> U \<subseteq> X"
-    sorry
-  show "f \<^sup>\<inverse> C i \<subseteq> X" if "i \<in> I" for i
-    using that sorry
-  show "is_open (f \<^sup>\<inverse> U)" "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> C i)"
+  show "f \<^sup>\<inverse> X U \<subseteq> X" by simp
+  show "f \<^sup>\<inverse> X C i \<subseteq> X" if "i \<in> I" for i
+    using that by simp
+  show "is_open (f \<^sup>\<inverse> X U)" "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> X C i)"
     using assms
-    by (auto simp: open_cover_of_open_subset_def open_cover_of_open_subset_axioms_def is_continuous open_cover_of_subset.are_open_subspaces vimage_def)
-  show "f \<^sup>\<inverse> U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> C i)"
+    apply (meson is_continuous open_cover_of_open_subset.is_open_subset)
+    by (meson assms is_continuous open_cover_of_open_subset.axioms(1) open_cover_of_subset.are_open_subspaces)
+  show "f \<^sup>\<inverse> X U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> X C i)"
     using assms unfolding open_cover_of_open_subset_def cover_of_subset_def open_cover_of_subset_def
     by blast
 qed
@@ -147,6 +147,6 @@ text \<open>The topological isomorphisms between topological spaces are called h
 
 locale homeomorphism = 
 continuous_map + bijective_map f X X' + 
-continuous_map X' is_open' X is_open "f\<^sup>\<inverse> X X'"
+continuous_map X' is_open' X is_open "inverse_map f X X'"
 
 end
