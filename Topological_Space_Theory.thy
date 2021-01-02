@@ -12,7 +12,7 @@ section \<open>Topological Spaces\<close>
 locale topological_space = fixes S :: "'a set" and is_open :: "'a set \<Rightarrow> bool"
   assumes open_space [simp, intro]: "is_open S" and open_empty [simp, intro]: "is_open {}" and
 open_inter [intro]: "\<lbrakk>U \<subseteq> S; V \<subseteq> S\<rbrakk> \<Longrightarrow> is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open (U \<inter> V)" and
-open_union [intro]: "\<And>F::('a set) set. (\<And>x. x \<in> F \<and> x \<subseteq> S \<and> is_open x) \<Longrightarrow> is_open (\<Union>x\<in>F. x)"
+open_union [intro]: "\<And>F::('a set) set. (\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> is_open x) \<Longrightarrow> is_open (\<Union>x\<in>F. x)"
 
 begin
 
@@ -72,14 +72,15 @@ proof-
     then show "ind_is_open (U \<inter> V)"
       using ind_is_open_def by (metis H1 inf.cobounded1 subset_trans)
   qed
-  moreover have "\<And>F::('a set) set. (\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x) \<Longrightarrow> ind_is_open (\<Union>x\<in>F. x)"
+  moreover have "\<And>F::('a set) set. (\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x) \<Longrightarrow> ind_is_open (\<Union>x\<in>F. x)"
   proof-
-    fix F assume "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x" obtain F' where "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
+    fix F assume "\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x" obtain F' where "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
       using ind_is_open_def by meson
     then have "is_open (\<Union>x\<in>F. F' x) \<and> ((\<Union>x\<in>F. x) = S \<inter> (\<Union>x\<in>F. F' x))" 
-      using open_union
-      by (metis SUP_upper2 \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x\<close> inf_left_idem set_eq_subset)
-    then show "ind_is_open (\<Union>x\<in>F. x)" by (simp add: \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x\<close>)
+      using open_union sorry
+      (* by (metis SUP_upper2 \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> inf_left_idem set_eq_subset) *)
+    then show "ind_is_open (\<Union>x\<in>F. x)"
+      by (metis SUP_le_iff \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> F' x \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> F' x\<close> ind_is_open_def)
   qed
   thus ?thesis
     by (simp add: calculation(1-3) topological_space_def)
@@ -119,21 +120,21 @@ subsection \<open>Continuous Maps\<close>
 locale continuous_map = source: topological_space X is_open + target: topological_space X' is_open' 
 + map f X X'
   for X and is_open and X' and is_open' and f +
-  assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open {x. f x \<in> U}"
+  assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open (f\<^sup>\<inverse> X U)"
 begin
 
 lemma open_cover_of_open_subset_from_target_to_source:
   assumes "open_cover_of_open_subset X' is_open' U I C"
-  shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> U) I (\<lambda>i. f\<^sup>\<inverse> (C i))"
+  shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> X U) I (\<lambda>i. f\<^sup>\<inverse> X (C i))"
 proof
-  show "f \<^sup>\<inverse> U \<subseteq> X"
-    sorry
-  show "f \<^sup>\<inverse> C i \<subseteq> X" if "i \<in> I" for i
-    using that sorry
-  show "is_open (f \<^sup>\<inverse> U)" "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> C i)"
+  show "f \<^sup>\<inverse> X U \<subseteq> X" by simp
+  show "f \<^sup>\<inverse> X C i \<subseteq> X" if "i \<in> I" for i
+    using that by simp
+  show "is_open (f \<^sup>\<inverse> X U)" "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> X C i)"
     using assms
-    by (auto simp: open_cover_of_open_subset_def open_cover_of_open_subset_axioms_def is_continuous open_cover_of_subset.are_open_subspaces vimage_def)
-  show "f \<^sup>\<inverse> U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> C i)"
+    apply (meson is_continuous open_cover_of_open_subset.is_open_subset)
+    by (meson assms is_continuous open_cover_of_open_subset.axioms(1) open_cover_of_subset.are_open_subspaces)
+  show "f \<^sup>\<inverse> X U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> X C i)"
     using assms unfolding open_cover_of_open_subset_def cover_of_subset_def open_cover_of_subset_def
     by blast
 qed
@@ -147,6 +148,6 @@ text \<open>The topological isomorphisms between topological spaces are called h
 
 locale homeomorphism = 
 continuous_map + bijective_map f X X' + 
-continuous_map X' is_open' X is_open "f\<^sup>\<inverse> X X'"
+continuous_map X' is_open' X is_open "inverse_map f X X'"
 
 end

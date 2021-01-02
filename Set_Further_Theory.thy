@@ -12,19 +12,19 @@ abbreviation complement_in_of:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a se
 
 section \<open>Functions\<close>
 
-abbreviation preimage:: "('a \<Rightarrow> 'b) \<Rightarrow> 'b set \<Rightarrow> 'a set" (infixr " \<^sup>\<inverse>" 90)
-  where "f\<^sup>\<inverse> V \<equiv> vimage f V"
+abbreviation preimage:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> 'a set" ("_ \<^sup>\<inverse> _ _")
+  where "f\<^sup>\<inverse> X V \<equiv> (vimage f V) \<inter> X"
 
-definition inverse_map:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> ('b \<Rightarrow> 'a)" ("_\<^sup>\<inverse>")
-  where "f\<^sup>\<inverse> S T \<equiv> restrict (inv_into S f) T"
+definition inverse_map:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> ('b \<Rightarrow> 'a)"
+  where "inverse_map f S T \<equiv> restrict (inv_into S f) T"
 
 lemma bijective_map_preimage:
   assumes "bijective_map f S T"
-  shows "bijective_map (f\<^sup>\<inverse> S T) T S"
+  shows "bijective_map (inverse_map f S T) T S"
 proof
-  show "f\<^sup>\<inverse> S T \<in> T \<rightarrow>\<^sub>E S"
+  show "inverse_map f S T \<in> T \<rightarrow>\<^sub>E S"
     by (simp add: assms bij_betw_imp_funcset bij_betw_inv_into bijective.bijective bijective_map.axioms(2) inverse_map_def)
-  show "bij_betw (f\<^sup>\<inverse> S T) T S"
+  show "bij_betw (inverse_map f S T) T S"
     using assms by (simp add: bij_betw_inv_into bijective_def bijective_map_def inverse_map_def)
 qed
 
