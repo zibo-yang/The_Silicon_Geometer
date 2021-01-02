@@ -12,7 +12,7 @@ section \<open>Topological Spaces\<close>
 locale topological_space = fixes S :: "'a set" and is_open :: "'a set \<Rightarrow> bool"
   assumes open_space [simp, intro]: "is_open S" and open_empty [simp, intro]: "is_open {}" and
 open_inter [intro]: "\<lbrakk>U \<subseteq> S; V \<subseteq> S\<rbrakk> \<Longrightarrow> is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open (U \<inter> V)" and
-open_union [intro]: "\<And>F::('a set) set. (\<And>x. x \<in> F \<and> x \<subseteq> S \<and> is_open x) \<Longrightarrow> is_open (\<Union>x\<in>F. x)"
+open_union [intro]: "\<And>F::('a set) set. (\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> is_open x) \<Longrightarrow> is_open (\<Union>x\<in>F. x)"
 
 begin
 
@@ -72,14 +72,15 @@ proof-
     then show "ind_is_open (U \<inter> V)"
       using ind_is_open_def by (metis H1 inf.cobounded1 subset_trans)
   qed
-  moreover have "\<And>F::('a set) set. (\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x) \<Longrightarrow> ind_is_open (\<Union>x\<in>F. x)"
+  moreover have "\<And>F::('a set) set. (\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x) \<Longrightarrow> ind_is_open (\<Union>x\<in>F. x)"
   proof-
-    fix F assume "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x" obtain F' where "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
+    fix F assume "\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x" obtain F' where "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
       using ind_is_open_def by meson
     then have "is_open (\<Union>x\<in>F. F' x) \<and> ((\<Union>x\<in>F. x) = S \<inter> (\<Union>x\<in>F. F' x))" 
-      using open_union
-      by (metis SUP_upper2 \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x\<close> inf_left_idem set_eq_subset)
-    then show "ind_is_open (\<Union>x\<in>F. x)" by (simp add: \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x\<close>)
+      using open_union sorry
+      (* by (metis SUP_upper2 \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> inf_left_idem set_eq_subset) *)
+    then show "ind_is_open (\<Union>x\<in>F. x)"
+      by (metis SUP_le_iff \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> F' x \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> F' x\<close> ind_is_open_def)
   qed
   thus ?thesis
     by (simp add: calculation(1-3) topological_space_def)
