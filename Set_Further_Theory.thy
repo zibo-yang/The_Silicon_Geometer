@@ -40,4 +40,20 @@ proof-
   thus ?thesis by (simp add: Set_Theory.map_def)
 qed
 
+lemma undefined_is_map_on_empty:
+  fixes f:: "'a set \<Rightarrow> 'b set"
+  assumes "f = (\<lambda>x. undefined)"
+  shows "map f {} {}"
+  using assms by (simp add: map.intro)
+
+lemma restrict_on_source:
+  assumes "map f S T"
+  shows "restrict f S = f"
+  using assms by (meson PiE_restrict map.graph)
+
+lemma restrict_further: 
+  assumes "map f S T" and "U \<subseteq> S" and "V \<subseteq> U"
+  shows "restrict (restrict f U) V = restrict f V"
+  using assms by (simp add: inf.absorb_iff2)
+
 end
