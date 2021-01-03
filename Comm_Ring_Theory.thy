@@ -701,7 +701,7 @@ next
   assume oc: "open_cover_of_open_subset X' is_open' U I V"
     and VU: "\<And>i. i \<in> I \<Longrightarrow> V i \<subseteq> U"
     and s: "s \<in> direct_im_sheaf U"
-    and eq0: "\<And>i. (i::real) \<in> I \<Longrightarrow> direct_im_sheaf_ring_morphisms U (V i) s = \<zero>\<^bsub>f \<^sup>\<inverse> X V i\<^esub>"
+    and eq0: "\<And>i. (i::real) \<in> I \<Longrightarrow> direct_im_sheaf_ring_morphisms U (V i) s = \<zero>\<^bsub>f \<^sup>\<inverse> X (V i)\<^esub>"
   have "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> X U) I (\<lambda>i. f\<^sup>\<inverse> X (V i))"
     by (simp add: oc open_cover_of_open_subset_from_target_to_source) 
   then show "s = \<zero>\<^bsub>f \<^sup>\<inverse> X U\<^esub>"
@@ -711,13 +711,13 @@ next
   assume oc: "open_cover_of_open_subset X' is_open' U I V"
     and VU: "\<forall>i. i \<in> I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> direct_im_sheaf (V i)"
     and eq: "\<And>i j. \<lbrakk>i \<in> I; j \<in> I\<rbrakk> \<Longrightarrow> direct_im_sheaf_ring_morphisms (V i) (V i \<inter> V j) (s i) = direct_im_sheaf_ring_morphisms (V j) (V i \<inter> V j) (s j)"
-  have "\<exists>t. t \<in> \<FF> (f  \<^sup>\<inverse> X U) \<and> (\<forall>i. i \<in> I \<longrightarrow> \<rho> (f  \<^sup>\<inverse> X U) (f  \<^sup>\<inverse> X V i) t = s i)"
+  have "\<exists>t. t \<in> \<FF> (f  \<^sup>\<inverse> X U) \<and> (\<forall>i. i \<in> I \<longrightarrow> \<rho> (f  \<^sup>\<inverse> X U) (f \<^sup>\<inverse> X (V i)) t = s i)"
   proof (rule glueing)
-    show "open_cover_of_open_subset X is_open (f \<^sup>\<inverse> X U) I (\<lambda>i. f \<^sup>\<inverse> X V i)"
+    show "open_cover_of_open_subset X is_open (f \<^sup>\<inverse> X U) I (\<lambda>i. f \<^sup>\<inverse> X (V i))"
       using oc open_cover_of_open_subset_from_target_to_source by presburger
-    show "\<forall>i. i \<in> I \<longrightarrow> f \<^sup>\<inverse> X V i \<subseteq> f \<^sup>\<inverse> X U \<and> s i \<in> \<FF> (f \<^sup>\<inverse> X V i)"
+    show "\<forall>i. i \<in> I \<longrightarrow> f  \<^sup>\<inverse> X (V i) \<subseteq> f \<^sup>\<inverse> X U \<and> s i \<in> \<FF> (f \<^sup>\<inverse> X (V i))"
       using VU direct_im_sheaf_def by blast
-    show "\<rho> (f \<^sup>\<inverse> X V i) (f \<^sup>\<inverse> X V i \<inter> f \<^sup>\<inverse> X V j) (s i) = \<rho> (f \<^sup>\<inverse> X V j) (f \<^sup>\<inverse> X V i \<inter> f \<^sup>\<inverse> X V j) (s j)"
+    show "\<rho> (f  \<^sup>\<inverse> X (V i)) (f  \<^sup>\<inverse> X (V i) \<inter> f  \<^sup>\<inverse> X (V j)) (s i) = \<rho> (f  \<^sup>\<inverse> X (V j)) (f  \<^sup>\<inverse> X (V i) \<inter> f  \<^sup>\<inverse> X (V j)) (s j)"
       if "i \<in> I" "j \<in> I" for i j
       using direct_im_sheaf_ring_morphisms_def eq that
       by (smt Int_commute Int_left_commute inf.left_idem vimage_Int)

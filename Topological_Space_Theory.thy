@@ -135,13 +135,13 @@ lemma open_cover_of_open_subset_from_target_to_source:
   shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> X U) I (\<lambda>i. f\<^sup>\<inverse> X (C i))"
 proof
   show "f \<^sup>\<inverse> X U \<subseteq> X" by simp
-  show "f \<^sup>\<inverse> X C i \<subseteq> X" if "i \<in> I" for i
+  show "f \<^sup>\<inverse> X (C i) \<subseteq> X" if "i \<in> I" for i
     using that by simp
-  show "is_open (f \<^sup>\<inverse> X U)" "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> X C i)"
+  show "is_open (f \<^sup>\<inverse> X U)" "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> X (C i))"
     using assms
     apply (meson is_continuous open_cover_of_open_subset.is_open_subset)
     by (meson assms is_continuous open_cover_of_open_subset.axioms(1) open_cover_of_subset.are_open_subspaces)
-  show "f \<^sup>\<inverse> X U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> X C i)"
+  show "f \<^sup>\<inverse> X U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> X (C i))"
     using assms unfolding open_cover_of_open_subset_def cover_of_subset_def open_cover_of_subset_def
     by blast
 qed
