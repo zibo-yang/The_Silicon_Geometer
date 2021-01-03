@@ -57,34 +57,41 @@ begin
 definition ind_is_open:: "'a set \<Rightarrow> bool"
   where "ind_is_open U \<equiv> U \<subseteq> S \<and> (\<exists>V. V \<subseteq> X \<and> is_open V \<and> U = S \<inter> V)"
 
+lemma ind_is_open_S [iff]: "ind_is_open S"
+    by (metis ind_is_open_def inf.orderE is_subset open_space order_refl)
+
+lemma ind_is_open_empty [iff]: "ind_is_open {}"
+    using ind_is_open_def by auto
+
 lemma ind_space_is_top_space:
   shows "topological_space S (ind_is_open)"
-proof-
-  have "ind_is_open S" using ind_is_open_def is_subset (* take V = X *) by auto
-  moreover have "ind_is_open {}" using ind_is_open_def (* take V = {} *) by auto
-  moreover have "\<And>U V. U \<subseteq> S \<Longrightarrow> V \<subseteq> S \<Longrightarrow> ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open (U \<inter> V)"
-  proof-
-    fix U assume "U \<subseteq> S" and "ind_is_open U" obtain V1 where H1:"V1 \<subseteq> X \<and> is_open V1 \<and> U = S \<inter> V1"
-      using \<open>ind_is_open U\<close> ind_is_open_def by auto
-    fix V assume "V \<subseteq> S" and "ind_is_open V" obtain V2 where H2:"V2 \<subseteq> X \<and> is_open V2 \<and> V = S \<inter> V2"
-      using \<open>ind_is_open V\<close> ind_is_open_def by auto
-    have "is_open (V1 \<inter> V2) \<and> (U \<inter> V = S \<inter> (V1 \<inter> V2))" using H1 H2 open_inter by auto
-    then show "ind_is_open (U \<inter> V)"
-      using ind_is_open_def by (metis H1 inf.cobounded1 subset_trans)
-  qed
-  moreover have "\<And>F::('a set) set. (\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x) \<Longrightarrow> ind_is_open (\<Union>x\<in>F. x)"
-  proof-
-    fix F assume "\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x" obtain F' where "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
+proof
+  fix U V
+  assume "U \<subseteq> S" "V \<subseteq> S"
+  assume "ind_is_open U" then obtain UX where "UX \<subseteq> X" "is_open UX" "U = S \<inter> UX"
+    using ind_is_open_def by auto
+  moreover
+  assume "ind_is_open V" then obtain VX where "VX \<subseteq> X" "is_open VX" "V = S \<inter> VX"
+    using ind_is_open_def by auto
+  ultimately have "is_open (UX \<inter> VX) \<and> (U \<inter> V = S \<inter> (UX \<inter> VX))" using open_inter by auto
+  then show "ind_is_open (U \<inter> V)"
+    by (metis \<open>UX \<subseteq> X\<close> ind_is_open_def le_infI1 subset_refl)
+next
+  fix F
+  assume F: "\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x"
+  show "ind_is_open (\<Union>x\<in>F. x)"
+  proof -
+    obtain F' where F': "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
       using ind_is_open_def by meson
-    then have "is_open (\<Union>x\<in>F. F' x) \<and> ((\<Union>x\<in>F. x) = S \<inter> (\<Union>x\<in>F. F' x))" 
-      using open_union sorry
-      (* by (metis SUP_upper2 \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> inf_left_idem set_eq_subset) *)
-    then show "ind_is_open (\<Union>x\<in>F. x)"
-      by (metis SUP_le_iff \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> \<open>\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> F' x \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> F' x\<close> ind_is_open_def)
+    have "is_open (\<Union> (F' ` F))"
+      by (smt (verit) F' \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> image_ident image_iff open_union)
+    moreover
+    have "(\<Union>x\<in>F. x) = S \<inter> \<Union> (F' ` F)"
+        using F' \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> by fastforce
+      ultimately show "ind_is_open (\<Union>x\<in>F. x)"
+      by (metis F F' SUP_least ind_is_open_def)
   qed
-  thus ?thesis
-    by (simp add: calculation(1-3) topological_space_def)
-qed
+qed auto
 
 lemma is_open_from_ind_is_open:
   assumes "is_open S" and "ind_is_open U"
