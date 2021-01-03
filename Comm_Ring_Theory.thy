@@ -406,9 +406,10 @@ assumes is_ring_morphism:
                                                   (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
                                                   (\<FF> V) (+\<^bsub>V\<^esub>) (\<cdot>\<^bsub>V\<^esub>) \<zero>\<^bsub>V\<^esub> \<one>\<^bsub>V\<^esub>"
   and ring_of_empty [simp]: "\<FF> {} = {b}"
-  and identity_map [simp]: "\<And>U. is_open U \<Longrightarrow> \<rho> U U = id"
+  and identity_map [simp]: "\<And>U. is_open U \<Longrightarrow> (\<And>x. x \<in> \<FF> U \<Longrightarrow> \<rho> U U x = x)"
   and assoc_comp: 
-  "\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> \<rho> U W = \<rho> V W \<circ> \<rho> U V"
+  "\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> 
+(\<And>x. x \<in> (\<FF> U) \<Longrightarrow> \<rho> U W x = (\<rho> V W \<circ> \<rho> U V) x)"
 begin
 
 lemma is_ring_from_is_homomorphism:
@@ -420,20 +421,9 @@ lemma is_map_from_is_homomorphism:
   shows "Set_Theory.map (\<rho> U V) (\<FF> U) (\<FF> V)"
   using assms by (meson is_ring_morphism ring_homomorphism.axioms(1))
 
-lemma id_is_identity:
-  assumes "is_open U"
-  shows "\<rho> U U = identity (\<FF> U)"
-  using assms identity_map
-  by (metis PiE_restrict Set_Theory.map_def eq_id_iff is_map_from_is_homomorphism subset_refl)
-
-lemma 
-  assumes "is_open U" and "is_open V" and "is_open W" and "V \<subseteq> U" and "W \<subseteq> V"
-  shows "\<And>x. x \<in> (\<FF> U) \<Longrightarrow> \<rho> U W x = (\<rho> V W \<circ> \<rho> U V) x"
-  using assms assoc_comp by presburger
-
 (* The small lemma below should be useful later in various places. *)
 lemma eq_\<rho>:
-  assumes "is_open U" and "is_open V" and "is_open W" and "W \<subseteq> U \<inter> V" 
+  assumes "is_open U" and "is_open V" and "is_open W" and "W \<subseteq> U \<inter> V" and "s \<in> \<FF> U" and "t \<in> \<FF> V"
     and "\<rho> U W s = \<rho> V W t" and "is_open W'" and "W' \<subseteq> W"
   shows "\<rho> U W' s = \<rho> V W' t"
   by (metis Int_subset_iff assms assoc_comp comp_apply)
@@ -452,7 +442,7 @@ locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> 
                                                                 (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
                                                                 (\<FF>' U) (+'\<^bsub>U\<^esub>) (\<cdot>'\<^bsub>U\<^esub>) \<zero>'\<^bsub>U\<^esub> \<one>'\<^bsub>U\<^esub>"
     and comm_diagrams: "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow>
-                      (\<rho>' U V) \<circ> fam_morphisms U \<down> \<FF> U = fam_morphisms V \<circ> (\<rho> U V) \<down> \<FF> U"
+               (\<And>x. x \<in> \<FF> U \<Longrightarrow> (\<rho>' U V \<circ> fam_morphisms U) x = (fam_morphisms V \<circ> \<rho> U V) x)"
 begin
 
 lemma fam_morphisms_are_maps:
@@ -465,15 +455,17 @@ end (* morphism_presheaves_of_rings *)
 (* Identity presheaf *)
 lemma
   assumes "presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str"
-  shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF> \<rho> b add_str mult_str zero_str one_str (\<lambda>U. id)"
+  shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF> \<rho> b add_str mult_str zero_str one_str (\<lambda>U. identity (\<FF> U))"
 proof (intro morphism_presheaves_of_rings.intro morphism_presheaves_of_rings_axioms.intro)
-  show "\<And>U. is_open U \<Longrightarrow> ring_homomorphism id 
+  show "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (identity (\<FF> U)) 
                                            (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
                                            (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U)"
-    using assms presheaf_of_rings.identity_map presheaf_of_rings.is_ring_morphism by fastforce
+    using assms presheaf_of_rings.identity_map presheaf_of_rings.is_ring_morphism
+    by (smt id_apply presheaf_of_rings.is_map_from_is_homomorphism restrict_ext restrict_on_source subset_refl)
   show "\<And>U V. \<lbrakk>is_open U; is_open V; V \<subseteq> U\<rbrakk>
-           \<Longrightarrow> \<rho> U V \<circ> id \<down> \<FF> U = id \<circ> \<rho> U V \<down> \<FF> U"
-    by (auto simp: compose_def fun_eq_iff)
+           \<Longrightarrow> (\<And>x. x \<in> (\<FF> U) \<Longrightarrow> (\<rho> U V \<circ> identity (\<FF> U)) x = (identity (\<FF> V) \<circ> \<rho> U V) x)"
+    using compose_def fun_eq_iff restrict_on_source
+    using assms map.map_closed presheaf_of_rings.is_map_from_is_homomorphism by fastforce
 qed (use assms in auto)
 
 lemma comp_ring_morphisms:
@@ -496,7 +488,7 @@ proof (intro morphism_presheaves_of_rings.intro morphism_presheaves_of_rings_axi
     using that
     by (metis assms comp_ring_morphisms morphism_presheaves_of_rings.is_ring_morphism)
 next
-  show "\<rho>'' U V \<circ> \<phi>' U \<circ> \<phi> U \<down> \<FF> U \<down> \<FF> U = (\<phi>' V \<circ> \<phi> V \<down> \<FF> V) \<circ> \<rho> U V \<down> \<FF> U"
+  show "\<And>x. x \<in> (\<FF> U) \<Longrightarrow> (\<rho>'' U V \<circ> (\<phi>' U \<circ> \<phi> U \<down> \<FF> U)) x = (\<phi>' V \<circ> \<phi> V \<down> \<FF> V \<circ> \<rho> U V) x"
     if "is_open U" "is_open V" "V \<subseteq> U" for U V
     using that 
     using morphism_presheaves_of_rings.comm_diagrams [OF 1]
@@ -511,17 +503,7 @@ locale iso_presheaves_of_rings =
 f: morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>  
 for X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<phi>
 + assumes is_inv: "\<exists>\<psi>. morphism_presheaves_of_rings X is_open \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str' \<FF> \<rho> b add_str mult_str zero_str one_str \<psi> 
-\<and> (\<forall>U. is_open U \<longrightarrow> \<phi> U \<circ> \<psi> U = id \<and> \<psi> U \<circ> \<phi> U = id)"
-begin
-
-lemma 
-  fixes \<psi>:: "'a set \<Rightarrow> 'c \<Rightarrow> 'b"
-  assumes "\<phi> U \<circ> \<psi> U = id" and "\<psi> U \<circ> \<phi> U = id"
-  shows "\<phi> U \<circ> \<psi> U \<down> (\<FF>' U) = identity (\<FF>' U)" and "\<psi> U \<circ> \<phi> U \<down> (\<FF> U) = identity (\<FF> U)"
-  apply (metis assms(1) comp_apply compose_def eq_id_iff)
-  by (metis assms(2) comp_apply compose_def eq_id_iff) 
- 
-end (* iso_presheaves_of_rings*)
+\<and> (\<forall>U. is_open U \<longrightarrow> (\<forall>x \<in> (\<FF>' U). (\<phi> U \<circ> \<psi> U) x = x) \<and> (\<forall>x \<in> (\<FF> U). (\<psi> U \<circ> \<phi> U) x = x))"
 
 
 subsection \<open>Sheaves of Rings\<close>
@@ -593,11 +575,11 @@ proof-
   qed
   moreover have "ind_sheaf {} = {b}"
     by (simp add: ind_sheaf_def)     
-  moreover have "\<And>U. ind_is_open U \<Longrightarrow> ind_ring_morphisms U U = id"
-    using identity_map ind_is_open_def ind_ring_morphisms_def is_open_subset is_subset open_inter by auto
+  moreover have "\<And>U. ind_is_open U \<Longrightarrow> (\<And>x. x \<in> (ind_sheaf U) \<Longrightarrow> ind_ring_morphisms U U x = x)"
+    by (simp add: Int_absorb1 ind_is_open_def ind_ring_morphisms_def ind_sheaf_def is_open_from_ind_is_open is_open_subset)
   moreover have "\<And>U V W. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V 
-             \<Longrightarrow> ind_ring_morphisms U W = ind_ring_morphisms V W \<circ> ind_ring_morphisms U V"
-    using assoc_comp ind_is_open_def ind_ring_morphisms_def is_open_subset is_subset open_inter by force
+             \<Longrightarrow> (\<And>x. x \<in> (ind_sheaf U) \<Longrightarrow> ind_ring_morphisms U W x = (ind_ring_morphisms V W \<circ> ind_ring_morphisms U V) x)"
+    by (metis Int_absorb1 assoc_comp ind_is_open_def ind_ring_morphisms_def ind_sheaf_def is_open_from_ind_is_open is_open_subset)
   ultimately show ?thesis 
     unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def by blast
 qed
@@ -666,65 +648,65 @@ begin
 definition direct_im_sheaf:: "'b set => 'c set"
   where "direct_im_sheaf V \<equiv> \<FF> (f\<^sup>\<inverse> X V)"
 
-definition direct_im_sheaf_ring_morphisms:: "'b set \<Rightarrow> 'b set \<Rightarrow> ('c \<Rightarrow> 'c)"
-  where "direct_im_sheaf_ring_morphisms U V \<equiv> \<rho> (f\<^sup>\<inverse> X U) (f\<^sup>\<inverse> X V)"
+definition direct_im_sheaf_morphisms:: "'b set \<Rightarrow> 'b set \<Rightarrow> ('c \<Rightarrow> 'c)"
+  where "direct_im_sheaf_morphisms U V \<equiv> \<rho> (f\<^sup>\<inverse> X U) (f\<^sup>\<inverse> X V)"
 
 lemma direct_im_sheaf_is_presheaf:
-"presheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b
+"presheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_morphisms b
 (\<lambda>V x y. +\<^bsub>(f\<^sup>\<inverse> X V)\<^esub> x y) (\<lambda>V x y. \<cdot>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub> x y) (\<lambda>V. \<zero>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<lambda>V. \<one>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>)"
 proof-
   have "topological_space X' is_open'"
     by (simp add: target.topological_space_axioms)
   moreover have "\<And>U V. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
-ring_homomorphism (direct_im_sheaf_ring_morphisms U V) 
+ring_homomorphism (direct_im_sheaf_morphisms U V) 
 (direct_im_sheaf U) (+\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) (\<cdot>\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) (\<zero>\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) (\<one>\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) 
 (direct_im_sheaf V) (+\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<cdot>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<zero>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<one>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>)"
-    by (metis Int_commute Int_mono direct_im_sheaf_def direct_im_sheaf_ring_morphisms_def is_continuous is_ring_morphism subset_refl vimage_mono)
+    by (metis Int_commute Int_mono direct_im_sheaf_def direct_im_sheaf_morphisms_def is_continuous is_ring_morphism subset_refl vimage_mono)
   moreover have "direct_im_sheaf {} = {b}" using direct_im_sheaf_def by simp
-  moreover have "\<And>U. is_open' U \<Longrightarrow> direct_im_sheaf_ring_morphisms U U = id" 
-    using direct_im_sheaf_ring_morphisms_def by (simp add: is_continuous)
+  moreover have "\<And>U. is_open' U \<Longrightarrow> (\<And>x. x \<in> (direct_im_sheaf U) \<Longrightarrow> direct_im_sheaf_morphisms U U x = x)" 
+    using direct_im_sheaf_morphisms_def by (simp add: direct_im_sheaf_def is_continuous) 
   moreover have "\<And>U V W. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> is_open' W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> 
-direct_im_sheaf_ring_morphisms U W = direct_im_sheaf_ring_morphisms V W \<circ> direct_im_sheaf_ring_morphisms U V"
-    by (metis Int_mono assoc_comp direct_im_sheaf_ring_morphisms_def ind_topology.is_subset is_continuous source.ind_topology_is_open_self vimage_mono)
-  ultimately show ?thesis unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def by blast
+(\<And>x. x \<in> (direct_im_sheaf U) \<Longrightarrow> direct_im_sheaf_morphisms U W x = (direct_im_sheaf_morphisms V W \<circ> direct_im_sheaf_morphisms U V) x)"
+    by (metis Int_mono assoc_comp direct_im_sheaf_def direct_im_sheaf_morphisms_def ind_topology.is_subset is_continuous source.ind_topology_is_open_self vimage_mono)
+  ultimately show ?thesis unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def by meson
 qed
 
 (* ex 0.23 *)
 lemma direct_im_sheaf_is_sheaf:
-  shows "sheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_ring_morphisms b
+  shows "sheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_morphisms b
 (\<lambda>V x y. +\<^bsub>(f\<^sup>\<inverse> X V)\<^esub> x y) (\<lambda>V x y. \<cdot>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub> x y) (\<lambda>V. \<zero>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<lambda>V. \<one>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>)"
 proof (intro sheaf_of_rings.intro sheaf_of_rings_axioms.intro)
-  show "presheaf_of_rings X' is_open' direct_im_sheaf direct_im_sheaf_ring_morphisms b (\<lambda>V. +\<^bsub>f \<^sup>\<inverse> X V\<^esub>) (\<lambda>V. \<cdot>\<^bsub>f \<^sup>\<inverse> X V\<^esub>) (\<lambda>V. \<zero>\<^bsub>f \<^sup>\<inverse> X V\<^esub>) (\<lambda>V. \<one>\<^bsub>f \<^sup>\<inverse> X V\<^esub>)"
+  show "presheaf_of_rings X' is_open' direct_im_sheaf direct_im_sheaf_morphisms b (\<lambda>V. +\<^bsub>f \<^sup>\<inverse> X V\<^esub>) (\<lambda>V. \<cdot>\<^bsub>f \<^sup>\<inverse> X V\<^esub>) (\<lambda>V. \<zero>\<^bsub>f \<^sup>\<inverse> X V\<^esub>) (\<lambda>V. \<one>\<^bsub>f \<^sup>\<inverse> X V\<^esub>)"
     using direct_im_sheaf_is_presheaf by force
 next
   fix U I V s
   assume oc: "open_cover_of_open_subset X' is_open' U I V"
     and VU: "\<And>i. i \<in> I \<Longrightarrow> V i \<subseteq> U"
     and s: "s \<in> direct_im_sheaf U"
-    and eq0: "\<And>i. (i::real) \<in> I \<Longrightarrow> direct_im_sheaf_ring_morphisms U (V i) s = \<zero>\<^bsub>f \<^sup>\<inverse> X (V i)\<^esub>"
+    and eq0: "\<And>i. (i::real) \<in> I \<Longrightarrow> direct_im_sheaf_morphisms U (V i) s = \<zero>\<^bsub>f \<^sup>\<inverse> X (V i)\<^esub>"
   have "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> X U) I (\<lambda>i. f\<^sup>\<inverse> X (V i))"
     by (simp add: oc open_cover_of_open_subset_from_target_to_source) 
   then show "s = \<zero>\<^bsub>f \<^sup>\<inverse> X U\<^esub>"
-    by (smt VU direct_im_sheaf_def direct_im_sheaf_ring_morphisms_def eq0 inf.absorb_iff2 inf_le2 inf_sup_aci(1) inf_sup_aci(3) locality s vimage_Int)
+    by (smt VU direct_im_sheaf_def direct_im_sheaf_morphisms_def eq0 inf.absorb_iff2 inf_le2 inf_sup_aci(1) inf_sup_aci(3) locality s vimage_Int)
 next
   fix U I V s
   assume oc: "open_cover_of_open_subset X' is_open' U I V"
     and VU: "\<forall>i. i \<in> I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> direct_im_sheaf (V i)"
-    and eq: "\<And>i j. \<lbrakk>i \<in> I; j \<in> I\<rbrakk> \<Longrightarrow> direct_im_sheaf_ring_morphisms (V i) (V i \<inter> V j) (s i) = direct_im_sheaf_ring_morphisms (V j) (V i \<inter> V j) (s j)"
-  have "\<exists>t. t \<in> \<FF> (f  \<^sup>\<inverse> X U) \<and> (\<forall>i. i \<in> I \<longrightarrow> \<rho> (f  \<^sup>\<inverse> X U) (f \<^sup>\<inverse> X (V i)) t = s i)"
+    and eq: "\<And>i j. \<lbrakk>i \<in> I; j \<in> I\<rbrakk> \<Longrightarrow> direct_im_sheaf_morphisms (V i) (V i \<inter> V j) (s i) = direct_im_sheaf_morphisms (V j) (V i \<inter> V j) (s j)"
+  have "\<exists>t. t \<in> \<FF> (f  \<^sup>\<inverse> X U) \<and> (\<forall>i. i \<in> I \<longrightarrow> \<rho> (f  \<^sup>\<inverse> X U) (f  \<^sup>\<inverse> X (V i)) t = s i)"
   proof (rule glueing)
     show "open_cover_of_open_subset X is_open (f \<^sup>\<inverse> X U) I (\<lambda>i. f \<^sup>\<inverse> X (V i))"
       using oc open_cover_of_open_subset_from_target_to_source by presburger
-    show "\<forall>i. i \<in> I \<longrightarrow> f  \<^sup>\<inverse> X (V i) \<subseteq> f \<^sup>\<inverse> X U \<and> s i \<in> \<FF> (f \<^sup>\<inverse> X (V i))"
+    show "\<forall>i. i \<in> I \<longrightarrow> f \<^sup>\<inverse> X (V i) \<subseteq> f \<^sup>\<inverse> X U \<and> s i \<in> \<FF> (f \<^sup>\<inverse> X (V i))"
       using VU direct_im_sheaf_def by blast
-    show "\<rho> (f  \<^sup>\<inverse> X (V i)) (f  \<^sup>\<inverse> X (V i) \<inter> f  \<^sup>\<inverse> X (V j)) (s i) = \<rho> (f  \<^sup>\<inverse> X (V j)) (f  \<^sup>\<inverse> X (V i) \<inter> f  \<^sup>\<inverse> X (V j)) (s j)"
+    show "\<rho> (f \<^sup>\<inverse> X (V i)) (f \<^sup>\<inverse> X (V i) \<inter> f \<^sup>\<inverse> X (V j)) (s i) = \<rho> (f \<^sup>\<inverse> X (V j)) (f \<^sup>\<inverse> X (V i) \<inter> f \<^sup>\<inverse> X (V j)) (s j)"
       if "i \<in> I" "j \<in> I" for i j
-      using direct_im_sheaf_ring_morphisms_def eq that
+      using direct_im_sheaf_morphisms_def eq that
       by (smt Int_commute Int_left_commute inf.left_idem vimage_Int)
   qed
   then obtain t where "t \<in> \<FF> (f\<^sup>\<inverse> X U) \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> (f\<^sup>\<inverse> X U) (f\<^sup>\<inverse> X (V i)) t = s i)" ..
-  then show "\<exists>t. t \<in> direct_im_sheaf U \<and> (\<forall>i. i \<in> I \<longrightarrow> direct_im_sheaf_ring_morphisms U (V i) t = s i)"
-    using direct_im_sheaf_def direct_im_sheaf_ring_morphisms_def by auto
+  then show "\<exists>t. t \<in> direct_im_sheaf U \<and> (\<forall>i. i \<in> I \<longrightarrow> direct_im_sheaf_morphisms U (V i) t = s i)"
+    using direct_im_sheaf_def direct_im_sheaf_morphisms_def by auto
 qed
 
 end (* cxt_direct_im_sheaf *)
@@ -1205,14 +1187,21 @@ definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarro
                                                                         s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
 ))))"
 
-lemma
+lemma map_on_empty_is_regular: 
   fixes s:: "'a set \<Rightarrow> ('a \<times> 'a) set"
   shows "is_regular s {}"
   by (simp add: is_regular_def)
 
-definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set"
-  where "sheaf_on_spec U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
+definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
+  where "\<O> U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
                   \<and> is_regular s U}"
+
+lemma sheaf_on_spec_of_empty_is_singleton:
+  fixes U:: "'a set set"
+  assumes "U = {}" and "s \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}" and 
+"t \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}"
+  shows "s = t"
+  using assms by (simp add: Set_Theory.map_def)
 
 definition add_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "add_sheaf_on_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.add_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
@@ -1248,20 +1237,53 @@ lemma
   shows "ring (\<O> U) (add_sheaf_on_spec U) (mult_sheaf_on_spec U) (zero_sheaf_on_spec U) (one_sheaf_on_spec U)"
   sorry
 
-definition sheaf_on_spec_ring_morphisms:: 
+definition sheaf_on_spec_morphisms:: 
 "'a set set \<Rightarrow> 'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set))"
-where "sheaf_on_spec_ring_morphisms U V \<equiv> \<lambda>s. restrict s V"
+where "sheaf_on_spec_morphisms U V \<equiv> \<lambda>s\<in>(\<O> U). restrict s V"
 
-lemma 
+lemma sheaf_morphisms_on_sheaf_on_spec:
+  assumes "s \<in> \<O> U" 
+  shows "sheaf_on_spec_morphisms U U s = s"
+  using assms sheaf_on_spec_def restrict_on_source sheaf_on_spec_morphisms_def
+  by (metis (no_types, lifting) mem_Collect_eq restrict_apply)
+
+lemma sheaf_on_spec_morphisms_are_maps:
   assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
-  shows "ring_homomorphism (sheaf_on_spec_ring_morphisms U V)
+  shows "Set_Theory.map (sheaf_on_spec_morphisms U V) (\<O> U) (\<O> V)"
+  sorry
+
+lemma sheaf_on_spec_morphisms_are_ring_morphisms:
+  assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
+  shows "ring_homomorphism (sheaf_on_spec_morphisms U V)
                             (\<O> U) (add_sheaf_on_spec U) (mult_sheaf_on_spec U) (zero_sheaf_on_spec U) (one_sheaf_on_spec U)
                             (\<O> V) (add_sheaf_on_spec V) (mult_sheaf_on_spec V) (zero_sheaf_on_spec V) (one_sheaf_on_spec V)"
   sorry
 
+lemma
+  shows "presheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
+(\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
+proof-
+  have "topological_space Spec is_zariski_open" by (simp add: zarisky_is_topological_space)
+  moreover have "sheaf_on_spec {} = {\<lambda>\<pp>. undefined}"
+  proof
+    show "{\<lambda>\<pp>. undefined} \<subseteq> \<O> {}"
+      using undefined_is_map_on_empty map_on_empty_is_regular sheaf_on_spec_def by fastforce
+    thus "\<O> {} \<subseteq> {\<lambda>\<pp>. undefined}" 
+      using sheaf_on_spec_def sheaf_on_spec_of_empty_is_singleton by auto
+  qed
+  moreover have "\<And>U. is_zariski_open U \<Longrightarrow> (\<And>s. s \<in> (\<O> U) \<Longrightarrow> sheaf_on_spec_morphisms U U s = s)"
+    using sheaf_on_spec_morphisms_def sheaf_morphisms_on_sheaf_on_spec by simp
+  moreover have "\<And>U V W. is_zariski_open U \<Longrightarrow> is_zariski_open V \<Longrightarrow> is_zariski_open W \<Longrightarrow> V \<subseteq> U 
+\<Longrightarrow> W \<subseteq> V \<Longrightarrow> (\<And>s. s \<in> \<O> U \<Longrightarrow> sheaf_on_spec_morphisms U W s = (sheaf_on_spec_morphisms V W \<circ> sheaf_on_spec_morphisms U V) s)"
+    using sheaf_on_spec_morphisms_def restrict_further sheaf_on_spec_morphisms_are_maps map.map_closed
+  by (smt FuncSet.restrict_restrict inf.absorb_iff2 o_apply restrict_apply')
+  ultimately show ?thesis 
+    unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def using sheaf_on_spec_morphisms_are_ring_morphisms by blast
+qed
+
 (* ex. 0.30 *)
 lemma
-  shows "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(\<zero>,\<zero>)})
+  shows "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
@@ -1273,14 +1295,14 @@ section \<open>Schemes\<close>
 subsection \<open>Ringed Spaces\<close>
 
 (* definition 0.32 *)
-locale ringed_space = topological_space X is_open + sheaf_of_rings X is_open \<O> \<rho> b add_str mult_str zero_str one_str
-  for X and is_open and \<O> and \<rho> and b and add_str and mult_str and zero_str and one_str
+locale ringed_space = topological_space X is_open + sheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
+  for X and is_open and \<O>\<^sub>X and \<rho> and b and add_str and mult_str and zero_str and one_str
 
 context comm_ring
 begin
 
 lemma 
-  shows "ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(a,a)})
+  shows "ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. {(a,a)})
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
@@ -1295,7 +1317,7 @@ fixes f:: "'a \<Rightarrow> 'c" and \<phi>\<^sub>f:: "'c set \<Rightarrow> ('d \
 assumes is_continuous: "continuous_map X is_open\<^sub>X Y is_open\<^sub>Y f"
 and is_morphism_of_sheaves: "morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y 
 (cxt_direct_im_sheaf.direct_im_sheaf X f \<O>\<^sub>X) 
-(cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms X f \<rho>\<^sub>X) 
+(cxt_direct_im_sheaf.direct_im_sheaf_morphisms X f \<rho>\<^sub>X) 
 b 
 (\<lambda>V x y. add_str\<^sub>X (f\<^sup>\<inverse> X V) x y) 
 (\<lambda>V x y. mult_str\<^sub>X (f\<^sup>\<inverse> X V) x y) 
@@ -1463,7 +1485,7 @@ begin
 
 (* ex. 0.43 *)
 lemma
-  shows "locally_ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(\<zero>,\<zero>)})
+  shows "locally_ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
 
@@ -1529,7 +1551,7 @@ locale iso_locally_ringed_spaces =
 morphism_locally_ringed_spaces + homeomorphism X is_open\<^sub>X Y is_open\<^sub>Y f +
 iso_presheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
 "cxt_direct_im_sheaf.direct_im_sheaf X f \<O>\<^sub>X" 
-"cxt_direct_im_sheaf.direct_im_sheaf_ring_morphisms X f \<rho>\<^sub>X" 
+"cxt_direct_im_sheaf.direct_im_sheaf_morphisms X f \<rho>\<^sub>X" 
 b 
 "\<lambda>V x y. add_str\<^sub>X (f\<^sup>\<inverse> X V) x y" 
 "\<lambda>V x y. mult_str\<^sub>X (f\<^sup>\<inverse> X V) x y" 
@@ -1542,8 +1564,8 @@ subsection \<open>Affine Schemes\<close>
 
 (* definition 0.46 *)
 locale affine_scheme = locally_ringed_space + comm_ring +
-  assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O> \<rho> b add_str mult_str zero_str one_str
-Spec is_zariski_open sheaf_on_spec sheaf_on_spec_ring_morphisms (\<lambda>\<pp>. {(\<zero>,\<zero>)}) (\<lambda>U. add_sheaf_on_spec U)
+  assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
+Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined) (\<lambda>U. add_sheaf_on_spec U)
 (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U) f \<phi>\<^sub>f"
 
 
@@ -1552,7 +1574,7 @@ subsection \<open>Schemes\<close>
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + comm_ring +
   assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U \<and> 
-affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O> U) 
+affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
 (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
 (cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
 (cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>
@@ -1562,7 +1584,7 @@ context affine_scheme
 begin
 
 lemma affine_scheme_is_scheme:
-  shows "scheme X is_open \<O> \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
+  shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
   sorry
 
 end (* affine_scheme*)
