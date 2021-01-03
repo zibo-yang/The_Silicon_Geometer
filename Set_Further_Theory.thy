@@ -56,4 +56,10 @@ lemma restrict_further:
   shows "restrict (restrict f U) V = restrict f V"
   using assms by (simp add: inf.absorb_iff2)
 
+lemma map_eq:
+  assumes "map f S T" and "map g S T" and "\<And>x. x \<in> S \<Longrightarrow> f x = g x"
+  shows "f = g"
+  using assms by (metis restrict_ext restrict_on_source)
+
+
 end
