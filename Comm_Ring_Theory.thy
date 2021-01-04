@@ -1417,9 +1417,15 @@ context comm_ring
 begin
 
 lemma 
-  shows "ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. {(a,a)})
+  shows "ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
-  sorry
+proof (intro ringed_space.intro)
+  show "topological_space Spec is_zariski_open" by (simp add: zarisky_is_topological_space)
+next
+  show "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
+     add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec"
+    using sheaf_on_spec_is_sheaf by simp
+qed
 
 end (* comm_ring *)
 
