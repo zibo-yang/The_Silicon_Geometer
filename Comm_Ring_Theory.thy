@@ -1672,6 +1672,12 @@ lemma affine_scheme_is_scheme:
 
 end (* affine_scheme*)
 
+lemma (in comm_ring)
+  shows "affine_scheme Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
+(\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)
+R (+) (\<cdot>) \<zero> \<one>"
+  sorry
+
 lemma empty_scheme_is_affine_scheme:
   shows "affine_scheme {} (\<lambda>U. True) (\<lambda>U. {0::nat}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
 {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0"
