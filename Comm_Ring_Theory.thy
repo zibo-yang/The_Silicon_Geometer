@@ -1297,8 +1297,8 @@ next
   then have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> s \<pp> = zero_sheaf_on_spec U \<pp>"
   proof-
     fix \<pp> assume "\<pp> \<in> U" then obtain i where F: "i \<in> I" "\<pp> \<in> (V i)" "is_zariski_open (V i)" 
-      unfolding open_cover_of_open_subset_def open_cover_of_subset_axioms_def using H(1) cover_of_subset.covering
-      sorry
+      using H(1) open_cover_of_subset.cover_of_select_index_is_open cover_of_subset.cover_of_select_index 
+cover_of_subset.select_index_belongs open_cover_of_open_subset.axioms(1) open_cover_of_subset_def by fastforce
     then have "sheaf_on_spec_morphisms U (V i) s \<pp> = cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"  
       using H(2,4) F by (simp add: zero_sheaf_on_spec_def) 
     thus "s \<pp> = zero_sheaf_on_spec U \<pp>" 
@@ -1313,7 +1313,7 @@ next
                                   j \<in> I \<Longrightarrow>
                                     sheaf_on_spec_morphisms (V i) (V i \<inter> V j) (s i) =
                                     sheaf_on_spec_morphisms (V j) (V i \<inter> V j) (s j)"
-  define t where D: "t \<equiv> \<lambda>\<pp>\<in>U. let i = (SOME j. j \<in> I \<and> \<pp> \<in> V j) in (s i) \<pp>"
+  define t where D: "t \<equiv> \<lambda>\<pp>\<in>U. s (cover_of_subset.select_index I V \<pp>) \<pp>"
   then have F1: "\<And>\<pp> i j. i \<in> I \<Longrightarrow> j \<in> I \<Longrightarrow> \<pp> \<in> V i \<Longrightarrow> \<pp> \<in> V j \<Longrightarrow> s i \<pp> = s j \<pp>"
   proof-
     fix \<pp> i j assume h: "i \<in> I" "j \<in> I" "\<pp> \<in> V i" "\<pp> \<in> V j"
@@ -1325,7 +1325,6 @@ next
       using sheaf_on_spec_morphisms_def h(2) by (simp add: H(2) h(3,4))
     ultimately show "s i \<pp> = s j \<pp>" by blast
   qed
-  moreover have F2: "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> \<exists>i. i \<in> I \<and> \<pp> \<in> V i" using H(1) sorry
   moreover have "t \<in> \<O> U"
   proof-
     have "Set_Theory.map t U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" (* using D H(2) *) sorry
@@ -1334,7 +1333,9 @@ next
       have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" (* using D H(2) *)
       proof-
         fix \<pp> assume "\<pp> \<in> U"
-        then obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>" using F2 D sorry
+        then obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>" 
+          using cover_of_subset.select_index_belongs cover_of_subset.cover_of_select_index open_cover_of_open_subset.axioms(1) 
+open_cover_of_subset_def D H(1) by fastforce 
         thus "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using H(2) sheaf_on_spec_def is_regular_def by simp
       qed
       moreover have "(\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> 
@@ -1353,7 +1354,9 @@ next
     have "\<pp> \<in> U \<Longrightarrow> sheaf_on_spec_morphisms U (V i) t \<pp> = s i \<pp>"
     proof-
       assume "\<pp> \<in> U" 
-      then obtain j where "j \<in> I" "\<pp> \<in> V j" "t \<pp> = s j \<pp>" using D sorry
+      then obtain j where "j \<in> I \<and> \<pp> \<in> V j \<and> t \<pp> = s j \<pp>" 
+        using cover_of_subset.select_index_belongs cover_of_subset.cover_of_select_index open_cover_of_open_subset.axioms(1) 
+open_cover_of_subset_def D H(1) by fastforce
       thus "sheaf_on_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
         using sheaf_on_spec_morphisms_def D F1 
         by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> mem_Collect_eq restrict_apply restrict_on_source sheaf_on_spec_def)

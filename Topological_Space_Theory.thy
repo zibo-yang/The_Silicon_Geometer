@@ -38,10 +38,39 @@ locale cover_of_subset =
 in Comm_Ring_Theory.thy *)
   assumes is_subset: "U \<subseteq> X" and are_subsets: "\<And>i. i \<in> index \<Longrightarrow> cover i \<subseteq> X"
 and covering: "U \<subseteq> (\<Union>i\<in>index. cover i)"
+begin
+
+lemma 
+  assumes "x \<in> U"
+  shows "\<exists>i\<in>index. x \<in> cover i"
+  using assms covering by auto
+
+definition select_index:: "'a \<Rightarrow> real" 
+  where "select_index x \<equiv> SOME i. i \<in> index \<and> x \<in> cover i"
+
+lemma cover_of_select_index:
+  assumes "x \<in> U"
+  shows "x \<in> cover (select_index x)"
+  using assms by (metis (mono_tags, lifting) UN_iff covering select_index_def someI_ex subset_iff)
+
+lemma select_index_belongs:
+  assumes "x \<in> U"
+  shows "select_index x \<in> index"
+  using assms by (metis (full_types, lifting) UN_iff covering in_mono select_index_def tfl_some)
+
+end (* cover_of_subset *)
 
 locale open_cover_of_subset = topological_space X is_open + cover_of_subset X U I C 
   for X and is_open and U and I and C +
   assumes are_open_subspaces: "\<And>i. i\<in>I \<Longrightarrow> is_open (C i)"
+begin
+
+lemma cover_of_select_index_is_open:
+  assumes "x \<in> U"
+  shows "is_open (C (select_index x))" 
+  using assms by (simp add: are_open_subspaces select_index_belongs)
+
+end (* open_cover_of_subset *)
 
 locale open_cover_of_open_subset = open_cover_of_subset X is_open U I C 
   for X and is_open and U and I and C +
