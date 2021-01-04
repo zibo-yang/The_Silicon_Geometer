@@ -1259,7 +1259,7 @@ lemma sheaf_on_spec_morphisms_are_ring_morphisms:
                             (\<O> V) (add_sheaf_on_spec V) (mult_sheaf_on_spec V) (zero_sheaf_on_spec V) (one_sheaf_on_spec V)"
   sorry
 
-lemma
+lemma sheaf_on_spec_is_presheaf:
   shows "presheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
 proof-
@@ -1285,7 +1285,87 @@ qed
 lemma
   shows "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
-  sorry
+proof (intro sheaf_of_rings.intro sheaf_of_rings_axioms.intro)
+  show "presheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
+     add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec"
+    using sheaf_on_spec_is_presheaf by simp
+next
+  fix U I V s assume H: "open_cover_of_open_subset Spec is_zariski_open U I V" 
+                        "\<And>i. i \<in> I \<Longrightarrow> V i \<subseteq> U" 
+                        "s \<in> \<O> U" 
+                        "\<And>i. i \<in> I \<Longrightarrow> sheaf_on_spec_morphisms U (V i) s = zero_sheaf_on_spec (V i)"
+  then have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> s \<pp> = zero_sheaf_on_spec U \<pp>"
+  proof-
+    fix \<pp> assume "\<pp> \<in> U" then obtain i where F: "i \<in> I" "\<pp> \<in> (V i)" "is_zariski_open (V i)" 
+      unfolding open_cover_of_open_subset_def open_cover_of_subset_axioms_def using H(1) cover_of_subset.covering
+      sorry
+    then have "sheaf_on_spec_morphisms U (V i) s \<pp> = cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"  
+      using H(2,4) F by (simp add: zero_sheaf_on_spec_def) 
+    thus "s \<pp> = zero_sheaf_on_spec U \<pp>" 
+      using sheaf_on_spec_morphisms_def zero_sheaf_on_spec_def F(2) by (simp add: H(3) \<open>\<pp> \<in> U\<close>)
+  qed
+  then show "s = zero_sheaf_on_spec U"
+    by (metis (mono_tags, lifting) H(3) comm_ring.sheaf_on_spec_def comm_ring.zero_sheaf_on_spec_def local.comm_ring_axioms mem_Collect_eq restrict_apply' restrict_ext restrict_on_source)
+next
+  fix U I V s assume H: "open_cover_of_open_subset Spec is_zariski_open U I V"
+                        "\<forall>i. i \<in> I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<O> (V i)"
+                        "\<And>i j. i \<in> I \<Longrightarrow>
+                                  j \<in> I \<Longrightarrow>
+                                    sheaf_on_spec_morphisms (V i) (V i \<inter> V j) (s i) =
+                                    sheaf_on_spec_morphisms (V j) (V i \<inter> V j) (s j)"
+  define t where D: "t \<equiv> \<lambda>\<pp>\<in>U. let i = (SOME j. j \<in> I \<and> \<pp> \<in> V j) in (s i) \<pp>"
+  then have F1: "\<And>\<pp> i j. i \<in> I \<Longrightarrow> j \<in> I \<Longrightarrow> \<pp> \<in> V i \<Longrightarrow> \<pp> \<in> V j \<Longrightarrow> s i \<pp> = s j \<pp>"
+  proof-
+    fix \<pp> i j assume h: "i \<in> I" "j \<in> I" "\<pp> \<in> V i" "\<pp> \<in> V j"
+    then have "s i \<pp> = sheaf_on_spec_morphisms (V i) (V i \<inter> V j) (s i) \<pp>"
+      using sheaf_on_spec_morphisms_def by (simp add: H(2))
+    moreover have "\<dots> = sheaf_on_spec_morphisms (V j) (V i \<inter> V j) (s j) \<pp>"
+      using H(3) h(1,2) by fastforce
+    moreover have "\<dots> = s j \<pp>" 
+      using sheaf_on_spec_morphisms_def h(2) by (simp add: H(2) h(3,4))
+    ultimately show "s i \<pp> = s j \<pp>" by blast
+  qed
+  moreover have F2: "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> \<exists>i. i \<in> I \<and> \<pp> \<in> V i" using H(1) sorry
+  moreover have "t \<in> \<O> U"
+  proof-
+    have "Set_Theory.map t U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" (* using D H(2) *) sorry
+    moreover have "is_regular t U" (* using D H(2) *)
+    proof-
+      have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" (* using D H(2) *)
+      proof-
+        fix \<pp> assume "\<pp> \<in> U"
+        then obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>" using F2 D sorry
+        thus "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using H(2) sheaf_on_spec_def is_regular_def by simp
+      qed
+      moreover have "(\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> 
+              (\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
+                                                                        f \<notin> \<qq> 
+                                                                          \<and> 
+                                                                        t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
+))))" sorry
+      ultimately show ?thesis using is_regular_def by simp
+    qed
+    ultimately show ?thesis using sheaf_on_spec_def by simp
+  qed
+  have "\<And>i. i \<in> I \<Longrightarrow> sheaf_on_spec_morphisms U (V i) t = s i"
+  proof
+    fix i \<pp> assume "i \<in> I"
+    have "\<pp> \<in> U \<Longrightarrow> sheaf_on_spec_morphisms U (V i) t \<pp> = s i \<pp>"
+    proof-
+      assume "\<pp> \<in> U" 
+      then obtain j where "j \<in> I" "\<pp> \<in> V j" "t \<pp> = s j \<pp>" using D sorry
+      thus "sheaf_on_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
+        using sheaf_on_spec_morphisms_def D F1 
+        by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> mem_Collect_eq restrict_apply restrict_on_source sheaf_on_spec_def)
+    qed 
+    thus "sheaf_on_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
+      using sheaf_on_spec_morphisms_def D F1
+      by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> comm_ring.sheaf_morphisms_on_sheaf_on_spec local.comm_ring_axioms restrict_apply subsetD)
+  qed
+  thus "\<exists>t. t \<in> (\<O> U) \<and> (\<forall>i. i \<in> I \<longrightarrow> sheaf_on_spec_morphisms U (V i) t = s i)"
+    using \<open>t \<in> \<O> U\<close> by blast
+qed
+
 
 end (* comm_ring *)
 
