@@ -386,7 +386,21 @@ qed
 definition is_zariski_open:: "'a set set \<Rightarrow> bool"
   where "is_zariski_open U \<equiv> generated_topology {U. \<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>} U"
 
-lemma zarisky_is_topological_space:
+lemma is_zariski_open_empty [simp]: "is_zariski_open {}"
+  using UNIV is_zariski_open_def by blast
+
+lemma is_zariski_open_Spec [simp]: "is_zariski_open Spec"
+  by (simp add: UNIV is_zariski_open_def)
+
+lemma is_zariski_open_Union [intro]: 
+  "(\<And>x. x \<in> F \<Longrightarrow> is_zariski_open x) \<Longrightarrow> is_zariski_open (\<Union> F)"
+  by (simp add: UNIV is_zariski_open_def)
+
+lemma is_zariski_open_Int [simp]: 
+  "\<lbrakk>is_zariski_open U; is_zariski_open V\<rbrakk> \<Longrightarrow> is_zariski_open (U \<inter> V)"
+  by (simp add: Int is_zariski_open_def)
+
+lemma zarisky_is_topological_space [iff]:
   shows "topological_space Spec is_zariski_open"
 proof qed (auto simp: is_zariski_open_def spectrum_def  UNIV)
 
@@ -683,7 +697,7 @@ next
   assume oc: "open_cover_of_open_subset X' is_open' U I V"
     and VU: "\<And>i. i \<in> I \<Longrightarrow> V i \<subseteq> U"
     and s: "s \<in> direct_im_sheaf U"
-    and eq0: "\<And>i. (i::real) \<in> I \<Longrightarrow> direct_im_sheaf_morphisms U (V i) s = \<zero>\<^bsub>f \<^sup>\<inverse> X (V i)\<^esub>"
+    and eq0: "\<And>i. i \<in> I \<Longrightarrow> direct_im_sheaf_morphisms U (V i) s = \<zero>\<^bsub>f \<^sup>\<inverse> X (V i)\<^esub>"
   have "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> X U) I (\<lambda>i. f\<^sup>\<inverse> X (V i))"
     by (simp add: oc open_cover_of_open_subset_from_target_to_source) 
   then show "s = \<zero>\<^bsub>f \<^sup>\<inverse> X U\<^esub>"
@@ -1192,21 +1206,29 @@ lemma map_on_empty_is_regular:
   shows "is_regular s {}"
   by (simp add: is_regular_def)
 
-definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
+definition sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _" [900] 900)
   where "\<O> U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
                   \<and> is_regular s U}"
 
 lemma sheaf_on_spec_of_empty_is_singleton:
   fixes U:: "'a set set"
-  assumes "U = {}" and "s \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}" and 
-"t \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}"
+  assumes "U = {}" and "s \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}" 
+      and "t \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}"
   shows "s = t"
   using assms by (simp add: Set_Theory.map_def)
+
+lemma sheaf_on_spec_empty [simp]: "sheaf_on_spec {} = {\<lambda>\<pp>. undefined}"
+  proof
+    show "{\<lambda>\<pp>. undefined} \<subseteq> \<O> {}"
+      using undefined_is_map_on_empty map_on_empty_is_regular sheaf_on_spec_def by fastforce
+    thus "\<O> {} \<subseteq> {\<lambda>\<pp>. undefined}" 
+      using sheaf_on_spec_def sheaf_on_spec_of_empty_is_singleton by auto
+  qed
 
 definition add_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "add_sheaf_on_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.add_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
 
-lemma
+lemma is_regular_add_sheaf_on_spec:
   assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
   shows "is_regular (add_sheaf_on_spec U s s') U"
   sorry
@@ -1214,25 +1236,26 @@ lemma
 definition mult_sheaf_on_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "mult_sheaf_on_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.mult_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
 
-lemma
+lemma is_regular_mult_sheaf_on_spec:
   assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
   shows "is_regular (mult_sheaf_on_spec U s s') U" sorry
 
 definition zero_sheaf_on_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "zero_sheaf_on_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"
 
-lemma 
+lemma is_regular_zero_sheaf_on_spec:
   assumes "is_zariski_open U"
-  shows "is_regular (zero_sheaf_on_spec U) U" sorry
+  shows "is_regular (zero_sheaf_on_spec U) U"
+  sorry
 
 definition one_sheaf_on_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "one_sheaf_on_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one> \<one>"
 
-lemma 
+lemma is_regular_one_sheaf_on_spec:
   assumes "is_zariski_open U"
   shows "is_regular (one_sheaf_on_spec U) U" sorry
 
-lemma 
+lemma ring_sheaf_on_spec:
   assumes "is_zariski_open U"
   shows "ring (\<O> U) (add_sheaf_on_spec U) (mult_sheaf_on_spec U) (zero_sheaf_on_spec U) (one_sheaf_on_spec U)"
   sorry
@@ -1262,30 +1285,42 @@ lemma sheaf_on_spec_morphisms_are_ring_morphisms:
 lemma
   shows "presheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
-proof-
-  have "topological_space Spec is_zariski_open" by (simp add: zarisky_is_topological_space)
-  moreover have "sheaf_on_spec {} = {\<lambda>\<pp>. undefined}"
-  proof
-    show "{\<lambda>\<pp>. undefined} \<subseteq> \<O> {}"
-      using undefined_is_map_on_empty map_on_empty_is_regular sheaf_on_spec_def by fastforce
-    thus "\<O> {} \<subseteq> {\<lambda>\<pp>. undefined}" 
-      using sheaf_on_spec_def sheaf_on_spec_of_empty_is_singleton by auto
-  qed
-  moreover have "\<And>U. is_zariski_open U \<Longrightarrow> (\<And>s. s \<in> (\<O> U) \<Longrightarrow> sheaf_on_spec_morphisms U U s = s)"
+unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def
+proof (intro conjI strip)
+  show "\<And>U. is_zariski_open U \<Longrightarrow> (\<And>s. s \<in> (\<O> U) \<Longrightarrow> sheaf_on_spec_morphisms U U s = s)"
     using sheaf_on_spec_morphisms_def sheaf_morphisms_on_sheaf_on_spec by simp
-  moreover have "\<And>U V W. is_zariski_open U \<Longrightarrow> is_zariski_open V \<Longrightarrow> is_zariski_open W \<Longrightarrow> V \<subseteq> U 
-\<Longrightarrow> W \<subseteq> V \<Longrightarrow> (\<And>s. s \<in> \<O> U \<Longrightarrow> sheaf_on_spec_morphisms U W s = (sheaf_on_spec_morphisms V W \<circ> sheaf_on_spec_morphisms U V) s)"
-    using sheaf_on_spec_morphisms_def restrict_further sheaf_on_spec_morphisms_are_maps map.map_closed
-  by (smt FuncSet.restrict_restrict inf.absorb_iff2 o_apply restrict_apply')
-  ultimately show ?thesis 
-    unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def using sheaf_on_spec_morphisms_are_ring_morphisms by blast
-qed
+  show "\<And>U V W. \<lbrakk>is_zariski_open U; is_zariski_open V; is_zariski_open W; V \<subseteq> U;
+                 W \<subseteq> V\<rbrakk> \<Longrightarrow> (\<And>s. s \<in> \<O> U \<Longrightarrow> sheaf_on_spec_morphisms U W s = (sheaf_on_spec_morphisms V W \<circ> sheaf_on_spec_morphisms U V) s)"
+      using restrict_further sheaf_on_spec_morphisms_are_maps map.map_closed
+    unfolding sheaf_on_spec_morphisms_def
+    by (smt (verit) FuncSet.restrict_restrict comp_apply inf.absorb_iff2 restrict_apply') 
+qed (auto simp: sheaf_on_spec_morphisms_are_ring_morphisms)
 
 (* ex. 0.30 *)
 lemma
   shows "sheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
-  sorry
+  unfolding sheaf_of_rings_def sheaf_of_rings_axioms_def
+proof (intro conjI strip)
+  show "presheaf_of_rings Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec"
+    unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def
+    by (smt (verit, best) FuncSet.restrict_restrict comp_apply inf.absorb_iff2 map.map_closed restrict_apply sheaf_morphisms_on_sheaf_on_spec sheaf_on_spec_empty sheaf_on_spec_morphisms_are_maps sheaf_on_spec_morphisms_are_ring_morphisms sheaf_on_spec_morphisms_def zarisky_is_topological_space)
+next
+  fix U I V s
+  assume "open_cover_of_open_subset Spec is_zariski_open U I V"
+      and "\<forall>i. i \<in> I \<longrightarrow> V i \<subseteq> (U::'a set set)"
+      and "s \<in> \<O> U"
+      and "\<forall>i. i \<in> I \<longrightarrow> sheaf_on_spec_morphisms U (V i) s = zero_sheaf_on_spec (V i)"
+  show "s = zero_sheaf_on_spec U"
+    sorry
+next
+  fix U I V s
+  assume "open_cover_of_open_subset Spec is_zariski_open U I V"
+      and "\<forall>i. i \<in> I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<O> V i"
+      and "\<forall>i j. i \<in> I \<longrightarrow> j \<in> I \<longrightarrow> sheaf_on_spec_morphisms (V i) (V i \<inter> V j) (s i) = sheaf_on_spec_morphisms (V j) (V i \<inter> V j) (s j)"
+  show "\<exists>t. t \<in> \<O> U \<and> (\<forall>i. i \<in> I \<longrightarrow> sheaf_on_spec_morphisms U (V i) t = s i)"
+    sorry
+qed
 
 end (* comm_ring *)
 
