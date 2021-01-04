@@ -1328,7 +1328,16 @@ next
   moreover have "t \<in> \<O> U"
   proof-
     have "Set_Theory.map t U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
-      by (metis UNIV insert_iff is_regular_def is_regular_zero_sheaf_on_spec is_zariski_open_def)
+    proof
+      show "t \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
+      proof
+        fix \<pp> assume "\<pp> \<in> U" then have "t \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+          using D H(1,2) comm_ring.is_regular_def cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs local.comm_ring_axioms open_cover_of_open_subset_def open_cover_of_subset_def sheaf_on_spec_def by fastforce
+        thus "t \<pp> \<in> (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" using \<open>\<pp> \<in> U\<close> by blast
+      next
+        fix \<pp> assume "\<pp> \<notin> U" then show "t \<pp> = undefined" using D by simp
+      qed
+    qed
     moreover have "is_regular t U"
     proof-
       have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
