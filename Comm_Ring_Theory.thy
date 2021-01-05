@@ -1703,7 +1703,7 @@ next
                 (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
         using cxt_direct_lim.universal_property sorry
-      then have "ring_isomorphism \<phi>
+      have "ring_isomorphism \<phi>
 (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
                 (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
                   add_sheaf_spec \<pp>)
@@ -1718,7 +1718,30 @@ next
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-        sorry
+      proof (intro ring_isomorphism.intro bijective_map.intro bijective.intro)
+        show "ring_homomorphism \<phi>
+     (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+     (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+       add_sheaf_spec \<pp>)
+     (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+       mult_sheaf_spec \<pp>)
+     (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+       zero_sheaf_spec \<pp> U)
+     (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+       one_sheaf_spec \<pp> U)
+     (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
+     (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+     (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+          sorry
+      next
+        show "Set_Theory.map \<phi>
+     (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+          sorry
+      next
+        show "bij_betw \<phi> (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+          sorry
+      qed
       thus "\<exists>f. ring_isomorphism f
                 (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
                 (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
