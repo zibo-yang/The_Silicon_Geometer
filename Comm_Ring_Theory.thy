@@ -1513,7 +1513,7 @@ notation cxt_direct_lim.carrier_direct_lim ("lim _ _ _")
 
 subsubsection \<open>Universal property of direct limits\<close>
 
-lemma (in cxt_direct_lim)
+lemma (in cxt_direct_lim) universal_property:
   fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)" and add:: "'c \<Rightarrow> 'c \<Rightarrow> 'c"
 and mult:: "'c \<Rightarrow> 'c \<Rightarrow> 'c" and zero:: "'c" and one:: "'c" 
   assumes "ring A add mult zero one" and 
@@ -1628,7 +1628,7 @@ proof (intro locally_ringed_space.intro locally_ringed_space_axioms.intro)
     using spec_is_ringed_space by simp
 next
   show "\<And>x U. x \<in> U \<Longrightarrow>
-           is_zariski_open U \<Longrightarrow>
+           is_zariski_open U \<Longrightarrow> 
            local_ring
             (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms x)
             (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
@@ -1680,10 +1680,63 @@ next
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-      sorry
+    proof-
+      fix \<pp> U assume "\<pp> \<in> U" "is_zariski_open U" 
+      define \<psi> where "\<psi> \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
+      then have "ring_homomorphism \<psi> 
+(\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
+(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+        sorry
+      then obtain \<phi> where "ring_homomorphism \<phi>
+(presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  add_sheaf_spec \<pp>)
+                (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  mult_sheaf_spec \<pp>)
+                (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  zero_sheaf_spec \<pp> U)
+                (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  one_sheaf_spec \<pp> U)
+                (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
+                (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+                (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+        using cxt_direct_lim.universal_property sorry
+      then have "ring_isomorphism \<phi>
+(presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  add_sheaf_spec \<pp>)
+                (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  mult_sheaf_spec \<pp>)
+                (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  zero_sheaf_spec \<pp> U)
+                (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  one_sheaf_spec \<pp> U)
+                (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
+                (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+                (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+        sorry
+      thus "\<exists>f. ring_isomorphism f
+                (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  add_sheaf_spec \<pp>)
+                (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  mult_sheaf_spec \<pp>)
+                (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  zero_sheaf_spec \<pp> U)
+                (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  one_sheaf_spec \<pp> U)
+                (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+                (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+        sorry
+    qed 
   qed
 qed
-
 
 end (* comm_ring *)
 
