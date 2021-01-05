@@ -1286,10 +1286,15 @@ proof-
   qed
   moreover have "\<And>U. is_zariski_open U \<Longrightarrow> (\<And>s. s \<in> (\<O> U) \<Longrightarrow> sheaf_spec_morphisms U U s = s)"
     using sheaf_spec_morphisms_def sheaf_morphisms_sheaf_spec by simp
-  moreover have "\<And>U V W. is_zariski_open U \<Longrightarrow> is_zariski_open V \<Longrightarrow> is_zariski_open W \<Longrightarrow> V \<subseteq> U 
-\<Longrightarrow> W \<subseteq> V \<Longrightarrow> (\<And>s. s \<in> \<O> U \<Longrightarrow> sheaf_spec_morphisms U W s = (sheaf_spec_morphisms V W \<circ> sheaf_spec_morphisms U V) s)"
-    using sheaf_spec_morphisms_def restrict_further sheaf_spec_morphisms_are_maps map.map_closed
-  by (smt FuncSet.restrict_restrict inf.absorb_iff2 o_apply restrict_apply')
+  moreover have "sheaf_spec_morphisms U W s = (sheaf_spec_morphisms V W \<circ> sheaf_spec_morphisms U V) s"
+    if "is_zariski_open U" "is_zariski_open V" "is_zariski_open W" "V \<subseteq> U" "W \<subseteq> V" and "s \<in> \<O> U"
+    for U V W s
+  proof -
+    have "restrict s V \<in> \<O> V"
+      using that by (smt (z3) map.map_closed restrict_apply sheaf_spec_morphisms_are_maps sheaf_spec_morphisms_def)
+    with that show ?thesis
+      by (simp add: sheaf_spec_morphisms_def inf_absorb2)
+  qed
   ultimately show ?thesis 
     unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def using sheaf_spec_morphisms_are_ring_morphisms by blast
 qed
@@ -1460,10 +1465,10 @@ subsection \<open>Direct Limits of Rings\<close>
 (* construction 0.34 *)
 locale cxt_direct_lim = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
   for X and is_open and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") and 
-zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") + 
+    zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") + 
   fixes I:: "'a set set"
   assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U" and 
-has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
+    has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
 begin
 
 definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> bool" (infix "\<sim>" 80)
@@ -1471,7 +1476,11 @@ definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Righ
 (\<exists>W. (W \<in> I) \<and> (W \<subseteq> fst x \<inter> fst y) \<and> \<rho> (fst x \<inter> fst y) W (snd x) = \<rho> (fst x \<inter> fst y) W (snd y))"
 
 lemma rel_is_equivalence:
-  shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}" sorry
+  shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}" 
+proof
+  show "\<And>a b c. \<lbrakk>(a, b) \<in> {(x, y). x \<sim> y}; (b, c) \<in> {(x, y). x \<sim> y}\<rbrakk> \<Longrightarrow> (a,c) \<in> {(x,y). x \<sim> y}"
+    sorry
+qed (auto simp: rel_def Int_commute)
 
 definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor> _ , _ \<rfloor>")
   where "\<lfloor>U,s\<rfloor> \<equiv> equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, s)"
