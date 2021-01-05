@@ -1773,7 +1773,7 @@ lemma affine_scheme_is_scheme:
 
 end (* affine_scheme*)
 
-lemma (in comm_ring)
+lemma (in comm_ring) spec_is_affine_scheme:
   shows "affine_scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
 R (+) (\<cdot>) \<zero> \<one>"
@@ -1811,10 +1811,20 @@ Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
   qed
 qed
 
+lemma (in comm_ring) spec_is_scheme:
+  shows "scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+(\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
+R (+) (\<cdot>) \<zero> \<one>"
+  using spec_is_affine_scheme by (simp add: affine_scheme.affine_scheme_is_scheme)
+
 lemma empty_scheme_is_affine_scheme:
   shows "affine_scheme {} (\<lambda>U. True) (\<lambda>U. {0::nat}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
 {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0"
   sorry
 
+lemma empty_scheme_is_scheme:
+  shows "scheme {} (\<lambda>U. True) (\<lambda>U. {0::nat}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
+{0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0" 
+  by (simp add: empty_scheme_is_affine_scheme affine_scheme.affine_scheme_is_scheme)
 
 end
