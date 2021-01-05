@@ -1224,18 +1224,18 @@ definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a
   where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"
 
 lemma is_regular_zero_sheaf_spec:
-  assumes "is_zariski_open U"
+  assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "is_regular (zero_sheaf_spec U) U" sorry
 
 definition one_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one> \<one>"
 
 lemma 
-  assumes "is_zariski_open U"
+  assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "is_regular (one_sheaf_spec U) U" sorry
 
 lemma 
-  assumes "is_zariski_open U"
+  assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
   sorry
 
