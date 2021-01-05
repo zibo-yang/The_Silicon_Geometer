@@ -1574,6 +1574,13 @@ subsubsection \<open>Local Rings\<close>
 locale local_ring = comm_ring +
 assumes is_unique: "\<lbrakk>I \<subseteq> R; J \<subseteq> R\<rbrakk> \<Longrightarrow> max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
 and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
+
+lemma 
+  assumes "ring A addA multA zeroA oneA" and "local_ring B addB multB zeroB oneB" and 
+"ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
+shows "local_ring A addA multA zeroA oneA"
+  sorry
+
 context prime_ideal
 begin
 
