@@ -1601,11 +1601,11 @@ subsubsection \<open>Locally Ringed Spaces\<close>
 locale locally_ringed_space = ringed_space +
   assumes is_local_ring: "\<And>x U. x \<in> U \<Longrightarrow> is_open U \<Longrightarrow>
 local_ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x U) (one_stalk_at x U)"
-context entire_ring
+context comm_ring
 begin
 
 (* ex. 0.43 *)
-lemma
+lemma spec_is_locally_ringed_space:
   shows "locally_ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)"
   sorry
@@ -1714,7 +1714,39 @@ lemma (in comm_ring)
   shows "affine_scheme Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_on_spec U) (\<lambda>U. mult_sheaf_on_spec U) (\<lambda>U. zero_sheaf_on_spec U) (\<lambda>U. one_sheaf_on_spec U)
 R (+) (\<cdot>) \<zero> \<one>"
-  sorry
+proof (intro affine_scheme.intro affine_scheme_axioms.intro)
+  show "locally_ringed_space Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms
+     (\<lambda>\<pp>. undefined) add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec"
+    using spec_is_locally_ringed_space by simp
+next
+  show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
+next
+  show "\<exists>f \<phi>\<^sub>f.
+       iso_locally_ringed_spaces Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms
+        (\<lambda>\<pp>. undefined) add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec
+        Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined)
+        add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec f \<phi>\<^sub>f"
+  proof-
+    have "homeomorphism Spec is_zariski_open Spec is_zariski_open (identity Spec)" sorry
+    moreover have "iso_presheaves_of_rings
+Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec
+(cxt_direct_im_sheaf.direct_im_sheaf Spec (identity Spec) sheaf_on_spec)
+(cxt_direct_im_sheaf.direct_im_sheaf_morphisms Spec (identity Spec) sheaf_on_spec_morphisms)
+(\<lambda>\<pp>. undefined)
+(\<lambda>V x y. add_sheaf_on_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
+(\<lambda>V x y. mult_sheaf_on_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
+(\<lambda>V. zero_sheaf_on_spec ((identity Spec)\<^sup>\<inverse> Spec V)) 
+(\<lambda>V. one_sheaf_on_spec ((identity Spec)\<^sup>\<inverse> Spec V))
+(\<lambda>U. identity (\<O> U))
+" sorry
+    moreover have "morphism_locally_ringed_spaces
+Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec
+Spec is_zariski_open sheaf_on_spec sheaf_on_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_on_spec mult_sheaf_on_spec zero_sheaf_on_spec one_sheaf_on_spec
+(identity Spec)
+(\<lambda>U. identity (\<O> U))" sorry
+    ultimately show ?thesis using iso_locally_ringed_spaces_def by fastforce
+  qed
+qed
 
 lemma empty_scheme_is_affine_scheme:
   shows "affine_scheme {} (\<lambda>U. True) (\<lambda>U. {0::nat}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
