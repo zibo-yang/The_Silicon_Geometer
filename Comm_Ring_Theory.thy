@@ -1167,6 +1167,11 @@ definition zero_local_ring_at:: "('a \<times> 'a) set"
 definition one_local_ring_at:: "('a \<times> 'a) set"
   where "one_local_ring_at \<equiv> cxt_quotient_ring.frac (R \<setminus> I) R (+) (\<cdot>) \<zero> \<one> \<one>"
 
+lemma local_ring_at_is_comm_ring:
+  shows "comm_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
+(zero_local_ring_at) (one_local_ring_at)"
+  sorry
+
 end (* prime_ideal *)
 
 abbreviation carrier_of_local_ring_at:: 
@@ -1234,7 +1239,7 @@ lemma
   assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "is_regular (one_sheaf_spec U) U" sorry
 
-lemma 
+lemma sheaf_spec_on_open_is_ring:
   assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
   sorry
@@ -1456,7 +1461,7 @@ locale cxt_direct_lim = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str
   for X and is_open and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") and 
 zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") + 
   fixes I:: "'a set set"
-  assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U" and 
+  assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U \<and> U \<subseteq> X" and 
 has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
 begin
 
@@ -1534,25 +1539,25 @@ begin
 
 (* definition 0.37 *)
 definition stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set set"
-  where "stalk_at x \<equiv> lim \<FF> \<rho> {U. is_open U \<and> x \<in> U}"
+  where "stalk_at x \<equiv> lim \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
 
 definition add_stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
-  where "add_stalk_at x \<equiv> cxt_direct_lim.add_rel \<FF> \<rho> add_str {U. is_open U \<and> x \<in> U}"
+  where "add_stalk_at x \<equiv> cxt_direct_lim.add_rel \<FF> \<rho> add_str {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
 
 definition mult_stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
-  where "mult_stalk_at x \<equiv> cxt_direct_lim.mult_rel \<FF> \<rho> mult_str {U. is_open U \<and> x \<in> U}"
+  where "mult_stalk_at x \<equiv> cxt_direct_lim.mult_rel \<FF> \<rho> mult_str {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
 
 definition zero_stalk_at:: "'a \<Rightarrow> 'a set \<Rightarrow> ('a set \<times> 'b) set"
-  where "zero_stalk_at x U \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. is_open U \<and> x \<in> U} U \<zero>\<^bsub>U\<^esub>"
+  where "zero_stalk_at x U \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U} U \<zero>\<^bsub>U\<^esub>"
 
 definition one_stalk_at:: "'a \<Rightarrow> 'a set \<Rightarrow> ('a set \<times> 'b) set"
-  where "one_stalk_at x U \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. is_open U \<and> x \<in> U} U \<one>\<^bsub>U\<^esub>"
+  where "one_stalk_at x U \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U} U \<one>\<^bsub>U\<^esub>"
 
 definition class_of:: "'a \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) set"
-  where "class_of x p \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. is_open U \<and> x \<in> U} (fst p) (snd p)"
+  where "class_of x p \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U} (fst p) (snd p)"
 
 lemma stalk_is_ring:
-  assumes "x \<in> X" and "is_open U" and "x \<in> U"
+  assumes "is_open U" and "x \<in> U" and "U \<subseteq> S"
   shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x U) (one_stalk_at x U)"
   sorry
 
@@ -1613,7 +1618,7 @@ subsubsection \<open>Locally Ringed Spaces\<close>
 
 (* def. 0.42 *)
 locale locally_ringed_space = ringed_space +
-  assumes is_local_ring: "\<And>x U. x \<in> U \<Longrightarrow> is_open U \<Longrightarrow>
+  assumes is_local_ring: "\<And>x U. x \<in> U \<Longrightarrow> is_open U \<Longrightarrow> U \<subseteq> X \<Longrightarrow>
 local_ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x U) (one_stalk_at x U)"
 context comm_ring
 begin
@@ -1628,74 +1633,97 @@ proof (intro locally_ringed_space.intro locally_ringed_space_axioms.intro)
     using spec_is_ringed_space by simp
 next
   show "\<And>x U. x \<in> U \<Longrightarrow>
-           is_zariski_open U \<Longrightarrow> 
+           is_zariski_open U \<Longrightarrow> U \<subseteq> Spec \<Longrightarrow> 
            local_ring
-            (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms x)
-            (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+            (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms x)
+            (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               add_sheaf_spec x)
-            (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+            (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               mult_sheaf_spec x)
-            (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+            (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               zero_sheaf_spec x U)
-            (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+            (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               one_sheaf_spec x U)"
   proof (rule isomorphic_to_local_is_local)
     show "\<And>x U. x \<in> U \<Longrightarrow>
-           is_zariski_open U \<Longrightarrow>
-           ring (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms x)
-            (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+           is_zariski_open U \<Longrightarrow> U \<subseteq> Spec \<Longrightarrow>
+           ring (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms x)
+            (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               add_sheaf_spec x)
-            (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+            (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               mult_sheaf_spec x)
-            (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+            (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               zero_sheaf_spec x U)
-            (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+            (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
               one_sheaf_spec x U)"
       using presheaf_of_rings.stalk_is_ring sheaf_spec_is_presheaf by fastforce
   next
     show "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
-           is_zariski_open U \<Longrightarrow> local_ring (prime_ideal.carrier_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
-                                            (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
-                                            (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
-                                            (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) 
-                                            (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+           is_zariski_open U \<Longrightarrow> U \<subseteq> Spec \<Longrightarrow> 
+                                        local_ring (prime_ideal.carrier_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+                                        (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+                                        (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+                                        (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) 
+                                        (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
     proof-
-      fix \<pp> U assume "is_zariski_open U" then have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" sorry
+      fix \<pp> U assume "\<pp> \<in> U" "is_zariski_open U" "U \<subseteq> Spec" then have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
+        using spectrum_def by auto
       thus "?thesis \<pp> U" by (simp add: prime_ideal.local_ring_at_is_local)
     qed
   next
     show "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
-           is_zariski_open U \<Longrightarrow>
+           is_zariski_open U \<Longrightarrow> U \<subseteq> Spec \<Longrightarrow>
            \<exists>f. ring_isomorphism f
-                (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
-                (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   add_sheaf_spec \<pp>)
-                (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
-                (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   zero_sheaf_spec \<pp> U)
-                (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   one_sheaf_spec \<pp> U)
-                R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub> (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
+                (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
     proof-
-      fix \<pp> U assume "\<pp> \<in> U" "is_zariski_open U" 
-      define \<psi> where "\<psi> \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
-      then have "ring_homomorphism \<psi> 
+      fix \<pp> U assume H: "\<pp> \<in> U" "is_zariski_open U" "U \<subseteq> Spec"
+      define \<psi> where D: "\<psi> \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
+      have "ring_homomorphism \<psi> 
 (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-        sorry
+      proof (intro ring_homomorphism.intro)
+        show "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+        proof
+          have "\<And>s. s \<in> \<O> U \<Longrightarrow> s \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using sheaf_spec_def H(1) is_regular_def by blast
+          thus "\<psi> \<in> (\<O> U) \<rightarrow>\<^sub>E (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using D extensional_funcset_def by simp
+        qed
+      next
+        show "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
+          using sheaf_spec_on_open_is_ring H(2,3) by simp
+      next
+        show "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+     (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+          using prime_ideal.local_ring_at_is_comm_ring H(1,3) comm_ring.axioms(1) spectrum_def by fastforce
+      next
+        show "group_homomorphism \<psi> (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
+     (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" sorry
+      next
+        show "monoid_homomorphism \<psi> (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
+     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" sorry
+      qed
       then obtain \<phi> where "ring_homomorphism \<phi>
-(presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
-                (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+(presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   add_sheaf_spec \<pp>)
-                (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
-                (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   zero_sheaf_spec \<pp> U)
-                (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   one_sheaf_spec \<pp> U)
                 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
                 (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
@@ -1704,14 +1732,14 @@ next
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
         using cxt_direct_lim.universal_property sorry
       have "ring_isomorphism \<phi>
-(presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
-                (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+(presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   add_sheaf_spec \<pp>)
-                (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
-                (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   zero_sheaf_spec \<pp> U)
-                (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   one_sheaf_spec \<pp> U)
                 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
                 (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
@@ -1720,14 +1748,14 @@ next
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
       proof (intro ring_isomorphism.intro bijective_map.intro bijective.intro)
         show "ring_homomorphism \<phi>
-     (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
-     (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+     (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+     (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
        add_sheaf_spec \<pp>)
-     (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+     (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
        mult_sheaf_spec \<pp>)
-     (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+     (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
        zero_sheaf_spec \<pp> U)
-     (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+     (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
        one_sheaf_spec \<pp> U)
      (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
      (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
@@ -1736,21 +1764,21 @@ next
           sorry
       next
         show "Set_Theory.map \<phi>
-     (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+     (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
           sorry
       next
-        show "bij_betw \<phi> (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+        show "bij_betw \<phi> (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
           sorry
       qed
       thus "\<exists>f. ring_isomorphism f
-                (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
-                (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   add_sheaf_spec \<pp>)
-                (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
-                (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   zero_sheaf_spec \<pp> U)
-                (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+                (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   one_sheaf_spec \<pp> U)
                 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
@@ -1774,7 +1802,7 @@ definition index:: "'c set set"
 definition induced_morphism:: "('c set \<times> 'd) set \<Rightarrow> ('a set \<times> 'b) set"
   where "induced_morphism C \<equiv> 
 let r = (SOME r. r \<in> C) in
-presheaf_of_rings.class_of is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X x (f\<^sup>\<inverse> X (fst r), \<phi>\<^sub>f (fst r) (snd r))
+presheaf_of_rings.class_of X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X x (f\<^sup>\<inverse> X (fst r), \<phi>\<^sub>f (fst r) (snd r))
 "
 (* 
 One should think of fst r as a V in index, and snd r as a d in \<O>\<^sub>Y V. 
@@ -1785,16 +1813,16 @@ is well defined.
 lemma 
   assumes "V \<in> index"
   shows "ring_homomorphism induced_morphism
-(presheaf_of_rings.stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x))
-(presheaf_of_rings.add_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y add_str\<^sub>Y (f x))
-(presheaf_of_rings.mult_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y mult_str\<^sub>Y (f x))
-(presheaf_of_rings.zero_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y zero_str\<^sub>Y (f x) V)
-(presheaf_of_rings.one_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y one_str\<^sub>Y (f x) V)
-(presheaf_of_rings.stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X x)
-(presheaf_of_rings.add_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X add_str\<^sub>X x)
-(presheaf_of_rings.mult_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X mult_str\<^sub>X x)
-(presheaf_of_rings.zero_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X zero_str\<^sub>X x (f\<^sup>\<inverse> X V))
-(presheaf_of_rings.one_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X one_str\<^sub>X x (f\<^sup>\<inverse> X V))
+(presheaf_of_rings.stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x))
+(presheaf_of_rings.add_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y add_str\<^sub>Y (f x))
+(presheaf_of_rings.mult_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y mult_str\<^sub>Y (f x))
+(presheaf_of_rings.zero_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y zero_str\<^sub>Y (f x) V)
+(presheaf_of_rings.one_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y one_str\<^sub>Y (f x) V)
+(presheaf_of_rings.stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X x)
+(presheaf_of_rings.add_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X add_str\<^sub>X x)
+(presheaf_of_rings.mult_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X mult_str\<^sub>X x)
+(presheaf_of_rings.zero_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X zero_str\<^sub>X x (f\<^sup>\<inverse> X V))
+(presheaf_of_rings.one_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X one_str\<^sub>X x (f\<^sup>\<inverse> X V))
 "
   sorry
 
@@ -1807,16 +1835,16 @@ notation cxt_ind_morphism_bwt_lim.induced_morphism ("\<phi>\<^bsub>_ _ _ _ _ _ _
 locale morphism_locally_ringed_spaces = 
 morphism_ringed_spaces +
 assumes is_local_morphism: "\<And>x. x \<in> X \<Longrightarrow> local_ring_morphism \<phi>\<^bsub>X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X f \<phi>\<^sub>f x\<^esub> 
-(presheaf_of_rings.stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x))
-(presheaf_of_rings.add_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y add_str\<^sub>Y (f x))
-(presheaf_of_rings.mult_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y mult_str\<^sub>Y (f x))
-(presheaf_of_rings.zero_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y zero_str\<^sub>Y (f x) V)
-(presheaf_of_rings.one_stalk_at is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y one_str\<^sub>Y (f x) V)
-(presheaf_of_rings.stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X x)
-(presheaf_of_rings.add_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X add_str\<^sub>X x)
-(presheaf_of_rings.mult_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X mult_str\<^sub>X x)
-(presheaf_of_rings.zero_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X zero_str\<^sub>X x (f\<^sup>\<inverse> X V))
-(presheaf_of_rings.one_stalk_at is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X one_str\<^sub>X x (f\<^sup>\<inverse> X V))
+(presheaf_of_rings.stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y (f x))
+(presheaf_of_rings.add_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y add_str\<^sub>Y (f x))
+(presheaf_of_rings.mult_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y mult_str\<^sub>Y (f x))
+(presheaf_of_rings.zero_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y zero_str\<^sub>Y (f x) V)
+(presheaf_of_rings.one_stalk_at Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y one_str\<^sub>Y (f x) V)
+(presheaf_of_rings.stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X x)
+(presheaf_of_rings.add_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X add_str\<^sub>X x)
+(presheaf_of_rings.mult_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X mult_str\<^sub>X x)
+(presheaf_of_rings.zero_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X zero_str\<^sub>X x (f\<^sup>\<inverse> X V))
+(presheaf_of_rings.one_stalk_at X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X one_str\<^sub>X x (f\<^sup>\<inverse> X V))
 "
 
 locale iso_locally_ringed_spaces =
