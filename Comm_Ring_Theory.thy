@@ -1241,7 +1241,7 @@ definition sheaf_spec_morphisms::
 "'a set set \<Rightarrow> 'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set))"
 where "sheaf_spec_morphisms U V \<equiv> \<lambda>s\<in>(\<O> U). restrict s V"
 
-lemma sheaf_morphisms_sheaf_on_spec:
+lemma sheaf_morphisms_sheaf_spec:
   assumes "s \<in> \<O> U" 
   shows "sheaf_spec_morphisms U U s = s"
   using assms sheaf_spec_def restrict_on_source sheaf_spec_morphisms_def
@@ -1272,7 +1272,7 @@ proof-
       using sheaf_spec_def sheaf_spec_of_empty_is_singleton by auto
   qed
   moreover have "\<And>U. is_zariski_open U \<Longrightarrow> (\<And>s. s \<in> (\<O> U) \<Longrightarrow> sheaf_spec_morphisms U U s = s)"
-    using sheaf_spec_morphisms_def sheaf_morphisms_sheaf_on_spec by simp
+    using sheaf_spec_morphisms_def sheaf_morphisms_sheaf_spec by simp
   moreover have "\<And>U V W. is_zariski_open U \<Longrightarrow> is_zariski_open V \<Longrightarrow> is_zariski_open W \<Longrightarrow> V \<subseteq> U 
 \<Longrightarrow> W \<subseteq> V \<Longrightarrow> (\<And>s. s \<in> \<O> U \<Longrightarrow> sheaf_spec_morphisms U W s = (sheaf_spec_morphisms V W \<circ> sheaf_spec_morphisms U V) s)"
     using sheaf_spec_morphisms_def restrict_further sheaf_spec_morphisms_are_maps map.map_closed
@@ -1395,7 +1395,7 @@ open_cover_of_subset_def D H(1) by fastforce
     qed 
     thus "sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
       using sheaf_spec_morphisms_def D F1
-      by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> comm_ring.sheaf_morphisms_sheaf_on_spec local.comm_ring_axioms restrict_apply subsetD)
+      by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> comm_ring.sheaf_morphisms_sheaf_spec local.comm_ring_axioms restrict_apply subsetD)
   qed
   thus "\<exists>t. t \<in> (\<O> U) \<and> (\<forall>i. i \<in> I \<longrightarrow> sheaf_spec_morphisms U (V i) t = s i)"
     using \<open>t \<in> \<O> U\<close> by blast
