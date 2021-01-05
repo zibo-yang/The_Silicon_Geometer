@@ -1169,7 +1169,9 @@ definition one_local_ring_at:: "('a \<times> 'a) set"
 
 end (* prime_ideal *)
 
-notation prime_ideal.carrier_local_ring_at ("_ \<^bsub>_ _ _ _\<^esub>")
+abbreviation carrier_of_local_ring_at:: 
+"'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set set" ("_ \<^bsub>_ _ _ _\<^esub>")
+where "R \<^bsub>I add mult zero\<^esub> \<equiv> prime_ideal.carrier_local_ring_at R I add mult zero" 
 
 subsection \<open>Spectrum of a Ring\<close>
 
@@ -1416,7 +1418,7 @@ locale ringed_space = topological_space X is_open + sheaf_of_rings X is_open \<O
 context comm_ring
 begin
 
-lemma 
+lemma spec_is_ringed_space:
   shows "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
 proof (intro ringed_space.intro)
@@ -1575,7 +1577,7 @@ locale local_ring = comm_ring +
 assumes is_unique: "\<lbrakk>I \<subseteq> R; J \<subseteq> R\<rbrakk> \<Longrightarrow> max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
 and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
 
-lemma 
+lemma isomorphic_to_local_is_local:
   assumes "ring A addA multA zeroA oneA" and "local_ring B addB multB zeroB oneB" and 
 "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
 shows "local_ring A addA multA zeroA oneA"
@@ -1585,7 +1587,7 @@ context prime_ideal
 begin
 
 (* ex. 0.40 *)
-lemma
+lemma local_ring_at_is_local:
   shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
 (zero_local_ring_at) (one_local_ring_at)"
   sorry
@@ -1615,7 +1617,55 @@ begin
 lemma spec_is_locally_ringed_space:
   shows "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
-  sorry
+proof (intro locally_ringed_space.intro locally_ringed_space_axioms.intro)
+  show "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+     add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
+    using spec_is_ringed_space by simp
+next
+  show "\<And>x U. x \<in> U \<Longrightarrow>
+           is_zariski_open U \<Longrightarrow>
+           local_ring
+            (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms x)
+            (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              add_sheaf_spec x)
+            (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              mult_sheaf_spec x)
+            (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              zero_sheaf_spec x U)
+            (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              one_sheaf_spec x U)"
+  proof-
+    fix \<pp> U assume H: "\<pp> \<in> U" "is_zariski_open U"
+    then have "\<exists>\<phi>. ring_isomorphism \<phi>
+(presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+            (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              add_sheaf_spec \<pp>)
+            (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              mult_sheaf_spec \<pp>)
+            (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              zero_sheaf_spec \<pp> U)
+            (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              one_sheaf_spec \<pp> U)
+(prime_ideal.carrier_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+(prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+(prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+(prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) 
+(prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+" sorry
+    moreover have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" sorry
+    thus "local_ring
+            (presheaf_of_rings.stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+            (presheaf_of_rings.add_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              add_sheaf_spec \<pp>)
+            (presheaf_of_rings.mult_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              mult_sheaf_spec \<pp>)
+            (presheaf_of_rings.zero_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              zero_sheaf_spec \<pp> U)
+            (presheaf_of_rings.one_stalk_at is_zariski_open sheaf_spec sheaf_spec_morphisms
+              one_sheaf_spec \<pp> U)"
+      using prime_ideal.local_ring_at_is_local isomorphic_to_local_is_local sorry
+  qed
+qed
 
 end (* comm_ring *)
 
