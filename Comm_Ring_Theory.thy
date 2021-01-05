@@ -386,7 +386,21 @@ qed
 definition is_zariski_open:: "'a set set \<Rightarrow> bool"
   where "is_zariski_open U \<equiv> generated_topology {U. \<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>} U"
 
-lemma zarisky_is_topological_space:
+lemma is_zariski_open_empty [simp]: "is_zariski_open {}"
+  using UNIV is_zariski_open_def by blast
+
+lemma is_zariski_open_Spec [simp]: "is_zariski_open Spec"
+  by (simp add: UNIV is_zariski_open_def)
+
+lemma is_zariski_open_Union [intro]: 
+  "(\<And>x. x \<in> F \<Longrightarrow> is_zariski_open x) \<Longrightarrow> is_zariski_open (\<Union> F)"
+  by (simp add: UNIV is_zariski_open_def)
+
+lemma is_zariski_open_Int [simp]: 
+  "\<lbrakk>is_zariski_open U; is_zariski_open V\<rbrakk> \<Longrightarrow> is_zariski_open (U \<inter> V)"
+  by (simp add: Int is_zariski_open_def)
+
+lemma zarisky_is_topological_space [iff]:
   shows "topological_space Spec is_zariski_open"
 proof qed (auto simp: is_zariski_open_def spectrum_def  UNIV)
 
@@ -494,9 +508,7 @@ next
     using morphism_presheaves_of_rings.comm_diagrams [OF 1]
     using morphism_presheaves_of_rings.comm_diagrams [OF 2]
     using presheaf_of_rings.is_map_from_is_homomorphism [OF morphism_presheaves_of_rings.axioms(1) [OF 1]]
-    apply (auto simp add: fun_eq_iff compose_def)
-    apply (metis map.map_closed morphism_presheaves_of_rings.fam_morphisms_are_maps [OF 1])
-    by (meson map.map_closed)
+    by (metis "1" comp_apply compose_eq map.map_closed morphism_presheaves_of_rings.fam_morphisms_are_maps)
 qed (use assms in \<open>auto simp: morphism_presheaves_of_rings_def\<close>)
 
 locale iso_presheaves_of_rings =
@@ -1339,42 +1351,39 @@ next
       show "t \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
       proof
         fix \<pp> assume "\<pp> \<in> U" then have "t \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-          using D H(1,2) comm_ring.is_regular_def cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs local.comm_ring_axioms open_cover_of_open_subset_def open_cover_of_subset_def sheaf_spec_def by fastforce
+          using D H(1,2) comm_ring.is_regular_def cover_of_subset.cover_of_select_index 
+            cover_of_subset.select_index_belongs local.comm_ring_axioms 
+            open_cover_of_open_subset_def open_cover_of_subset_def sheaf_spec_def by fastforce
         thus "t \<pp> \<in> (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" using \<open>\<pp> \<in> U\<close> by blast
       next
         fix \<pp> assume "\<pp> \<notin> U" then show "t \<pp> = undefined" using D by simp
       qed
     qed
-    moreover have "is_regular t U"
-    proof-
-      have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-      proof-
-        fix \<pp> assume "\<pp> \<in> U"
-        then obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>" 
-          using cover_of_subset.select_index_belongs cover_of_subset.cover_of_select_index open_cover_of_open_subset.axioms(1) 
-open_cover_of_subset_def D H(1) by fastforce 
+    moreover have "is_regular t U" (* using D H(2) *)
+      unfolding is_regular_def
+    proof (intro strip conjI)
+      fix \<pp>
+      assume "\<pp> \<in> U" 
+      show "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+      proof -
+        obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>"
+          using D H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_open_subset.axioms(1) 
+            open_cover_of_subset_def by fastforce 
         thus "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using H(2) sheaf_spec_def is_regular_def by simp
       qed
-      moreover have "(\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> 
-              (\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
-                                                                        f \<notin> \<qq> 
-                                                                          \<and> 
-                                                                        t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
-))))"
-      proof-
-        fix \<pp> assume "\<pp> \<in> U"
-        then have "\<exists>V'. V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
+      show "\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> 
+             (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq>  \<and>  t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f ))" 
+      proof -
+        have "\<exists>V'. V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
                  (\<exists>r f. r \<in> R \<and>
                         f \<in> R \<and>
                         (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow>
                              f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))"
-          using H(1,2) cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def mem_Collect_eq open_cover_of_open_subset_def open_cover_of_subset_def sheaf_spec_def by fastforce
+          using H(1,2) cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def mem_Collect_eq 
+            open_cover_of_open_subset_def open_cover_of_subset_def sheaf_spec_def \<open>\<pp> \<in> U\<close> by fastforce
         moreover have "V (cover_of_subset.select_index I V \<pp>) \<subseteq> U" 
           using H(2) by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
-        ultimately show "\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
-                                                                        f \<notin> \<qq> 
-                                                                          \<and> 
-                                                                        t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f))"
+        ultimately show ?thesis
         proof-
           have "\<And>V' \<qq>. V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
             using D F1 cover_of_subset.select_index_belongs
@@ -1383,7 +1392,6 @@ open_cover_of_subset_def D H(1) by fastforce
             by (smt \<open>V (cover_of_subset.select_index I V \<pp>) \<subseteq> U\<close> \<open>\<exists>V'\<subseteq>V (cover_of_subset.select_index I V \<pp>). \<pp> \<in> V' \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow> f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))\<close> subset_trans)
         qed 
       qed
-      ultimately show ?thesis using is_regular_def by simp
     qed
     ultimately show ?thesis using sheaf_spec_def by simp
   qed
