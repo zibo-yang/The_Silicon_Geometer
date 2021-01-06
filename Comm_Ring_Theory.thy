@@ -1745,7 +1745,7 @@ proof-
 qed
 
 lemma key_ring_morphism:
-  assumes "U \<subseteq> Spec" and "is_zariski_open U" and "\<pp> \<in> U"
+  assumes "V \<subseteq> Spec" and "is_zariski_open V" and "\<pp> \<in> V"
   shows "\<exists>\<phi>. ring_homomorphism \<phi>
                 (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
                 (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
@@ -1753,16 +1753,16 @@ lemma key_ring_morphism:
                 (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
                 (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  zero_sheaf_spec \<pp> U)
+                  zero_sheaf_spec \<pp> V)
                 (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  one_sheaf_spec \<pp> U)
+                  one_sheaf_spec \<pp> V)
                 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
                 (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
-\<and> (\<forall>U. U \<subseteq> Spec \<and> is_zariski_open U \<and> \<pp> \<in> U \<longrightarrow> 
-(\<forall>s\<in>\<O> U. (\<phi> \<circ> cxt_direct_lim.canonical_fun sheaf_spec sheaf_spec_morphisms {U. \<pp>\<in>U \<and> is_zariski_open U \<and> U \<subseteq> Spec} U) s = key_map U s))"
+\<and> 
+(\<forall>U\<in>(presheaf_of_rings.neighborhood Spec is_zariski_open \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> cxt_direct_lim.canonical_fun sheaf_spec sheaf_spec_morphisms (presheaf_of_rings.neighborhood Spec is_zariski_open \<pp>) U) s = key_map U s)"
 proof-
   have "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
              (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
@@ -1770,15 +1770,15 @@ proof-
              (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
              (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
     using prime_ideal.local_ring_at_is_comm_ring comm_ring.axioms(1) is_prime spectrum_def by fastforce
-  moreover have "cxt_direct_lim Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec {U. \<pp>\<in> U \<and> is_zariski_open U \<and> U \<subseteq> Spec}" sorry
-  thus ?thesis unfolding cxt_direct_lim_def cxt_direct_lim_axioms_def
-    using cxt_direct_lim.universal_property[of "Spec" "is_zariski_open" "sheaf_spec" "sheaf_spec_morphisms" "(\<lambda>\<pp>. undefined)" "add_sheaf_spec" "mult_sheaf_spec" "zero_sheaf_spec" "one_sheaf_spec" "{U. \<pp>\<in> U \<and> is_zariski_open U \<and> U \<subseteq> Spec}"
-_ _ _ _ _ "key_map"]
-assms key_map_is_ring_morphism key_maps_are_coherent sorry 
+  moreover have "V \<in> presheaf_of_rings.neighborhood Spec is_zariski_open \<pp>" 
+    using assms presheaf_of_rings.neighborhood_def sheaf_spec_is_presheaf by fastforce
+  ultimately show ?thesis 
+    using presheaf_of_rings.universal_property_for_stalk[of "Spec" "is_zariski_open" _ _ _ _ _ _ _ "V" "\<pp>" "(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" _ _ _ _ "key_map"] 
+sheaf_spec_is_presheaf assms key_map_is_ring_morphism key_maps_are_coherent sorry 
 qed
 
 lemma key_ring_iso_aux:
-  assumes "U \<subseteq> Spec" and "is_zariski_open U" and "\<pp> \<in> U" and
+  assumes "V \<subseteq> Spec" and "is_zariski_open V" and "\<pp> \<in> V" and
 "ring_homomorphism \<phi>
                 (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
                 (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
@@ -1786,15 +1786,15 @@ lemma key_ring_iso_aux:
                 (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
                 (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  zero_sheaf_spec \<pp> U)
+                  zero_sheaf_spec \<pp> V)
                 (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  one_sheaf_spec \<pp> U)
+                  one_sheaf_spec \<pp> V)
                 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
                 (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-and "\<And>U. U \<subseteq> Spec \<and> is_zariski_open U \<and> \<pp> \<in> U \<Longrightarrow> (\<And>s. s\<in>\<O> U \<Longrightarrow> (\<phi> \<circ> canonical_fun U) s = key_map U s)"
+and "\<forall>U\<in>(presheaf_of_rings.neighborhood Spec is_zariski_open \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> cxt_direct_lim.canonical_fun sheaf_spec sheaf_spec_morphisms (presheaf_of_rings.neighborhood Spec is_zariski_open \<pp>) U) s = key_map U s"
 shows "ring_isomorphism \<phi>
                 (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
                 (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
@@ -1802,9 +1802,9 @@ shows "ring_isomorphism \<phi>
                 (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
                 (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  zero_sheaf_spec \<pp> U)
+                  zero_sheaf_spec \<pp> V)
                 (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  one_sheaf_spec \<pp> U)
+                  one_sheaf_spec \<pp> V)
                 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
                 (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
@@ -1818,9 +1818,9 @@ proof (intro ring_isomorphism.intro bijective_map.intro bijective.intro)
      (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
        mult_sheaf_spec \<pp>)
      (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-       zero_sheaf_spec \<pp> U)
+       zero_sheaf_spec \<pp> V)
      (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-       one_sheaf_spec \<pp> U)
+       one_sheaf_spec \<pp> V)
      (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
      (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
      (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
@@ -1836,7 +1836,7 @@ next
 qed
 
 lemma key_ring_iso:
-  assumes "U \<subseteq> Spec" and "is_zariski_open U" and "\<pp> \<in> U"
+  assumes "V \<subseteq> Spec" and "is_zariski_open V" and "\<pp> \<in> V"
   shows "\<exists>\<phi>. ring_isomorphism \<phi>
                 (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
                 (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
@@ -1844,9 +1844,9 @@ lemma key_ring_iso:
                 (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
                   mult_sheaf_spec \<pp>)
                 (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  zero_sheaf_spec \<pp> U)
+                  zero_sheaf_spec \<pp> V)
                 (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-                  one_sheaf_spec \<pp> U)
+                  one_sheaf_spec \<pp> V)
                 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
                 (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
