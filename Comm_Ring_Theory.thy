@@ -1730,6 +1730,26 @@ proof-
     by (simp add: \<open>s \<in> \<O> U\<close> assms(4) key_map_def sheaf_spec_morphisms_def)
 qed
 
+lemma key_iso:
+  assumes "U \<subseteq> Spec" and "is_zariski_open U" and "\<pp> \<in> U"
+  shows "\<exists>\<phi>. ring_isomorphism \<phi>
+                (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
+                (presheaf_of_rings.add_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  add_sheaf_spec \<pp>)
+                (presheaf_of_rings.mult_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  mult_sheaf_spec \<pp>)
+                (presheaf_of_rings.zero_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  zero_sheaf_spec \<pp> U)
+                (presheaf_of_rings.one_stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
+                  one_sheaf_spec \<pp> U)
+                (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) 
+                (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+                (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+                (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+\<and> (\<forall>U. U \<subseteq> Spec \<and> is_zariski_open U \<and> \<pp> \<in> U \<longrightarrow> (\<forall>s\<in>\<O> U. (\<phi> \<circ> canonical_fun U) s = key_map U s))"
+  sorry
+
 end (* key_map*)
 
 
@@ -1804,8 +1824,11 @@ next
                 (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
                 (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
-                (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-    proof-
+                (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" 
+      using cxt_key_map.key_iso sorry
+  qed
+qed
+    (* proof-
       fix \<pp> U assume H: "\<pp> \<in> U" "is_zariski_open U" "U \<subseteq> Spec"
       define \<psi> where D: "\<psi> \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>" (* now use key_map_def here *)
       have F1: "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" (* now use key_map_is_map here *)
@@ -1934,7 +1957,7 @@ next
     qed 
   qed
 qed
-
+*)
 end (* comm_ring *)
 
 (* Construction 0.44: induced morphism between direct limits *)
