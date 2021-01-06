@@ -1660,6 +1660,68 @@ B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) an
 
 subsubsection \<open>Locally Ringed Spaces\<close>
 
+(* The key map from the stalk at a prime ideal \<pp> to the local ring at \<pp> *)
+locale cxt_key_map = comm_ring +
+  fixes \<pp>:: "'a set" assumes is_prime: "\<pp> \<in> Spec"
+begin
+
+definition key_map:: "'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a \<times> 'a) set)"
+  where "key_map U \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
+
+lemma key_map_is_map:
+  assumes  "\<pp> \<in> U"
+  shows "Set_Theory.map (key_map U) (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+proof 
+  have "\<And>s. s \<in> \<O> U \<Longrightarrow> s \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+    using sheaf_spec_def assms is_regular_def by blast 
+  thus "key_map U \<in> (\<O> U) \<rightarrow>\<^sub>E (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+    using key_map_def extensional_funcset_def by simp
+qed
+
+lemma key_map_is_ring_morphism:
+  assumes "\<pp> \<in> U" and "is_zariski_open U" and "U \<subseteq> Spec"
+  shows "ring_homomorphism (key_map U) 
+(\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
+(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" 
+proof (intro ring_homomorphism.intro) 
+  show "Set_Theory.map (key_map U) (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using key_map_is_map assms(1) by simp 
+next 
+  show "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
+    by (simp add: assms(2,3) sheaf_spec_on_open_is_ring) 
+next 
+  show "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+     (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+    using comm_ring.axioms(1) is_prime prime_ideal.local_ring_at_is_comm_ring spectrum_def by fastforce 
+next 
+  show "group_homomorphism (key_map U) (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
+     (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" 
+  proof- 
+    have "(key_map U) (zero_sheaf_spec U) = prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
+      using zero_sheaf_spec_def key_map_def prime_ideal.zero_local_ring_at_def assms(1-3) spectrum_def zero_sheaf_spec_in_sheaf_spec by fastforce 
+    moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow> y \<in> \<O> U \<Longrightarrow>
+           (key_map U) (add_sheaf_spec U x y) = prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero> (key_map U x) (key_map U y)"
+      using add_sheaf_spec_in_sheaf_spec key_map_def assms(1-3) prime_ideal.add_local_ring_at_def add_sheaf_spec_def spectrum_def by fastforce 
+    thus ?thesis unfolding group_homomorphism_def monoid_homomorphism_def monoid_homomorphism_axioms_def
+      by (metis Group_Theory.group_def abelian_group.axioms(1) assms calculation comm_ring.axioms(1) comm_ring.sheaf_spec_on_open_is_ring is_prime key_map_is_map local.comm_ring_axioms mem_Collect_eq prime_ideal.local_ring_at_is_comm_ring ring_def spectrum_def) 
+  qed 
+next 
+  show "monoid_homomorphism (key_map U) (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
+     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" 
+  proof- 
+    have "(key_map U) (one_sheaf_spec U) = prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
+      using one_sheaf_spec_def key_map_def prime_ideal.one_local_ring_at_def assms one_sheaf_spec_in_sheaf_spec spectrum_def by fastforce 
+    moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow> y \<in> \<O> U \<Longrightarrow>
+           (key_map U) (mult_sheaf_spec U x y) = prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero> (key_map U x) (key_map U y)" 
+      using mult_sheaf_spec_in_sheaf_spec key_map_def assms(1-3) prime_ideal.mult_local_ring_at_def mult_sheaf_spec_def spectrum_def by fastforce 
+    thus ?thesis unfolding monoid_homomorphism_def monoid_homomorphism_axioms_def 
+      by (metis assms calculation comm_ring.axioms(1) comm_ring.sheaf_spec_on_open_is_ring is_prime key_map_is_map local.comm_ring_axioms mem_Collect_eq prime_ideal.local_ring_at_is_comm_ring ring_def spectrum_def) 
+  qed
+qed
+
+end (* key_map*)
+
+
 (* def. 0.42 *)
 locale locally_ringed_space = ringed_space +
   assumes is_local_ring: "\<And>x U. x \<in> U \<Longrightarrow> is_open U \<Longrightarrow> U \<subseteq> X \<Longrightarrow>
@@ -1734,8 +1796,8 @@ next
                 (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
     proof-
       fix \<pp> U assume H: "\<pp> \<in> U" "is_zariski_open U" "U \<subseteq> Spec"
-      define \<psi> where D: "\<psi> \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
-      have F1: "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+      define \<psi> where D: "\<psi> \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>" (* now use key_map_def here *)
+      have F1: "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" (* now use key_map_is_map here *)
       proof 
         have "\<And>s. s \<in> \<O> U \<Longrightarrow> s \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using sheaf_spec_def H(1) is_regular_def by blast 
         thus "\<psi> \<in> (\<O> U) \<rightarrow>\<^sub>E (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using D extensional_funcset_def by simp 
@@ -1749,7 +1811,7 @@ next
       have "ring_homomorphism \<psi> 
 (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-      proof (intro ring_homomorphism.intro)
+      proof (intro ring_homomorphism.intro) (* now use key_map_is_ring_morphisms *)
         show "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using F1 by simp
       next
         show "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
