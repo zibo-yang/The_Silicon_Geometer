@@ -1016,18 +1016,19 @@ lemma valid_frac_1[simp]:
   "valid_frac (\<one> / \<one>)"
   unfolding valid_frac_def by blast
 
-abbreviation carrier_quotient_ring:: "('a \<times> 'a) set set"
+definition carrier_quotient_ring:: "('a \<times> 'a) set set"
   where "carrier_quotient_ring \<equiv> rel.Partition"
 
-lemma carrier_quotient_ring_iff[iff]:"X \<in> carrier_quotient_ring \<longleftrightarrow> valid_frac X "
-  unfolding valid_frac_def 
+lemma carrier_quotient_ring_iff[iff,simp]:"X \<in> carrier_quotient_ring \<longleftrightarrow> valid_frac X "
+  unfolding valid_frac_def carrier_quotient_ring_def
   apply safe
   subgoal using local.frac_def by fastforce
   subgoal using local.frac_def rel.natural.map_closed by auto
   done
 
 (* ex. 0.26 *)
-interpretation rel_frac:comm_ring carrier_quotient_ring add_rel mult_rel "(\<zero> / \<one>)" "(\<one> / \<one>)"
+lemma quotient_ring_is_comm_ring:
+  shows "comm_ring carrier_quotient_ring add_rel mult_rel (\<zero> / \<one>) (\<one> / \<one>)"
 proof (unfold_locales; unfold carrier_quotient_ring_iff)
   show add_assoc:"add_rel (add_rel a b) c = add_rel a (add_rel b c)" and
        mult_assoc:"mult_rel (mult_rel a b) c = mult_rel a (mult_rel b c)" and 
@@ -1155,22 +1156,28 @@ qed auto
 definition carrier_local_ring_at:: "('a \<times> 'a) set set"
   where "carrier_local_ring_at \<equiv> (R \<setminus> I)\<^sup>\<inverse> R\<^bsub>(+) (\<cdot>) \<zero>\<^esub>"
 
+interpretation local:cxt_quotient_ring "(R \<setminus> I)" R "(+)" "(\<cdot>)" \<zero> \<one>
+  apply intro_locales
+  using submonoid_prime_ideal by (simp add: submonoid_def)
+
 definition add_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
-  where "add_local_ring_at X Y \<equiv> cxt_quotient_ring.add_rel (R \<setminus> I) R (+) (\<cdot>) \<zero> X Y"
+  where "add_local_ring_at \<equiv> local.add_rel "
 
 definition mult_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
-  where "mult_local_ring_at X Y \<equiv> cxt_quotient_ring.mult_rel (R \<setminus> I) R (+) (\<cdot>) \<zero> X Y"
+  where "mult_local_ring_at \<equiv> local.mult_rel "
 
 definition zero_local_ring_at:: "('a \<times> 'a) set"
-  where "zero_local_ring_at \<equiv> cxt_quotient_ring.frac (R \<setminus> I) R (+) (\<cdot>) \<zero> \<zero> \<one>"
+  where "zero_local_ring_at \<equiv> local.frac \<zero> \<one>"
 
 definition one_local_ring_at:: "('a \<times> 'a) set"
-  where "one_local_ring_at \<equiv> cxt_quotient_ring.frac (R \<setminus> I) R (+) (\<cdot>) \<zero> \<one> \<one>"
+  where "one_local_ring_at \<equiv> local.frac \<one> \<one>"
 
 lemma local_ring_at_is_comm_ring:
-  shows "comm_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
-(zero_local_ring_at) (one_local_ring_at)"
-  sorry
+  shows "comm_ring carrier_local_ring_at add_local_ring_at mult_local_ring_at 
+            zero_local_ring_at one_local_ring_at"
+unfolding carrier_local_ring_at_def add_local_ring_at_def mult_local_ring_at_def
+    zero_local_ring_at_def one_local_ring_at_def
+  by (rule local.quotient_ring_is_comm_ring)
 
 end (* prime_ideal *)
 
