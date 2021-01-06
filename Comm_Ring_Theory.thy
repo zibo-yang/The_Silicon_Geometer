@@ -1221,8 +1221,13 @@ definition add_sheaf_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('
   where "add_sheaf_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.add_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
 
 lemma
-  assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
+  assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" and "U \<subseteq> Spec"
   shows "is_regular (add_sheaf_spec U s s') U"
+  sorry
+
+lemma add_sheaf_spec_in_sheaf_spec:
+  assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "is_zariski_open U" and "U \<subseteq> Spec"
+  shows "add_sheaf_spec U s t \<in> \<O> U"
   sorry
 
 definition mult_sheaf_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
@@ -1715,34 +1720,48 @@ next
     proof-
       fix \<pp> U assume H: "\<pp> \<in> U" "is_zariski_open U" "U \<subseteq> Spec"
       define \<psi> where D: "\<psi> \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
+      have F1: "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+      proof 
+        have "\<And>s. s \<in> \<O> U \<Longrightarrow> s \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using sheaf_spec_def H(1) is_regular_def by blast 
+        thus "\<psi> \<in> (\<O> U) \<rightarrow>\<^sub>E (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using D extensional_funcset_def by simp 
+      qed
+      have F2: "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)" 
+        using sheaf_spec_on_open_is_ring H(2,3) by simp
+      have F3: "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+     (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+        using prime_ideal.local_ring_at_is_comm_ring H(1,3) comm_ring.axioms(1) spectrum_def by fastforce
       have "ring_homomorphism \<psi> 
 (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
       proof (intro ring_homomorphism.intro)
-        show "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
-        proof
-          have "\<And>s. s \<in> \<O> U \<Longrightarrow> s \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using sheaf_spec_def H(1) is_regular_def by blast
-          thus "\<psi> \<in> (\<O> U) \<rightarrow>\<^sub>E (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using D extensional_funcset_def by simp
-        qed
+        show "Set_Theory.map \<psi> (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using F1 by simp
       next
         show "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
-          using sheaf_spec_on_open_is_ring H(2,3) by simp
+          using F2 by simp
       next
         show "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
      (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
      (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-          using prime_ideal.local_ring_at_is_comm_ring H(1,3) comm_ring.axioms(1) spectrum_def by fastforce
+          using F3 by fastforce
       next
         show "group_homomorphism \<psi> (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
-     (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" sorry
-        (* proof (intro group_homomorphism.intro monoid_homomorphism.intro monoid_homomorphism_axioms.intro)
-          show "\<psi> (zero_sheaf_spec U) = prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
+     (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+        proof- (* (intro group_homomorphism.intro monoid_homomorphism.intro monoid_homomorphism_axioms.intro) *)
+          have "\<psi> (zero_sheaf_spec U) = prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
             using zero_sheaf_spec_def D prime_ideal.zero_local_ring_at_def
             by (metis (no_types, lifting) H(1-3) mem_Collect_eq restrict_apply' spectrum_def subsetD zero_sheaf_spec_in_sheaf_spec)
-*)  
+          moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow>
+           y \<in> \<O> U \<Longrightarrow>
+           \<psi> (add_sheaf_spec U x y) = prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero> (\<psi> x) (\<psi> y)"
+            using add_sheaf_spec_in_sheaf_spec D H(1-3) prime_ideal.add_local_ring_at_def add_sheaf_spec_def spectrum_def by fastforce
+          thus ?thesis unfolding group_homomorphism_def monoid_homomorphism_def monoid_homomorphism_axioms_def 
+            using F1 F2 F3 by (simp add: Group_Theory.group.axioms(1) abelian_group.axioms(1) calculation ring_def)
+        qed
       next
         show "monoid_homomorphism \<psi> (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
-     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" sorry
+     (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+          sorry
       qed
       then obtain \<phi> where "ring_homomorphism \<phi>
 (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
