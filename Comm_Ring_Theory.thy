@@ -1237,6 +1237,11 @@ lemma
   assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
   shows "is_regular (mult_sheaf_spec U s s') U" sorry
 
+lemma mult_sheaf_spec_in_sheaf_spec:
+  assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "is_zariski_open U" and "U \<subseteq> Spec"
+  shows "mult_sheaf_spec U s t \<in> \<O> U"
+  sorry
+
 definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"
 
@@ -1264,9 +1269,19 @@ lemma zero_sheaf_spec_in_sheaf_spec:
 definition one_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one> \<one>"
 
-lemma 
+lemma one_sheaf_spec_is_map:
+  assumes "U \<subseteq> Spec"
+  shows "Set_Theory.map (one_sheaf_spec U) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
+  sorry
+
+lemma is_regular_one_sheaf_spec:
   assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "is_regular (one_sheaf_spec U) U" sorry
+
+lemma one_sheaf_spec_in_sheaf_spec:
+  assumes "is_zariski_open U" and "U \<subseteq> Spec"
+  shows "one_sheaf_spec U \<in> \<O> U"
+  using assms is_regular_one_sheaf_spec one_sheaf_spec_is_map by (simp add: sheaf_spec_def)
 
 lemma sheaf_spec_on_open_is_ring:
   assumes "is_zariski_open U" and "U \<subseteq> Spec"
@@ -1747,7 +1762,7 @@ next
       next
         show "group_homomorphism \<psi> (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
      (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-        proof- (* (intro group_homomorphism.intro monoid_homomorphism.intro monoid_homomorphism_axioms.intro) *)
+        proof-
           have "\<psi> (zero_sheaf_spec U) = prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
             using zero_sheaf_spec_def D prime_ideal.zero_local_ring_at_def
             by (metis (no_types, lifting) H(1-3) mem_Collect_eq restrict_apply' spectrum_def subsetD zero_sheaf_spec_in_sheaf_spec)
@@ -1761,7 +1776,17 @@ next
       next
         show "monoid_homomorphism \<psi> (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
      (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-          sorry
+        proof- 
+          have "\<psi> (one_sheaf_spec U) = prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
+            using one_sheaf_spec_def D prime_ideal.one_local_ring_at_def
+            by (metis (no_types, lifting) H(1-3) mem_Collect_eq restrict_apply' spectrum_def subsetD one_sheaf_spec_in_sheaf_spec)
+          moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow>
+           y \<in> \<O> U \<Longrightarrow>
+           \<psi> (mult_sheaf_spec U x y) = prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero> (\<psi> x) (\<psi> y)"
+            using mult_sheaf_spec_in_sheaf_spec D H(1-3) prime_ideal.mult_local_ring_at_def mult_sheaf_spec_def spectrum_def by fastforce
+          thus ?thesis unfolding monoid_homomorphism_def monoid_homomorphism_axioms_def 
+            using F1 F2 F3 by (simp add: calculation ring_def)
+        qed
       qed
       then obtain \<phi> where "ring_homomorphism \<phi>
 (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>)
