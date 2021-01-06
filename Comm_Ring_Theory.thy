@@ -1719,6 +1719,17 @@ next
   qed
 qed
 
+lemma key_maps_are_coherent:
+  assumes "V \<subseteq> U" and "is_zariski_open U" and "is_zariski_open V" and "\<pp> \<in> V"
+  shows "\<And>s. s \<in> \<O> U \<Longrightarrow> (key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
+proof-
+  fix s assume "s \<in> \<O> U"
+  then have "sheaf_spec_morphisms U V s \<in> \<O> V"
+    using assms(1-3) sheaf_spec_morphisms_are_maps map.map_closed by fastforce
+  thus "(key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
+    by (simp add: \<open>s \<in> \<O> U\<close> assms(4) key_map_def sheaf_spec_morphisms_def)
+qed
+
 end (* key_map*)
 
 
