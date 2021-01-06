@@ -1235,9 +1235,26 @@ lemma
 definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"
 
+lemma zero_sheaf_spec_is_map:
+  assumes "U \<subseteq> Spec"
+  shows "Set_Theory.map (zero_sheaf_spec U) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
+proof
+  have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" using assms spectrum_def by auto
+  hence "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> zero_sheaf_spec U \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+    using zero_sheaf_spec_def sorry
+  hence "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> zero_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" by auto
+  thus "zero_sheaf_spec U \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
+    using extensional_funcset_def by (smt Pi_iff restrict_PiE restrict_apply' zero_sheaf_spec_def)
+qed
+
 lemma is_regular_zero_sheaf_spec:
   assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "is_regular (zero_sheaf_spec U) U" sorry
+
+lemma zero_sheaf_spec_in_sheaf_spec:
+  assumes "is_zariski_open U" and "U \<subseteq> Spec"
+  shows "zero_sheaf_spec U \<in> \<O> U"
+  using assms is_regular_zero_sheaf_spec zero_sheaf_spec_is_map by (simp add: sheaf_spec_def)
 
 definition one_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one> \<one>"
@@ -1718,6 +1735,11 @@ next
       next
         show "group_homomorphism \<psi> (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
      (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" sorry
+        (* proof (intro group_homomorphism.intro monoid_homomorphism.intro monoid_homomorphism_axioms.intro)
+          show "\<psi> (zero_sheaf_spec U) = prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
+            using zero_sheaf_spec_def D prime_ideal.zero_local_ring_at_def
+            by (metis (no_types, lifting) H(1-3) mem_Collect_eq restrict_apply' spectrum_def subsetD zero_sheaf_spec_in_sheaf_spec)
+*)  
       next
         show "monoid_homomorphism \<psi> (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
      (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)" sorry
