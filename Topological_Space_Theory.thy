@@ -151,6 +151,10 @@ lemma (in topological_space) ind_topology_is_open_self [iff]: "ind_topology S is
 lemma (in topological_space) ind_topology_is_open_empty [iff]: "ind_topology S is_open {}"
   by (simp add: ind_topology_axioms_def ind_topology_def topological_space_axioms)
 
+lemma (in topological_space) 
+  shows "ind_topology.ind_is_open S is_open S U \<longleftrightarrow> is_open U"
+  sorry
+
 subsection \<open>Continuous Maps\<close>
 
 locale continuous_map = source: topological_space X is_open + target: topological_space X' is_open' 
