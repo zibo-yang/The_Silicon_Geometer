@@ -1581,28 +1581,43 @@ context presheaf_of_rings
 begin
 
 (* definition 0.37 *)
+
+definition neighborhood:: "'a \<Rightarrow> ('a set) set"
+  where "neighborhood x \<equiv> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
+
 definition stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set set"
-  where "stalk_at x \<equiv> lim \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
+  where "stalk_at x \<equiv> lim \<FF> \<rho> (neighborhood x)"
 
 definition add_stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
-  where "add_stalk_at x \<equiv> cxt_direct_lim.add_rel \<FF> \<rho> add_str {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
+  where "add_stalk_at x \<equiv> cxt_direct_lim.add_rel \<FF> \<rho> add_str (neighborhood x)"
 
 definition mult_stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
-  where "mult_stalk_at x \<equiv> cxt_direct_lim.mult_rel \<FF> \<rho> mult_str {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
+  where "mult_stalk_at x \<equiv> cxt_direct_lim.mult_rel \<FF> \<rho> mult_str (neighborhood x)"
 
 definition zero_stalk_at:: "'a \<Rightarrow> 'a set \<Rightarrow> ('a set \<times> 'b) set"
-  where "zero_stalk_at x U \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U} U \<zero>\<^bsub>U\<^esub>"
+  where "zero_stalk_at x V \<equiv> cxt_direct_lim.class_of \<FF> \<rho> (neighborhood x) V \<zero>\<^bsub>V\<^esub>"
 
 definition one_stalk_at:: "'a \<Rightarrow> 'a set \<Rightarrow> ('a set \<times> 'b) set"
-  where "one_stalk_at x U \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U} U \<one>\<^bsub>U\<^esub>"
+  where "one_stalk_at x V \<equiv> cxt_direct_lim.class_of \<FF> \<rho> (neighborhood x) V \<one>\<^bsub>V\<^esub>"
 
 definition class_of:: "'a \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) set"
-  where "class_of x p \<equiv> cxt_direct_lim.class_of \<FF> \<rho> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U} (fst p) (snd p)"
+  where "class_of x p \<equiv> cxt_direct_lim.class_of \<FF> \<rho> (neighborhood x) (fst p) (snd p)"
 
 lemma stalk_is_ring:
-  assumes "is_open U" and "x \<in> U" and "U \<subseteq> S"
-  shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x U) (one_stalk_at x U)"
+  assumes "is_open V" and "x \<in> V" and "V \<subseteq> S"
+  shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V)"
   sorry
+
+lemma universal_property_for_stalk:
+  fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
+  assumes "is_open V" and "x \<in> V" and "V \<subseteq> S" and "ring A add mult zero one" and 
+"\<And>U. U\<in>(neighborhood x) \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
+and "\<And>U V. U\<in>(neighborhood x) \<Longrightarrow> V\<in>(neighborhood x) \<Longrightarrow> V \<subseteq> U \<Longrightarrow> (\<And>x. x \<in> (\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) x = \<psi> U x)"
+shows "\<forall>V\<in>(neighborhood x). \<exists>!u. ring_homomorphism u  
+(stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V) 
+A add mult zero one 
+\<and> (\<forall>U\<in>(neighborhood x). \<forall>s\<in>(\<FF> U). (u \<circ> cxt_direct_lim.canonical_fun \<FF> \<rho> (neighborhood x) U) s = \<psi> U s)"
+  using cxt_direct_lim.universal_property sorry
 
 end (* presheaf_of_rings *)
 
@@ -1759,7 +1774,7 @@ proof-
   thus ?thesis unfolding cxt_direct_lim_def cxt_direct_lim_axioms_def
     using cxt_direct_lim.universal_property[of "Spec" "is_zariski_open" "sheaf_spec" "sheaf_spec_morphisms" "(\<lambda>\<pp>. undefined)" "add_sheaf_spec" "mult_sheaf_spec" "zero_sheaf_spec" "one_sheaf_spec" "{U. \<pp>\<in> U \<and> is_zariski_open U \<and> U \<subseteq> Spec}"
 _ _ _ _ _ "key_map"]
-assms key_map_is_ring_morphism key_maps_are_coherent sorry
+assms key_map_is_ring_morphism key_maps_are_coherent sorry 
 qed
 
 lemma key_ring_iso_aux:
