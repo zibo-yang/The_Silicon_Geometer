@@ -1568,9 +1568,8 @@ and mult:: "'c \<Rightarrow> 'c \<Rightarrow> 'c" and zero:: "'c" and one:: "'c"
   assumes "ring A add mult zero one" and 
 "\<And>U. U \<in> I \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
 and "\<And>U V. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> V \<subseteq> U \<Longrightarrow> (\<And>x. x \<in> (\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) x = \<psi> U x)"
-  shows "\<forall>V\<in>I. \<exists>!u. \<forall>U. U \<in> I \<longrightarrow> 
-  ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor>V,\<zero>\<^bsub>V\<^esub>\<rfloor> \<lfloor>V,\<one>\<^bsub>V\<^esub>\<rfloor> A add mult zero one 
-\<and> (\<forall>x\<in>(\<FF> U). (u \<circ> canonical_fun U) x = \<psi> U x)"
+  shows "\<forall>V\<in>I. \<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor>V,\<zero>\<^bsub>V\<^esub>\<rfloor> \<lfloor>V,\<one>\<^bsub>V\<^esub>\<rfloor> A add mult zero one 
+\<and> (\<forall>U\<in>I. \<forall>x\<in>(\<FF> U). (u \<circ> canonical_fun U) x = \<psi> U x)"
   sorry
 
 
@@ -1756,8 +1755,11 @@ proof-
              (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
              (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
     using prime_ideal.local_ring_at_is_comm_ring comm_ring.axioms(1) is_prime spectrum_def by fastforce
+  moreover have "cxt_direct_lim Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec {U. \<pp>\<in> U \<and> is_zariski_open U \<and> U \<subseteq> Spec}" sorry
   thus ?thesis unfolding cxt_direct_lim_def cxt_direct_lim_axioms_def
-    using cxt_direct_lim.universal_property assms key_map_is_ring_morphism key_maps_are_coherent cxt_direct_lim_def sorry
+    using cxt_direct_lim.universal_property[of "Spec" "is_zariski_open" "sheaf_spec" "sheaf_spec_morphisms" "(\<lambda>\<pp>. undefined)" "add_sheaf_spec" "mult_sheaf_spec" "zero_sheaf_spec" "one_sheaf_spec" "{U. \<pp>\<in> U \<and> is_zariski_open U \<and> U \<subseteq> Spec}"
+_ _ _ _ _ "key_map"]
+assms key_map_is_ring_morphism key_maps_are_coherent sorry
 qed
 
 lemma key_ring_iso_aux:
