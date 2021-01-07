@@ -410,6 +410,11 @@ lemma
   shows "is_zariski_open \<D>(x)"
   sorry
 
+lemma belongs_standard_open_iff:
+  assumes "x \<in> R" and "\<pp> \<in> Spec"
+  shows "x \<notin> \<pp> \<longleftrightarrow> \<pp> \<in> \<D>(x)"
+  sorry
+
 end (* comm_ring *)
 
 
@@ -1962,9 +1967,23 @@ next
 "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>" sorry
       hence "local.frac a f = local.frac b g" sorry
       then obtain h where "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" sorry
+      then have "\<And>\<qq>. \<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h) \<Longrightarrow> s' \<qq> = t' \<qq>" using belongs_standard_open_iff sorry
       thus "s = t" sorry
     qed
-    moreover have "\<phi> ` (pr.stalk_at \<pp>) = (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" sorry
+    moreover have "\<phi> ` (pr.stalk_at \<pp>) = (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+    proof
+      show " \<phi> ` pr.stalk_at \<pp> \<subseteq> pi.carrier_local_ring_at" sorry
+    next
+      show " pi.carrier_local_ring_at \<subseteq> \<phi> ` pr.stalk_at \<pp>"
+      proof 
+        fix x assume "x \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+        then obtain a f where "a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" sorry 
+        define s where "s \<equiv> \<lambda>\<qq>\<in>\<D>(f). local.frac a f" 
+        then have "s \<in> \<O>(\<D>(f))" sorry 
+        then have "\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f" sorry 
+        thus "x \<in> \<phi> ` (pr.stalk_at \<pp>)" sorry 
+      qed 
+    qed 
     ultimately show ?thesis by (simp add: bij_betw_def)
   qed
 qed
@@ -2252,4 +2271,4 @@ lemma empty_scheme_is_scheme:
 {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0" 
   by (simp add: empty_scheme_is_affine_scheme affine_scheme.affine_scheme_is_scheme)
 
-end
+end 
