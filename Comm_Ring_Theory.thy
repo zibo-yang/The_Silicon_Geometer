@@ -1822,6 +1822,9 @@ interpretation pr:presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spec
             \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
   sorry
 
+interpretation local:cxt_quotient_ring "(R \<setminus> \<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+  sorry
+
 lemma key_ring_morphism:
   assumes "V \<subseteq> Spec" and "is_zariski_open V" and "\<pp> \<in> V"
   shows "\<exists>\<phi>. ring_homomorphism \<phi>
@@ -1930,7 +1933,20 @@ next
     sorry 
 next 
   show "bij_betw \<phi> (presheaf_of_rings.stalk_at Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-    sorry
+  proof-
+    have "inj_on \<phi> (pr.stalk_at \<pp>)"
+    proof
+      fix s t assume "s \<in> pr.stalk_at \<pp>" "t \<in> pr.stalk_at \<pp>" "\<phi> s = \<phi> t"
+      then obtain U s' t' a f b g where "is_zariski_open U" "U \<subseteq> Spec" "\<pp> \<in> U" "s' \<in> \<O> U" "t' \<in> \<O> U"
+"s = pr.class_of \<pp> (U, s')" "t = pr.class_of \<pp> (U, t')" "s' = (\<lambda>\<qq>\<in>U. local.frac a f)" "t' = (\<lambda>\<qq>\<in>U. local.frac b g)" 
+"a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>" sorry
+      hence "local.frac a f = local.frac b g" sorry
+      then obtain h where "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" sorry
+      thus "s = t" sorry
+    qed
+    moreover have "\<phi> ` (pr.stalk_at \<pp>) = (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" sorry
+    ultimately show ?thesis by (simp add: bij_betw_def)
+  qed
 qed
 
 lemma key_ring_iso:
