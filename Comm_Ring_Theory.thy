@@ -1804,7 +1804,7 @@ next
   qed
 qed
 
-lemma key_maps_are_coherent:
+lemma key_map_is_coherent:
   assumes "V \<subseteq> U" and "is_zariski_open U" and "is_zariski_open V" and "\<pp> \<in> V"
   shows "\<And>s. s \<in> \<O> U \<Longrightarrow> (key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
 proof-
@@ -1850,9 +1850,29 @@ proof-
     using prime_ideal.local_ring_at_is_comm_ring comm_ring.axioms(1) is_prime spectrum_def by fastforce
   moreover have "V \<in> presheaf_of_rings.neighborhood Spec is_zariski_open \<pp>" 
     using assms presheaf_of_rings.neighborhood_def sheaf_spec_is_presheaf by fastforce
+  moreover have "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+     add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec" using sheaf_spec_is_presheaf by simp
+  moreover have "\<And>U. U \<in> presheaf_of_rings.neighborhood Spec is_zariski_open \<pp> \<Longrightarrow>
+          ring_homomorphism (key_map U) \<O> U (add_sheaf_spec U) (mult_sheaf_spec U)
+           (zero_sheaf_spec U) (one_sheaf_spec U) R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>
+           (prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+           (prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>)
+           (prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)
+           (prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+    using key_map_is_ring_morphism presheaf_of_rings.neighborhood_def sheaf_spec_is_presheaf by force
+  moreover have "\<And>U V x.
+        U \<in> presheaf_of_rings.neighborhood Spec is_zariski_open \<pp> \<Longrightarrow>
+        V \<in> presheaf_of_rings.neighborhood Spec is_zariski_open \<pp> \<Longrightarrow>
+        V \<subseteq> U \<Longrightarrow> x \<in> \<O> U \<Longrightarrow> (key_map V \<circ> sheaf_spec_morphisms U V) x = key_map U x" 
+    using key_map_is_coherent
+    by (metis (no_types, lifting) mem_Collect_eq presheaf_of_rings.neighborhood_def sheaf_spec_is_presheaf)
   ultimately show ?thesis 
-    using presheaf_of_rings.universal_property_for_stalk[of "Spec" "is_zariski_open" _ _ _ _ _ _ _ "V" "\<pp>" "(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" _ _ _ _ "key_map"] 
-sheaf_spec_is_presheaf assms key_map_is_ring_morphism key_maps_are_coherent sorry 
+    using assms presheaf_of_rings.universal_property_for_stalk[
+of "Spec" "is_zariski_open" "sheaf_spec" "sheaf_spec_morphisms" "\<lambda>\<pp>. undefined" "add_sheaf_spec" "mult_sheaf_spec" "zero_sheaf_spec" "one_sheaf_spec" "V" "\<pp>" "(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+"prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>" 
+"prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>" 
+"prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
+"prime_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" "key_map"] by auto
 qed
 
 lemma key_ring_iso_aux:
@@ -2096,7 +2116,7 @@ subsection \<open>Schemes\<close>
 
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + comm_ring +
-  assumes are_affine_schemes: "\<forall>x. x \<in> X \<longrightarrow> (\<exists>U. is_open U \<and> x \<in> U \<and> 
+  assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U. is_open U \<and> x \<in> U \<and> 
 affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
 (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
 (cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
@@ -2108,7 +2128,37 @@ begin
 
 lemma affine_scheme_is_scheme:
   shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
-  sorry
+proof (intro scheme.intro scheme_axioms.intro)
+  show "locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" by (simp add: locally_ringed_space_axioms)
+next
+  show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
+next
+  show "\<And>x. x \<in> X \<Longrightarrow>
+         \<exists>U. is_open U \<and>
+             x \<in> U \<and>
+             affine_scheme U (ind_topology.ind_is_open X is_open U)
+              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
+              (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
+              (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) R (+)
+              (\<cdot>) \<zero> \<one>"
+  proof-
+    fix x assume "x \<in> X"
+    then have "affine_scheme X (ind_topology.ind_is_open X is_open X)
+              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X X) (cxt_ind_sheaf.ind_ring_morphisms \<rho> X) b
+              (cxt_ind_sheaf.ind_add_str add_str X) (cxt_ind_sheaf.ind_mult_str mult_str X)
+              (cxt_ind_sheaf.ind_zero_str zero_str X) (cxt_ind_sheaf.ind_one_str one_str X) R (+)
+              (\<cdot>) \<zero> \<one>"
+      sorry
+    thus "\<exists>U. is_open U \<and>
+             x \<in> U \<and>
+             affine_scheme U (ind_topology.ind_is_open X is_open U)
+              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
+              (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
+              (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) R (+)
+              (\<cdot>) \<zero> \<one>"
+      using \<open>x \<in> X\<close> by blast
+  qed
+qed
 
 end (* affine_scheme*)
 
