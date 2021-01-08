@@ -455,7 +455,8 @@ lemma eq_\<rho>:
 
 end (* presheaf_of_rings *)
 
-locale morphism_presheaves_of_rings = source: presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
+locale morphism_presheaves_of_rings = 
+source: presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
   + target: presheaf_of_rings X is_open \<FF>' \<rho>' c add_str' mult_str' zero_str' one_str'
   for X and is_open 
     and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") 
@@ -483,8 +484,8 @@ lemma
   shows "morphism_presheaves_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str \<FF> \<rho> b add_str mult_str zero_str one_str (\<lambda>U. identity (\<FF> U))"
 proof (intro morphism_presheaves_of_rings.intro morphism_presheaves_of_rings_axioms.intro)
   show "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (identity (\<FF> U)) 
-                                           (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
-                                           (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U)"
+                                            (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U) 
+                                            (\<FF> U) (add_str U) (mult_str U) (zero_str U) (one_str U)"
     using assms presheaf_of_rings.identity_map presheaf_of_rings.is_ring_morphism
     by (smt id_apply presheaf_of_rings.is_map_from_is_homomorphism restrict_ext restrict_on_source subset_refl)
   show "\<And>U V. \<lbrakk>is_open U; is_open V; V \<subseteq> U\<rbrakk>
@@ -537,7 +538,8 @@ subsection \<open>Sheaves of Rings\<close>
 locale sheaf_of_rings = presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
   for X and is_open and \<FF> and \<rho> and b and add_str and mult_str and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str + 
   assumes locality: "\<And>U I V s. open_cover_of_open_subset X is_open U I V \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> V i \<subseteq> U) \<Longrightarrow> 
-s \<in> \<FF> U \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> \<rho> U (V i) s = \<zero>\<^bsub>(V i)\<^esub>) \<Longrightarrow> s = \<zero>\<^bsub>U\<^esub>" and
+s \<in> \<FF> U \<Longrightarrow> (\<And>i. i\<in>I \<Longrightarrow> \<rho> U (V i) s = \<zero>\<^bsub>(V i)\<^esub>) \<Longrightarrow> s = \<zero>\<^bsub>U\<^esub>" 
+and
 glueing: "\<And>U I V s. open_cover_of_open_subset X is_open U I V \<Longrightarrow> (\<forall>i. i\<in>I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<FF> (V i)) \<Longrightarrow> 
 (\<And>i j. i\<in>I \<Longrightarrow> j\<in>I \<Longrightarrow> \<rho> (V i) (V i \<inter> V j) (s i) = \<rho> (V j) (V i \<inter> V j) (s j)) \<Longrightarrow> 
 (\<exists>t. t \<in> \<FF> U \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> U (V i) t = s i))"
@@ -1235,10 +1237,10 @@ definition sheaf_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<
   where "\<O> U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
                   \<and> is_regular s U}"
 
-definition \<O>b::"'a set \<Rightarrow> ('a \<times> 'a) set" where
-  "\<O>b = (\<lambda>\<pp>. undefined)"
+definition \<O>b::"'a set \<Rightarrow> ('a \<times> 'a) set" 
+  where "\<O>b = (\<lambda>\<pp>. undefined)"
 
-lemma \<O>_on_emptyset:"\<O> {} = {\<O>b}" 
+lemma \<O>_on_emptyset: "\<O> {} = {\<O>b}" 
   unfolding sheaf_spec_def \<O>b_def
   by (auto simp:Set_Theory.map_def map_on_empty_is_regular) 
   
@@ -1588,20 +1590,20 @@ lemma sheaf_spec_morphisms_are_maps:
 lemma sheaf_spec_morphisms_are_ring_morphisms:
   assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
   shows "ring_homomorphism (sheaf_spec_morphisms U V)
-                            (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
-                            (\<O> V) (add_sheaf_spec V) (mult_sheaf_spec V) (zero_sheaf_spec V) (one_sheaf_spec V)"
+                           (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
+                           (\<O> V) (add_sheaf_spec V) (mult_sheaf_spec V) (zero_sheaf_spec V) (one_sheaf_spec V)"
   sorry
 
 lemma sheaf_spec_is_presheaf:
-  shows "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  shows "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
 proof-
   have "topological_space Spec is_zariski_open" by (simp add: zarisky_is_topological_space)
-  moreover have "sheaf_spec {} = {\<lambda>\<pp>. undefined}"
+  moreover have "sheaf_spec {} = {\<O>b}"
   proof
-    show "{\<lambda>\<pp>. undefined} \<subseteq> \<O> {}"
-      using undefined_is_map_on_empty map_on_empty_is_regular sheaf_spec_def by fastforce
-    thus "\<O> {} \<subseteq> {\<lambda>\<pp>. undefined}" 
+    show "{\<O>b} \<subseteq> \<O> {}"
+      using undefined_is_map_on_empty map_on_empty_is_regular sheaf_spec_def \<O>_on_emptyset by auto
+    thus "\<O> {} \<subseteq> {\<O>b}" 
       using sheaf_spec_def sheaf_spec_of_empty_is_singleton by auto
   qed
   moreover have "\<And>U. is_zariski_open U \<Longrightarrow> (\<And>s. s \<in> (\<O> U) \<Longrightarrow> sheaf_spec_morphisms U U s = s)"
@@ -1616,10 +1618,10 @@ qed
 
 (* ex. 0.30 *)
 lemma sheaf_spec_is_sheaf:
-  shows "sheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  shows "sheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
 proof (intro sheaf_of_rings.intro sheaf_of_rings_axioms.intro)
-  show "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  show "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
     using sheaf_spec_is_presheaf by simp
 next
@@ -1743,19 +1745,20 @@ section \<open>Schemes\<close>
 subsection \<open>Ringed Spaces\<close>
 
 (* definition 0.32 *)
-locale ringed_space = topological_space X is_open + sheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
+locale ringed_space = 
+topological_space X is_open + sheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
   for X and is_open and \<O>\<^sub>X and \<rho> and b and add_str and mult_str and zero_str and one_str
 
 context comm_ring
 begin
 
 lemma spec_is_ringed_space:
-  shows "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  shows "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
 proof (intro ringed_space.intro)
   show "topological_space Spec is_zariski_open" by (simp add: zarisky_is_topological_space)
 next
-  show "sheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  show "sheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
     using sheaf_spec_is_sheaf by simp
 qed
@@ -1763,7 +1766,8 @@ qed
 end (* comm_ring *)
 
 (* definition 0.33 *)
-locale morphism_ringed_spaces = source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X 
+locale morphism_ringed_spaces = 
+source: ringed_space X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X 
 + target: ringed_space Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
 for X and is_open\<^sub>X and \<O>\<^sub>X and \<rho>\<^sub>X and b and add_str\<^sub>X and mult_str\<^sub>X and zero_str\<^sub>X and one_str\<^sub>X 
 and Y and is_open\<^sub>Y and \<O>\<^sub>Y and \<rho>\<^sub>Y and d and add_str\<^sub>Y and mult_str\<^sub>Y and zero_str\<^sub>Y and one_str\<^sub>Y +
@@ -1894,7 +1898,7 @@ lemma universal_property_for_stalk:
   fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
   assumes "is_open V" and "x \<in> V" and "V \<subseteq> S" and "ring A add mult zero one" and 
 "\<And>U. U\<in>(neighborhood x) \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
-and "\<And>U V. U\<in>(neighborhood x) \<Longrightarrow> V\<in>(neighborhood x) \<Longrightarrow> V \<subseteq> U \<Longrightarrow> (\<And>x. x \<in> (\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) x = \<psi> U x)"
+and "\<And>U V. U\<in>(neighborhood x) \<Longrightarrow> V\<in>(neighborhood x) \<Longrightarrow> V \<subseteq> U \<Longrightarrow> (\<And>x. x\<in>(\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) x = \<psi> U x)"
 shows "\<forall>V\<in>(neighborhood x). \<exists>!u. ring_homomorphism u  
 (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V) 
 A add mult zero one 
@@ -2064,7 +2068,7 @@ proof-
     using prime_ideal.local_ring_at_is_comm_ring comm_ring.axioms(1) is_prime spectrum_def by fastforce
   moreover have "V \<in> presheaf_of_rings.neighborhood Spec is_zariski_open \<pp>" 
     using assms presheaf_of_rings.neighborhood_def sheaf_spec_is_presheaf by fastforce
-  moreover have "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  moreover have "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec" using sheaf_spec_is_presheaf by simp
   moreover have "\<And>U. U \<in> presheaf_of_rings.neighborhood Spec is_zariski_open \<pp> \<Longrightarrow>
           ring_homomorphism (key_map U) \<O> U (add_sheaf_spec U) (mult_sheaf_spec U)
@@ -2082,7 +2086,7 @@ proof-
     by (metis (no_types, lifting) mem_Collect_eq presheaf_of_rings.neighborhood_def sheaf_spec_is_presheaf)
   ultimately show ?thesis 
     using assms presheaf_of_rings.universal_property_for_stalk[
-of "Spec" "is_zariski_open" "sheaf_spec" "sheaf_spec_morphisms" "\<lambda>\<pp>. undefined" "add_sheaf_spec" "mult_sheaf_spec" "zero_sheaf_spec" "one_sheaf_spec" "V" "\<pp>" "(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+of "Spec" "is_zariski_open" "sheaf_spec" "sheaf_spec_morphisms" "\<O>b" "add_sheaf_spec" "mult_sheaf_spec" "zero_sheaf_spec" "one_sheaf_spec" "V" "\<pp>" "(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
 "prime_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>" 
 "prime_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>" 
 "prime_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>" 
@@ -2158,9 +2162,9 @@ next
     qed
     moreover have "\<phi> ` (pr.stalk_at \<pp>) = (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
     proof
-      show " \<phi> ` pr.stalk_at \<pp> \<subseteq> pi.carrier_local_ring_at" sorry
+      show "\<phi> ` pr.stalk_at \<pp> \<subseteq> pi.carrier_local_ring_at" sorry
     next
-      show " pi.carrier_local_ring_at \<subseteq> \<phi> ` pr.stalk_at \<pp>"
+      show "pi.carrier_local_ring_at \<subseteq> \<phi> ` pr.stalk_at \<pp>"
       proof 
         fix x assume "x \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
         then obtain a f where "a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" sorry 
@@ -2206,10 +2210,10 @@ begin
 
 (* ex. 0.43 *)
 lemma spec_is_locally_ringed_space:
-  shows "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  shows "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
 proof (intro locally_ringed_space.intro locally_ringed_space_axioms.intro)
-  show "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  show "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
     using spec_is_ringed_space by simp
 next
@@ -2349,7 +2353,7 @@ subsection \<open>Affine Schemes\<close>
 (* definition 0.46 *)
 locale affine_scheme = locally_ringed_space + comm_ring +
   assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined) (\<lambda>U. add_sheaf_spec U)
+Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
 (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
 
 
@@ -2404,28 +2408,28 @@ qed
 end (* affine_scheme*)
 
 lemma (in comm_ring) spec_is_affine_scheme:
-  shows "affine_scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  shows "affine_scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
 R (+) (\<cdot>) \<zero> \<one>"
 proof (intro affine_scheme.intro affine_scheme_axioms.intro)
   show "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-     (\<lambda>\<pp>. undefined) add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
+     \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
     using spec_is_locally_ringed_space by simp
 next
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
 next
   show "\<exists>f \<phi>\<^sub>f.
        iso_locally_ringed_spaces Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-        (\<lambda>\<pp>. undefined) add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-        Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+        \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+        Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
         add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
   proof-
     have "homeomorphism Spec is_zariski_open Spec is_zariski_open (identity Spec)" sorry
     moreover have "iso_presheaves_of_rings
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
 (cxt_direct_im_sheaf.direct_im_sheaf Spec (identity Spec) sheaf_spec)
 (cxt_direct_im_sheaf.direct_im_sheaf_morphisms Spec (identity Spec) sheaf_spec_morphisms)
-(\<lambda>\<pp>. undefined)
+\<O>b
 (\<lambda>V x y. add_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
 (\<lambda>V x y. mult_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
 (\<lambda>V. zero_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V)) 
@@ -2433,8 +2437,8 @@ Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
 (\<lambda>U. identity (\<O> U))
 " sorry
     moreover have "morphism_locally_ringed_spaces
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined) add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
 (identity Spec)
 (\<lambda>U. identity (\<O> U))" sorry
     ultimately show ?thesis using iso_locally_ringed_spaces_def by fastforce
@@ -2442,7 +2446,7 @@ Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
 qed
 
 lemma (in comm_ring) spec_is_scheme:
-  shows "scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms (\<lambda>\<pp>. undefined)
+  shows "scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
 R (+) (\<cdot>) \<zero> \<one>"
   using spec_is_affine_scheme by (simp add: affine_scheme.affine_scheme_is_scheme)
