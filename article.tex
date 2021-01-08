@@ -99,7 +99,7 @@ Kevin Buzzard in 2017 proposed the formalization of schemes
 \begin{quote}
 	as basically a challenge to see if Lean can handle such a complex definition.\footnote{\url{https://github.com/leanprover-community/mathlib/issues/26}} 
 \end{quote}
-We should note that the Isabelle proof assistant is based on a much more minimalist type theory, known as a simple type theory. As a consequence, many users of dependent type theories see Isabelle's type theory has a far less expressive system for formalizing advanced mathematics.  These doubts have been vocally expressed by Kevin Buzzard on his blog:
+We should note that the Isabelle proof assistant is based on a much more minimalist type theory, known as a simple type theory. As a consequence, many users of dependent type theories see Isabelle's type theory as a far less expressive system for formalizing advanced mathematics.  These doubts have been vocally expressed by Kevin Buzzard on his blog:
 \begin{quote}
 	What can Isabelle/HOL actually do before it breaks? Nobody knows. [\dots] But do you people want to attract “working mathematicians”? Then where are the schemes? Can your system even do schemes? I don’t know. Does anyone know? If it cannot then this would be very valuable to know because it will help mathematician early adopters to make an informed decision about which system to use.\footnote{\url{https://xenaproject.wordpress.com/2020/02/09/where-is-the-fashionable-mathematics/}}
 \end{quote}
@@ -422,6 +422,7 @@ As a sanity check for our formal definitions, we prove in Isabelle that the spec
 
 % snippet of code to be inserted here for the corresponding lemma in Isabelle `lemma spec_is_locally_ringed_space`
 
+The required formal machinery and our formalization as a whole benefit from the interpretation mechanism that allows to keep statements and proof scripts concise. Without this mechanism the terms involved in the statements and proof scripts of such an intricate hierarchy of nested algebraic structures would have to be fed with many arguments, cluttering these statements and proof scripts to the point where they would become unreadable and difficult to use. Fortunately, the interpretation mechanism that goes along with locales allows for concise and manageable terms with many invisible arguments which are declared beforehand using the interpretation mechanism. \\   
 Now, we introduce our last construction. \\
 	Let $(X, \mathscr{O}_X)$, $(Y, \mathscr{O}_Y)$ be two ringed spaces and $(f, \phi_f)$ a morphism between them. Given $x \in X$, consider 
 	\[
@@ -475,7 +476,8 @@ To catch on the state of the art in the Lean theorem prover, we finally prove in
 
 \section{Concluding Thoughts}
 
-For our formalization we built upon Ballarin's work \cite{ballarin20} formalizing parts of Jacobson's \textit{Basic Algebra} textbook. We believe Ballarin's nice formalization could serve as a first stepping stone to a new algebra library for Isabelle. We also hope the present work could serve as a second stepping stone in that direction. Our work demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. 
+For our formalization we built upon Ballarin's work \cite{ballarin20} formalizing parts of Jacobson's \textit{Basic Algebra} textbook. We believe Ballarin's nice formalization could serve as a first stepping stone to a new algebra library for Isabelle. We also hope the present work could serve as a second stepping stone in that direction. Also, we seized the opportunity of formalizing schemes to partly rebuild the topology library. Our new topology library is entirely built on modern locales instead of using type classes like it is the case in \textit{HOL-Topological\_Spaces.thy}, allowing more abstraction. In particular, our topological spaces have explicit carrier sets instead of using \textit{UNIV}. \\
+Our work demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. 
 Actually, it seems that our experience in Isabelle to formalize schemes was much smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
 \begin{quote}
 	The project is completely incompatible with modern Lean and mathlib, but if you compile it then you get a sorry-free proof that an affine scheme is a scheme. During our proof we ran into a huge problem because our blueprint, the Stacks Project, assumed that $R[1/f][1/g]=R[1/fg]$, and this turns out to be unprovable for Lean’s version of equality [\dots]. The Lean community wrestled with this idea, and has ultimately come up with a beefed-up notion of equality for which the identity is now true.\footnote{\url{https://xenaproject.wordpress.com/2020/06/05/the-sphere-eversion-project/}}
