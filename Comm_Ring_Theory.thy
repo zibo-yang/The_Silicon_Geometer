@@ -1253,8 +1253,7 @@ definition add_sheaf_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('
   where "add_sheaf_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.add_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
 
 lemma is_regular_add_sheaf_spec:
-  assumes (* the assumption "is_zariski_open U" is unnecessary *) 
-    "is_regular s U" and "is_regular s' U" and "U \<subseteq> Spec"
+  assumes "is_regular s U" and "is_regular s' U" and "U \<subseteq> Spec"
   shows "is_regular (add_sheaf_spec U s s') U"
 proof -     
   have "add_sheaf_spec U s s' \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
@@ -1322,62 +1321,249 @@ proof -
 qed
 
 lemma add_sheaf_spec_in_sheaf_spec:
-  assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "is_zariski_open U" and "U \<subseteq> Spec"
+  assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "U \<subseteq> Spec"
   shows "add_sheaf_spec U s t \<in> \<O> U"
-  sorry
+proof -
+  have "\<exists>I\<in>U. cxt_quotient_ring.add_rel (R\<setminus>S) R (+) (\<cdot>) \<zero> (s S) (t S) \<in> R \<^bsub>I (+) (\<cdot>) \<zero>\<^esub>"
+    if "S \<in> U" for S
+  proof -
+    interpret cr:cxt_quotient_ring "(R\<setminus>S)" R "(+)" "(\<cdot>)" \<zero> \<one>
+      using assms(3) cxt_quotient_ring_def local.comm_ring_axioms prime_ideal.submonoid_prime_ideal 
+        spectrum_def that 
+      by fastforce
+    interpret pi:prime_ideal R S "(+)" "(\<cdot>)" \<zero> \<one>
+      using assms(3) spectrum_def that by auto
+    have "s S \<in> cr.carrier_quotient_ring" using \<open>s \<in> \<O> U\<close> 
+      apply (simp add:sheaf_spec_def)
+      using is_regular_def pi.carrier_local_ring_at_def that by blast
+    moreover have "t S \<in> cr.carrier_quotient_ring" using \<open>t \<in> \<O> U\<close>
+      apply (simp add:sheaf_spec_def)
+      using is_regular_def pi.carrier_local_ring_at_def that by blast
+    ultimately have "cr.add_rel (s S) (t S) \<in> pi.carrier_local_ring_at"
+      unfolding pi.carrier_local_ring_at_def by blast
+    then show ?thesis using that by blast
+  qed
+  then have "Set_Theory.map (add_sheaf_spec U s t) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
+    unfolding add_sheaf_spec_def sheaf_spec_def
+    by (auto intro:map.intro)
+  then show ?thesis  
+    using assms is_regular_add_sheaf_spec
+    unfolding add_sheaf_spec_def sheaf_spec_def by auto
+qed
 
 definition mult_sheaf_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "mult_sheaf_spec U s s' \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.mult_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) (s' \<pp>)"
 
-lemma
-  assumes "is_zariski_open U" and "is_regular s U" and "is_regular s' U" 
-  shows "is_regular (mult_sheaf_spec U s s') U" sorry
+lemma is_regular_mult_sheaf_spec:
+  assumes "is_regular s U" and "is_regular s' U" and "U \<subseteq> Spec"
+  shows "is_regular (mult_sheaf_spec U s s') U" 
+proof -     
+  have "mult_sheaf_spec U s s' \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
+  proof -
+    interpret pi: prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+      using \<open>U \<subseteq> Spec\<close>[unfolded spectrum_def] \<open>\<pp> \<in> U\<close> by blast
+    have "s \<pp> \<in> pi.carrier_local_ring_at" 
+      "s' \<pp> \<in> pi.carrier_local_ring_at"
+      using \<open>is_regular s U\<close> \<open>is_regular s' U\<close>
+      unfolding is_regular_def using that by blast+
+    then show ?thesis
+      unfolding mult_sheaf_spec_def using that 
+      apply (simp flip:pi.mult_local_ring_at_def)
+      using pi.local_ring_at_is_comm_ring 
+      by (meson comm_ring.ideal_R_R ideal.ideal(2))
+  qed  
+  moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
+            \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
+                  mult_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
+    if "\<pp> \<in> U" for \<pp> 
+  proof -
+    obtain V1 r1 f1 where "V1 \<subseteq>U" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
+        q_V1:"(\<forall>\<qq>. \<qq> \<in> V1 \<longrightarrow> f1 \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r1 f1)"
+      using \<open>is_regular s U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
+      by blast
+    obtain V2 r2 f2 where "V2 \<subseteq>U" "\<pp> \<in> V2" "r2 \<in> R" "f2 \<in> R" and
+        q_V2:"(\<forall>\<qq>. \<qq> \<in> V2 \<longrightarrow> f2 \<notin> \<qq> \<and> s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r2 f2)"
+      using \<open>is_regular s' U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
+      by blast
+
+    define V3 where "V3 = V1 \<inter> V2"
+    define r3 where "r3 = r1 \<cdot> r2  "
+    define f3 where "f3 = f1 \<cdot> f2"
+    have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
+      unfolding V3_def r3_def f3_def
+      using \<open>V1 \<subseteq> U\<close> \<open>\<pp> \<in> V1\<close> \<open>\<pp> \<in> V2\<close> \<open>f1 \<in> R\<close> \<open>f2 \<in> R\<close> \<open>r1 \<in> R\<close> \<open>r2 \<in> R\<close> by blast+
+    moreover have "f3 \<notin> \<qq>"
+        "mult_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
+        if "\<qq> \<in> V3" for \<qq>
+    proof -
+      interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
+        using \<open>U \<subseteq> Spec\<close> \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> cxt_quotient_ring_def local.comm_ring_axioms 
+          prime_ideal.submonoid_prime_ideal spectrum_def 
+        by fastforce
+      have "f1 \<notin> \<qq>" "s \<qq> = q.frac r1 f1"
+        using q_V1 \<open>\<qq> \<in> V3\<close>  unfolding V3_def by auto
+      have "f2 \<notin> \<qq>" "s' \<qq> = q.frac r2 f2"
+        using q_V2 \<open>\<qq> \<in> V3\<close>  unfolding V3_def by auto
+
+      have "q.mult_rel (q.frac r1 f1) (q.frac r2 f2) = q.frac (r1 \<cdot> r2 ) (f1 \<cdot> f2)"
+        apply (rule q.mult_rel_frac)
+        subgoal by (simp add: \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> \<open>r1 \<in> R\<close> \<open>r2 \<in> R\<close>)
+        subgoal using \<open>f2 \<in> R\<close> \<open>f2 \<notin> \<qq>\<close> \<open>r2 \<in> R\<close> by blast
+        done
+      then have "q.mult_rel (s \<qq>) (s' \<qq>) = q.frac r3 f3"
+        unfolding r3_def f3_def using \<open>s \<qq> = q.frac r1 f1\<close> \<open>s' \<qq> = q.frac r2 f2\<close>
+        by auto
+      then show "mult_sheaf_spec U s s' \<qq> = q.frac r3 f3"
+        unfolding mult_sheaf_spec_def using \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> by auto
+      show "f3 \<notin> \<qq>" using that unfolding V3_def f3_def 
+        using \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> \<open>f2 \<in> R\<close> \<open>f2 \<notin> \<qq>\<close> q.sub_composition_closed by auto 
+    qed
+    ultimately show ?thesis by metis
+  qed
+  ultimately show ?thesis unfolding is_regular_def by auto
+qed
 
 lemma mult_sheaf_spec_in_sheaf_spec:
-  assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "is_zariski_open U" and "U \<subseteq> Spec"
+  assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "U \<subseteq> Spec"
   shows "mult_sheaf_spec U s t \<in> \<O> U"
-  sorry
+proof -
+  have "\<exists>I\<in>U. cxt_quotient_ring.mult_rel (R\<setminus>S) R (+) (\<cdot>) \<zero> (s S) (t S) \<in> R \<^bsub>I (+) (\<cdot>) \<zero>\<^esub>"
+    if "S \<in> U" for S
+  proof -
+    interpret cr:cxt_quotient_ring "(R\<setminus>S)" R "(+)" "(\<cdot>)" \<zero> \<one>
+      using assms(3) cxt_quotient_ring_def local.comm_ring_axioms prime_ideal.submonoid_prime_ideal 
+        spectrum_def that 
+      by fastforce
+    interpret pi:prime_ideal R S "(+)" "(\<cdot>)" \<zero> \<one>
+      using assms(3) spectrum_def that by auto
+    have "s S \<in> cr.carrier_quotient_ring" using \<open>s \<in> \<O> U\<close> 
+      apply (simp add:sheaf_spec_def)
+      using is_regular_def pi.carrier_local_ring_at_def that by blast
+    moreover have "t S \<in> cr.carrier_quotient_ring" using \<open>t \<in> \<O> U\<close>
+      apply (simp add:sheaf_spec_def)
+      using is_regular_def pi.carrier_local_ring_at_def that by blast
+    ultimately have "cr.mult_rel (s S) (t S) \<in> pi.carrier_local_ring_at"
+      unfolding pi.carrier_local_ring_at_def by blast
+    then show ?thesis using that by blast
+  qed
+  then have "Set_Theory.map (mult_sheaf_spec U s t) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
+    unfolding mult_sheaf_spec_def sheaf_spec_def
+    by (auto intro:map.intro)
+  then show ?thesis  
+    using assms is_regular_mult_sheaf_spec
+    unfolding mult_sheaf_spec_def sheaf_spec_def by auto
+qed
 
 definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"
 
-lemma zero_sheaf_spec_is_map:
-  assumes "U \<subseteq> Spec"
-  shows "Set_Theory.map (zero_sheaf_spec U) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
-proof
-  have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" using assms spectrum_def by auto
-  hence "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> zero_sheaf_spec U \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-    using zero_sheaf_spec_def sorry
-  hence "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> zero_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" by auto
-  thus "zero_sheaf_spec U \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
-    using extensional_funcset_def by (smt Pi_iff restrict_PiE restrict_apply' zero_sheaf_spec_def)
-qed
-
 lemma is_regular_zero_sheaf_spec:
-  assumes "is_zariski_open U" and "U \<subseteq> Spec"
-  shows "is_regular (zero_sheaf_spec U) U" sorry
+  assumes "U \<subseteq> Spec"
+  shows "is_regular (zero_sheaf_spec U) U" 
+proof -       
+  have "zero_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
+    unfolding zero_sheaf_spec_def 
+    using assms closed_subsets_def closed_subsets_empty 
+      cxt_quotient_ring.carrier_quotient_ring_iff cxt_quotient_ring.valid_frac_0 
+      cxt_quotient_ring_def local.comm_ring_axioms prime_ideal.carrier_local_ring_at_def 
+      prime_ideal.submonoid_prime_ideal subsetD that by fastforce 
+  moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
+            \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
+                  zero_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
+    if "\<pp> \<in> U" for \<pp>    
+  proof -
+    define V3 where "V3 = U"
+    define r3 where "r3 = \<zero> "
+    define f3 where "f3 = \<one>"
+    have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
+      unfolding V3_def r3_def f3_def using that by auto
+    moreover have "f3 \<notin> \<qq>"
+        "zero_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
+        if "\<qq> \<in> V3" for \<qq>
+      subgoal using V3_def assms f3_def prime_ideal.submonoid_prime_ideal spectrum_def 
+          submonoid.sub_unit_closed that by fastforce  
+      subgoal using V3_def f3_def r3_def that zero_sheaf_spec_def by auto
+      done
+    ultimately show ?thesis by metis
+  qed
+  ultimately show ?thesis unfolding is_regular_def by auto
+qed  
 
 lemma zero_sheaf_spec_in_sheaf_spec:
-  assumes "is_zariski_open U" and "U \<subseteq> Spec"
+  assumes "U \<subseteq> Spec"
   shows "zero_sheaf_spec U \<in> \<O> U"
-  using assms is_regular_zero_sheaf_spec zero_sheaf_spec_is_map by (simp add: sheaf_spec_def)
+proof -
+  have "zero_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" if "\<pp> \<in> U" for \<pp>
+  proof -
+    have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" using assms that spectrum_def by auto
+    hence "zero_sheaf_spec U \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+      using assms is_regular_def is_regular_zero_sheaf_spec that by auto
+    then show ?thesis using that by auto
+  qed
+  then have "zero_sheaf_spec U \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
+    using extensional_funcset_def 
+    by (smt Pi_iff restrict_PiE restrict_apply' zero_sheaf_spec_def)
+  with is_regular_zero_sheaf_spec[OF \<open>U \<subseteq> Spec\<close>]
+  show ?thesis
+    using assms is_regular_zero_sheaf_spec 
+    unfolding sheaf_spec_def by (simp add: map.intro)
+qed
 
 definition one_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one> \<one>"
 
-lemma one_sheaf_spec_is_map:
-  assumes "U \<subseteq> Spec"
-  shows "Set_Theory.map (one_sheaf_spec U) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
-  sorry
-
 lemma is_regular_one_sheaf_spec:
-  assumes "is_zariski_open U" and "U \<subseteq> Spec"
-  shows "is_regular (one_sheaf_spec U) U" sorry
+  assumes "U \<subseteq> Spec"
+  shows "is_regular (one_sheaf_spec U) U" 
+proof -       
+  have "one_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
+    unfolding one_sheaf_spec_def 
+    by (smt assms closed_subsets_empty comm_ring.closed_subsets_def 
+        cxt_quotient_ring.carrier_quotient_ring_iff cxt_quotient_ring.valid_frac_1 
+        cxt_quotient_ring_def local.comm_ring_axioms mem_Collect_eq 
+        prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal 
+        restrict_apply subsetD that)
+  moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
+            \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
+                  one_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
+    if "\<pp> \<in> U" for \<pp>    
+  proof -
+    define V3 where "V3 = U"
+    define r3 where "r3 = \<one>"
+    define f3 where "f3 = \<one>"
+    have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
+      unfolding V3_def r3_def f3_def using that by auto
+    moreover have "f3 \<notin> \<qq>"
+        "one_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
+        if "\<qq> \<in> V3" for \<qq>
+      subgoal using V3_def assms f3_def prime_ideal.submonoid_prime_ideal spectrum_def 
+          submonoid.sub_unit_closed that by fastforce  
+      subgoal using V3_def f3_def r3_def that one_sheaf_spec_def by auto
+      done
+    ultimately show ?thesis by metis
+  qed
+  ultimately show ?thesis unfolding is_regular_def by auto
+qed
 
 lemma one_sheaf_spec_in_sheaf_spec:
-  assumes "is_zariski_open U" and "U \<subseteq> Spec"
+  assumes "U \<subseteq> Spec"
   shows "one_sheaf_spec U \<in> \<O> U"
-  using assms is_regular_one_sheaf_spec one_sheaf_spec_is_map by (simp add: sheaf_spec_def)
+proof -
+  have "one_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" if "\<pp> \<in> U" for \<pp>
+  proof -
+    have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" using assms that spectrum_def by auto
+    hence "one_sheaf_spec U \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+      using assms is_regular_def is_regular_one_sheaf_spec that by auto
+    then show ?thesis using that by auto
+  qed
+  then have "one_sheaf_spec U \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
+    using extensional_funcset_def 
+    by (smt Pi_iff restrict_PiE restrict_apply' one_sheaf_spec_def)
+  with is_regular_one_sheaf_spec[OF \<open>U \<subseteq> Spec\<close>]
+  show ?thesis
+    using assms is_regular_zero_sheaf_spec 
+    unfolding sheaf_spec_def by (simp add: map.intro)
+qed
 
 lemma sheaf_spec_on_open_is_ring:
   assumes "is_zariski_open U" and "U \<subseteq> Spec"
