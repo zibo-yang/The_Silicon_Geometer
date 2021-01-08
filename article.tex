@@ -79,7 +79,7 @@
 \maketitle
 
 \begin{abstract}
- 	We report on a formalization of Grothendieck's schemes in the proof assistant Isabelle and we discuss in the process the design choices made. Schemes being sophisticated mathematical objects in algebraic geometry introduced by the mathematician Alexander Grothendieck in 1960, this experiment shows that the simple type theory implemented in Isabelle can handle such sophisticated objects despite doubts raised about Isabelle capability in that direction.   
+ 	We report on a formalization of Grothendieck's schemes in the proof assistant Isabelle and we discuss in the process the design choices made. Schemes being sophisticated mathematical objects in algebraic geometry introduced by the mathematician Alexander Grothendieck in 1960, this experiment shows that the simple type theory implemented in Isabelle can easily handle such sophisticated objects despite doubts raised about Isabelle capability in that direction.   
 \end{abstract}
 
 \section{Motivation and Problems}
@@ -476,7 +476,7 @@ To catch on the state of the art in the Lean theorem prover, we finally prove in
 \section{Concluding Thoughts}
 
 For our formalization we built upon Ballarin's work \cite{ballarin20} formalizing parts of Jacobson's \textit{Basic Algebra} textbook. We believe Ballarin's nice formalization could serve as a first stepping stone to a new algebra library for Isabelle. We also hope the present work could serve as a second stepping stone in that direction. Our work demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. 
-Actually, it seems that our experience in Isabelle to formalize schemes was smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
+Actually, it seems that our experience in Isabelle to formalize schemes was much smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
 \begin{quote}
 	The project is completely incompatible with modern Lean and mathlib, but if you compile it then you get a sorry-free proof that an affine scheme is a scheme. During our proof we ran into a huge problem because our blueprint, the Stacks Project, assumed that $R[1/f][1/g]=R[1/fg]$, and this turns out to be unprovable for Lean’s version of equality [\dots]. The Lean community wrestled with this idea, and has ultimately come up with a beefed-up notion of equality for which the identity is now true.\footnote{\url{https://xenaproject.wordpress.com/2020/06/05/the-sphere-eversion-project/}}
 \end{quote}	
