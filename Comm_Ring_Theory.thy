@@ -2377,28 +2377,28 @@ b
 subsection \<open>Affine Schemes\<close>
 
 (* definition 0.46 *)
-locale affine_scheme = comm_ring + 
+locale cons_affine_scheme = comm_ring + 
 iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b "\<lambda>U. add_sheaf_spec U"
 "\<lambda>U. mult_sheaf_spec U" "\<lambda>U. zero_sheaf_spec U" "\<lambda>U. one_sheaf_spec U" f \<phi>\<^sub>f
 for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f
 
-locale classical_affine_scheme = locally_ringed_space + comm_ring +
+locale affine_scheme = locally_ringed_space + comm_ring +
   assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
 (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
 
-sublocale affine_scheme \<subseteq> classical_affine_scheme sorry
+sublocale cons_affine_scheme \<subseteq> affine_scheme sorry
 
 subsection \<open>Schemes\<close>
 
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + comm_ring +
-  assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U f \<phi>\<^sub>f. x\<in>U \<and> is_open U \<and> U \<subseteq> X \<and> 
-affine_scheme R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
+  assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U. x\<in>U \<and> is_open U \<and> U \<subseteq> X \<and> 
+affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
 (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
 (cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
-(cxt_ind_sheaf.ind_one_str one_str U) f \<phi>\<^sub>f)"
+(cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>)"
 
 context affine_scheme
 begin
@@ -2406,26 +2406,42 @@ begin
 lemma affine_scheme_is_scheme:
   shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
 proof (intro scheme.intro scheme_axioms.intro)
-  show "locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" sorry
+  show "locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" by (simp add: locally_ringed_space_axioms)
 next
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
 next
   show "\<And>x. x \<in> X \<Longrightarrow>
-         \<exists>U f \<phi>\<^sub>f. x\<in>U \<and> is_open U \<and> U \<subseteq> X \<and>
-             affine_scheme R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U)
+         \<exists>U. x \<in> U \<and> is_open U \<and> U \<subseteq> X \<and>
+             affine_scheme U (ind_topology.ind_is_open X is_open U)
               (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
               (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
-              (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) f \<phi>\<^sub>f"
-    sorry
+              (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) R (+)
+              (\<cdot>) \<zero> \<one>"
+  proof-
+    fix x assume "x \<in> X"
+    then have "affine_scheme X (ind_topology.ind_is_open X is_open X)
+              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X X) (cxt_ind_sheaf.ind_ring_morphisms \<rho> X) b
+              (cxt_ind_sheaf.ind_add_str add_str X) (cxt_ind_sheaf.ind_mult_str mult_str X)
+              (cxt_ind_sheaf.ind_zero_str zero_str X) (cxt_ind_sheaf.ind_one_str one_str X) R (+)
+              (\<cdot>) \<zero> \<one>"
+      sorry
+    thus "\<exists>U. x \<in> U \<and> is_open U \<and> U \<subseteq> X \<and>
+             affine_scheme U (ind_topology.ind_is_open X is_open U)
+              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
+              (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
+              (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) R (+)
+              (\<cdot>) \<zero> \<one>"
+      using \<open>x \<in> X\<close> by blast
+  qed
 qed
 
 end (* affine_scheme*)
 
-lemma (in comm_ring) spec_is_affine_scheme:
-  shows "affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
+lemma (in comm_ring) spec_is_cons_affine_scheme:
+  shows "cons_affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
 (identity Spec) (\<lambda>U. identity (\<O> U))"
-proof (intro affine_scheme.intro)
+proof (intro cons_affine_scheme.intro)
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
 next
   show "iso_locally_ringed_spaces Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
@@ -2458,10 +2474,10 @@ lemma (in comm_ring) spec_is_scheme:
   shows "scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
 R (+) (\<cdot>) \<zero> \<one>"
-  using spec_is_affine_scheme by (simp add: affine_scheme.affine_scheme_is_scheme)
+  using spec_is_cons_affine_scheme affine_scheme.affine_scheme_is_scheme sorry
 
-lemma empty_scheme_is_affine_scheme:
-  shows "affine_scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 
+lemma empty_scheme_is_cons_affine_scheme:
+  shows "cons_affine_scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 
 {} (\<lambda>U. True) (\<lambda>U. {0}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
 (\<lambda>\<pp>\<in>Spec. undefined) (\<lambda>U.\<lambda>s\<in>(\<O> U). 0)"
   sorry
@@ -2469,6 +2485,6 @@ lemma empty_scheme_is_affine_scheme:
 lemma empty_scheme_is_scheme:
   shows "scheme {} (\<lambda>U. True) (\<lambda>U. {0}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
 {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0"
-  using affine_scheme.affine_scheme_is_scheme empty_scheme_is_affine_scheme by fastforce
+  using affine_scheme.affine_scheme_is_scheme empty_scheme_is_cons_affine_scheme sorry
 
 end
