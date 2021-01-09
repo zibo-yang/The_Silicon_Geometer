@@ -423,9 +423,14 @@ subsection \<open>Standard Open Sets\<close>
 definition standard_open:: "'a \<Rightarrow> 'a set set" ("\<D> _")
   where "\<D>(x) \<equiv> (Spec \<setminus> \<V>(\<langle>x\<rangle>))"
 
-lemma 
+lemma standard_open_is_zariski_open:
   assumes "x \<in> R"
   shows "is_zariski_open \<D>(x)"
+  sorry
+
+lemma standard_pen_is_subset:
+  assumes "x \<in> R"
+  shows "\<D>(x) \<subseteq> Spec"
   sorry
 
 lemma belongs_standard_open_iff:
@@ -2041,6 +2046,12 @@ definition class_of:: "'a \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> ('a s
 definition canonical_fun:: "'a \<Rightarrow> 'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set"
   where "canonical_fun x U y \<equiv> cxt_direct_lim.canonical_fun \<FF> \<rho> (neighborhoods x) U y"
 
+lemma class_of_in_stalk_at:
+  fixes p:: "'a set \<times> 'b"
+  assumes "x \<in> S" and "fst p \<in> neighborhoods x" and "snd p \<in> \<FF>(fst p)"
+  shows "class_of x p \<in> stalk_at x"
+  sorry
+
 lemma stalk_is_ring:
   assumes "is_open V" and "x \<in> V" and "V \<subseteq> S"
   shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V)"
@@ -2262,13 +2273,26 @@ next
       show "pi.carrier_local_ring_at \<subseteq> \<phi> ` pr.stalk_at \<pp>"
       proof 
         fix x assume "x \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-        then obtain a f where "a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" sorry 
+        then obtain a f where F:"a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" sorry 
         define s where "s \<equiv> \<lambda>\<qq>\<in>\<D>(f). local.frac a f" 
-        then have "s \<in> \<O>(\<D>(f))" sorry 
-        then have "\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f" sorry 
-        thus "x \<in> \<phi> ` (pr.stalk_at \<pp>)" sorry 
-      qed 
-    qed 
+        then have sec:"s \<in> \<O>(\<D>(f))" sorry 
+        then have im:"\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f" sorry 
+        thus "x \<in> \<phi> ` (pr.stalk_at \<pp>)"
+        proof- 
+          have "pr.class_of \<pp> (\<D>(f), s) \<in> (pr.stalk_at \<pp>)"
+          proof (rule pr.class_of_in_stalk_at)
+            show "\<pp> \<in> Spec" using is_prime by simp
+          next
+            show "fst (\<D> f, s) \<in> pr.neighborhoods \<pp>"
+              using pr.neighborhoods_def belongs_standard_open_iff F(2,3) is_prime standard_open_is_zariski_open standard_pen_is_subset 
+              by (metis (no_types, lifting) fst_conv mem_Collect_eq)
+          next
+            show "snd (\<D> f, s) \<in> \<O> fst (\<D> f, s)" using sec by simp 
+          qed
+          thus ?thesis using F(4) im by blast 
+        qed 
+      qed
+    qed
     ultimately show ?thesis by (simp add: bij_betw_def)
   qed
 qed
