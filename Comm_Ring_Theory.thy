@@ -1092,6 +1092,12 @@ lemma carrier_quotient_ring_iff[iff,simp]:"X \<in> carrier_quotient_ring \<longl
   subgoal using local.frac_def rel.natural.map_closed by auto
   done
 
+lemma frac_from_carrier:
+  assumes "X \<in> carrier_quotient_ring"
+  obtains r s where "r \<in> R" "s \<in> S" "X = rel.Class (r,s)"
+  using assms carrier_quotient_ring_def
+  by (metis (no_types, lifting) SigmaE rel.representant_exists)
+
 (* ex. 0.26 *)
 (*
 lemma quotient_ring_is_comm_ring:
@@ -1252,6 +1258,11 @@ lemma local_ring_at_is_comm_ring:
   by (simp add: add_local_ring_at_def carrier_local_ring_at_def local.local.comm_ring_axioms 
       mult_local_ring_at_def one_local_ring_at_def zero_local_ring_at_def)
 *)
+
+lemma frac_from_carrier_local:
+  assumes "X \<in> carrier_local_ring_at"
+  obtains r s where "r \<in> R" "s \<in> R" "s \<notin> I" "X = local.frac r s"
+  using assms carrier_local_ring_at_def local.frac_from_carrier sorry 
 
 end (* prime_ideal *)
 
@@ -2272,10 +2283,25 @@ next
     next
       show "pi.carrier_local_ring_at \<subseteq> \<phi> ` pr.stalk_at \<pp>"
       proof 
-        fix x assume "x \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-        then obtain a f where F:"a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" sorry 
-        define s where sec_def:"s \<equiv> \<lambda>\<qq>\<in>\<D>(f). local.frac a f" 
-        then have sec:"s \<in> \<O>(\<D>(f))" sorry 
+        fix x assume H:"x \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+        obtain a f where F:"a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" 
+          using pi.frac_from_carrier_local H by blast
+        define s where sec_def:"s \<equiv> \<lambda>\<qq>\<in>\<D>(f). local.frac a f"
+        then have sec:"s \<in> \<O>(\<D>(f))"
+        proof-
+          have "Set_Theory.map s \<D>(f) (\<Union>\<qq>\<in>\<D>(f). (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>))" 
+            using sec_def map_def extensional_funcset_def
+            by (smt F(2-4) Pi_iff UN_iff \<open>x \<in> pi.carrier_local_ring_at\<close> belongs_standard_open_iff is_prime restrict_PiE)
+          moreover have "\<And>\<qq>. \<qq> \<in> \<D>(f) \<Longrightarrow> s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)"
+          proof-
+            fix \<qq> assume "\<qq> \<in> \<D>(f)" 
+            hence "f \<notin> \<qq>" using belongs_standard_open_iff F(2) standard_pen_is_subset by blast
+            then have "local.frac a f \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using F(1,2) local.carrier_quotient_ring_def sorry
+            thus "s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using sec_def by (simp add: \<open>\<qq> \<in> \<D> f\<close>)
+          qed
+          moreover have "is_regular s \<D>(f)" using is_regular_def[of s "\<D>(f)"] sorry
+          ultimately show ?thesis using sheaf_spec_def[of "\<D>(f)"] by (smt mem_Collect_eq)
+        qed
         then have im:"\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f"
         proof-
           have "\<phi> (pr.class_of \<pp> (\<D>(f), s)) = \<phi> (pr.canonical_fun \<pp> \<D>(f) s)" 
