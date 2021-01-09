@@ -2274,9 +2274,17 @@ next
       proof 
         fix x assume "x \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
         then obtain a f where F:"a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" sorry 
-        define s where "s \<equiv> \<lambda>\<qq>\<in>\<D>(f). local.frac a f" 
+        define s where sec_def:"s \<equiv> \<lambda>\<qq>\<in>\<D>(f). local.frac a f" 
         then have sec:"s \<in> \<O>(\<D>(f))" sorry 
-        then have im:"\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f" sorry 
+        then have im:"\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f"
+        proof-
+          have "\<phi> (pr.class_of \<pp> (\<D>(f), s)) = \<phi> (pr.canonical_fun \<pp> \<D>(f) s)" 
+            using pr.canonical_fun_def cxt_direct_lim.canonical_fun_def pr.class_of_def is_prime pr.stalk_is_direct_lim by fastforce
+          moreover have "\<dots> = key_map \<D>(f) s" 
+            using assms(5) by (metis (no_types, lifting) F(2,3) belongs_standard_open_iff comp_apply is_prime mem_Collect_eq pr.neighborhoods_def sec standard_open_is_zariski_open standard_pen_is_subset)
+          ultimately show ?thesis 
+            using key_map_def sec_def sec by (metis F(2,3) belongs_standard_open_iff is_prime restrict_apply') 
+        qed
         thus "x \<in> \<phi> ` (pr.stalk_at \<pp>)"
         proof- 
           have "pr.class_of \<pp> (\<D>(f), s) \<in> (pr.stalk_at \<pp>)"
