@@ -1785,11 +1785,11 @@ next
                         "\<And>i. i \<in> I \<Longrightarrow> V i \<subseteq> U" 
                         "s \<in> \<O> U" 
                         "\<And>i. i \<in> I \<Longrightarrow> sheaf_spec_morphisms U (V i) s = zero_sheaf_spec (V i)"
-  then have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> s \<pp> = zero_sheaf_spec U \<pp>"
-  proof-
-    fix \<pp> assume "\<pp> \<in> U" then obtain i where F: "i \<in> I" "\<pp> \<in> (V i)" "is_zariski_open (V i)" 
-      using H(1) open_cover_of_subset.cover_of_select_index_is_open cover_of_subset.cover_of_select_index 
-cover_of_subset.select_index_belongs open_cover_of_open_subset.axioms(1) open_cover_of_subset_def by fastforce
+  then have "s \<pp> = zero_sheaf_spec U \<pp>" if "\<pp> \<in> U" for \<pp>
+  proof -
+    from that obtain i where F: "i \<in> I" "\<pp> \<in> (V i)" "is_zariski_open (V i)" 
+      using H(1) unfolding open_cover_of_subset_def open_cover_of_open_subset_def
+      by (meson UNIV cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_zariski_open_def)
     then have "sheaf_spec_morphisms U (V i) s \<pp> = cxt_quotient_ring.zero_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"  
       using H(2,4) F by (simp add: zero_sheaf_spec_def) 
     thus "s \<pp> = zero_sheaf_spec U \<pp>" 
@@ -1805,15 +1805,14 @@ next
                                     sheaf_spec_morphisms (V i) (V i \<inter> V j) (s i) =
                                     sheaf_spec_morphisms (V j) (V i \<inter> V j) (s j)"
   define t where D: "t \<equiv> \<lambda>\<pp>\<in>U. s (cover_of_subset.select_index I V \<pp>) \<pp>"
-  then have F1: "\<And>\<pp> i j. i \<in> I \<Longrightarrow> j \<in> I \<Longrightarrow> \<pp> \<in> V i \<Longrightarrow> \<pp> \<in> V j \<Longrightarrow> s i \<pp> = s j \<pp>"
-  proof-
-    fix \<pp> i j assume h: "i \<in> I" "j \<in> I" "\<pp> \<in> V i" "\<pp> \<in> V j"
-    then have "s i \<pp> = sheaf_spec_morphisms (V i) (V i \<inter> V j) (s i) \<pp>"
-      using sheaf_spec_morphisms_def by (simp add: H(2))
+  then have F1: "s i \<pp> = s j \<pp>" if "i \<in> I" "j \<in> I" "\<pp> \<in> V i" "\<pp> \<in> V j" for \<pp> i j
+  proof -
+    have "s i \<pp> = sheaf_spec_morphisms (V i) (V i \<inter> V j) (s i) \<pp>"
+      using that sheaf_spec_morphisms_def by (simp add: H(2))
     moreover have "\<dots> = sheaf_spec_morphisms (V j) (V i \<inter> V j) (s j) \<pp>"
-      using H(3) h(1,2) by fastforce
+      using H(3) that by fastforce
     moreover have "\<dots> = s j \<pp>" 
-      using sheaf_spec_morphisms_def h(2) by (simp add: H(2) h(3,4))
+      using sheaf_spec_morphisms_def that by (simp add: H(2))
     ultimately show "s i \<pp> = s j \<pp>" by blast
   qed
   moreover have "t \<in> \<O> U"
@@ -1867,15 +1866,15 @@ next
     qed
     ultimately show ?thesis using sheaf_spec_def by simp
   qed
-  have "\<And>i. i \<in> I \<Longrightarrow> sheaf_spec_morphisms U (V i) t = s i"
+  have "sheaf_spec_morphisms U (V i) t = s i" if "i \<in> I" for i
   proof
-    fix i \<pp> assume "i \<in> I"
-    have "\<pp> \<in> U \<Longrightarrow> sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>"
+    fix \<pp> 
+    have "sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>" if "\<pp> \<in> U"
     proof-
-      assume "\<pp> \<in> U" 
-      then obtain j where "j \<in> I \<and> \<pp> \<in> V j \<and> t \<pp> = s j \<pp>" 
-        using cover_of_subset.select_index_belongs cover_of_subset.cover_of_select_index open_cover_of_open_subset.axioms(1) 
-open_cover_of_subset_def D H(1) by fastforce
+      from that H(1)  
+      obtain j where "j \<in> I \<and> \<pp> \<in> V j \<and> t \<pp> = s j \<pp>" 
+        unfolding D open_cover_of_subset_def open_cover_of_open_subset_def
+        by (meson cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs restrict_apply')
       thus "sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
         using sheaf_spec_morphisms_def D F1 
         by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> mem_Collect_eq restrict_apply restrict_on_source sheaf_spec_def)
@@ -2183,21 +2182,17 @@ next
     moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow> y \<in> \<O> U \<Longrightarrow>
            (key_map U) (mult_sheaf_spec U x y) = pi.mult_local_ring_at (key_map U x) (key_map U y)" 
       using mult_sheaf_spec_in_sheaf_spec key_map_def assms(1-3) pi.mult_local_ring_at_def mult_sheaf_spec_def spectrum_def by fastforce 
-    thus ?thesis unfolding monoid_homomorphism_def monoid_homomorphism_axioms_def 
-      sorry
-      (* my tweaks about locale structures somehow affect this proof, I will fix it later. -- Wenda
-      by (metis assms calculation comm_ring.axioms(1) comm_ring.sheaf_spec_on_open_is_ring key_map_is_map local.comm_ring_axioms pi.local_ring_at_is_comm_ring ring_def) 
-      *)
+    thus ?thesis unfolding monoid_homomorphism_def monoid_homomorphism_axioms_def
+      by (meson assms(1) assms(2) calculation key_map_is_map pi.multiplicative.monoid_axioms pr.is_ring_from_is_homomorphism ring_def) 
   qed
 qed
 
 lemma key_map_is_coherent:
-  assumes "V \<subseteq> U" and "is_zariski_open U" and "is_zariski_open V" and "\<pp> \<in> V"
-  shows "\<And>s. s \<in> \<O> U \<Longrightarrow> (key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
+  assumes "V \<subseteq> U" and "is_zariski_open U" and "is_zariski_open V" and "\<pp> \<in> V" and "s \<in> \<O> U"
+  shows "(key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
 proof-
-  fix s assume "s \<in> \<O> U"
-  then have "sheaf_spec_morphisms U V s \<in> \<O> V"
-    using assms(1-3) sheaf_spec_morphisms_are_maps map.map_closed by fastforce
+  have "sheaf_spec_morphisms U V s \<in> \<O> V"
+    using assms sheaf_spec_morphisms_are_maps map.map_closed by fastforce
   thus "(key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
     by (simp add: \<open>s \<in> \<O> U\<close> assms(4) key_map_def sheaf_spec_morphisms_def)
 qed
