@@ -200,7 +200,7 @@ qed
 end (* comm_ring *)
 
 text \<open>def. 0.18, see remark 0.20\<close>
-locale prime_ideal = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
+locale prime_ideal = comm:comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
   for R and I and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>")
 (* 
@@ -216,7 +216,7 @@ lemma shows "\<one> \<notin> I"
 proof
   assume "\<one> \<in> I"
   then have "\<And>x. \<lbrakk>\<one> \<in> I; x \<in> R\<rbrakk> \<Longrightarrow> x \<in> I"
-    by (metis ideal(1) multiplicative.right_unit)
+    by (metis ideal(1) comm.multiplicative.right_unit)
   with \<open>\<one> \<in> I\<close> have "I = R"
     by auto
   then show False
@@ -760,16 +760,16 @@ lemma inverse_distributive: "\<lbrakk> a \<in> R; b \<in> R; c \<in> R \<rbrakk>
 
 end
 
-locale cxt_quotient_ring = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + submonoid S R "(\<cdot>)" "\<one>" 
+locale cxt_quotient_ring = comm:comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + submonoid S R "(\<cdot>)" "\<one>" 
   for S and R and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>")
 begin
 
 lemmas comm_ring_simps =
-  multiplicative.associative
-  additive.associative 
-  commutative_mult
-  additive.commutative
+  comm.multiplicative.associative
+  comm.additive.associative 
+  comm.commutative_mult
+  comm.additive.commutative
   right_minus
 
 definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> bool" (infix "\<sim>" 80)
@@ -781,7 +781,10 @@ proof (intro equivalence.intro; simp)
     by (auto simp: rel_def)
   have "\<And>r s r1 s2 s1.
        \<lbrakk>r \<in> R; s \<in> S; r1 \<in> R; s2 \<in> S; s1 \<in> S; s1 \<cdot> (s2 \<cdot> r - s \<cdot> r1) = \<zero>\<rbrakk> \<Longrightarrow> s1 \<cdot> (s \<cdot> r1 - s2 \<cdot> r) = \<zero>"
-    by (metis inverse_distributive(1) additive.cancel_imp_equal multiplicative.composition_closed sub)
+    by (smt comm.additive.composition_closed comm.additive.inverse_composition_commute 
+        comm.additive.inverse_unit comm.additive.invertible comm.additive.invertible_inverse_closed 
+        comm.additive.monoid_axioms comm.multiplicative.composition_closed 
+        comm.right_minus monoid.invertible_inverse_inverse sub)
   then show "\<And>x y. x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y \<Longrightarrow> y \<sim> x"
     by (metis SigmaE prod.sel rel_def)
   show  "\<And>x y z. \<lbrakk>x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y; z \<in> R \<times> S \<and> y \<sim> z\<rbrakk> \<Longrightarrow> x \<sim> z"
@@ -794,17 +797,23 @@ proof (intro equivalence.intro; simp)
       show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S"
         using \<section> by blast
       have sx: "sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1" and sy: "sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2"
-        using sx0 sy0 \<section> additive.cancel_imp_equal inverse_distributive(1) 
-              multiplicative.associative multiplicative.composition_closed sub by metis+
+        using sx0 sy0 \<section> comm.additive.cancel_imp_equal comm.inverse_distributive(1) 
+              comm.multiplicative.associative comm.multiplicative.composition_closed sub 
+        by metis+
       then
       have "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s1 \<cdot> r - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
-        using "\<section>" \<open>sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S\<close> inverse_distributive(1) multiplicative.associative multiplicative.composition_closed sub by presburger
+        using "\<section>" \<open>sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S\<close> 
+          comm.inverse_distributive(1) comm.multiplicative.associative comm.multiplicative.composition_closed
+          sub 
+        by presburger
       also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
-        using \<section> by (smt sy commutative_mult multiplicative.associative multiplicative.composition_closed sub)
+        using \<section> 
+        by (smt sy comm.commutative_mult comm.multiplicative.associative comm.multiplicative.composition_closed sub)
       also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s1 \<cdot> s \<cdot> r2"
-        using \<section> by (smt sx commutative_mult multiplicative.associative multiplicative.composition_closed sub)
+        using \<section> by (smt sx comm.commutative_mult comm.multiplicative.associative
+            comm.multiplicative.composition_closed sub)
       also have "... = \<zero>"
-        using \<section> by (simp add: ring_mult_ac)
+        using \<section> by (simp add: comm.ring_mult_ac)
       finally show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>" .
     qed
   qed
@@ -815,6 +824,10 @@ notation equivalence.Partition (infixl "'/" 75)
 definition frac:: "'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set" (infixl "'/" 75)
   where "r / s \<equiv> rel.Class (r, s)"
 
+
+lemma frac_Pow:"(r, s) \<in> R \<times> S \<Longrightarrow> frac r s \<in> Pow (R \<times> S) "
+  using local.frac_def rel.Class_closed2 by auto
+
 lemma frac_eqI:
   assumes "s1\<in>S" and "(r, s) \<in> R \<times> S" "(r', s') \<in> R \<times> S"
      and eq:"s1 \<cdot> s' \<cdot> r = s1 \<cdot> s \<cdot> r'"
@@ -822,7 +835,7 @@ lemma frac_eqI:
   unfolding frac_def
 proof (rule rel.Class_eq)
   have "s1 \<cdot> (s' \<cdot> r - s \<cdot> r') = \<zero>"
-    using assms inverse_distributive(1) multiplicative.associative by auto
+    using assms comm.inverse_distributive(1) comm.multiplicative.associative by auto
   with \<open>s1\<in>S\<close> have "(r, s) \<sim> (r', s')"
     unfolding rel_def by auto
   then show "((r, s), r', s') \<in> {(x, y). (x, y) \<in> (R \<times> S) \<times> R \<times> S \<and> x \<sim> y}"
@@ -848,9 +861,9 @@ proof -
   from this(2) obtain s1 where "s1\<in>S" and "s1 \<cdot> (s \<cdot> fst x - snd x \<cdot> r) = \<zero>"
     unfolding rel_def by auto
   then have x_eq:"s1 \<cdot> s \<cdot> fst x = s1 \<cdot> snd x \<cdot> r" 
-    using distributive x_RS assms(1) 
-    by (smt additive.group_axioms group.cancel_imp_equal inverse_distributive(1) 
-        mem_Sigma_iff multiplicative.associative multiplicative.composition_closed prod.collapse sub)
+    using comm.distributive x_RS assms(1) 
+    by (smt comm.additive.group_axioms group.cancel_imp_equal comm.inverse_distributive(1) 
+        mem_Sigma_iff comm.multiplicative.associative comm.multiplicative.composition_closed prod.collapse sub)
   then show ?thesis using that x_RS \<open>s1\<in>S\<close> by auto
 qed
 
@@ -888,16 +901,16 @@ proof -
     have "snd y \<cdot>  s' \<cdot> s2 \<cdot> (s1 \<cdot>  s \<cdot> fst x)  = snd y \<cdot> s' \<cdot> s2 \<cdot> (s1 \<cdot>  snd x \<cdot>  r)"
       using x_eq by simp
     then have "s1 \<cdot> s2 \<cdot> s \<cdot> s' \<cdot> fst x \<cdot> snd y =  s1 \<cdot> s2 \<cdot> snd x \<cdot> snd y \<cdot> r \<cdot> s'"
-      using multiplicative.associative assms x_RS y_RS commutative_mult
+      using comm.multiplicative.associative assms x_RS y_RS comm.commutative_mult
       by auto
     moreover have "snd x \<cdot> s \<cdot>s1 \<cdot> (s2 \<cdot> s' \<cdot> fst y) = snd x \<cdot> s \<cdot>s1 \<cdot> (s2 \<cdot> snd y \<cdot> r')"
       using y_eq by simp
     then have "s1 \<cdot> s2 \<cdot> s \<cdot> s' \<cdot> fst y \<cdot> snd x = s1 \<cdot> s2 \<cdot> snd x \<cdot> snd y \<cdot> r' \<cdot> s"
-      using multiplicative.associative assms x_RS y_RS commutative_mult
+      using comm.multiplicative.associative assms x_RS y_RS comm.commutative_mult
       by auto
     ultimately show "s1 \<cdot> s2 \<cdot> (s \<cdot> s') \<cdot> (fst x \<cdot> snd y + fst y \<cdot> snd x) 
         = s1 \<cdot> s2 \<cdot> (snd x \<cdot> snd y) \<cdot> (r \<cdot> s' + r' \<cdot> s)"
-      using multiplicative.associative assms x_RS y_RS distributive
+      using comm.multiplicative.associative assms x_RS y_RS comm.distributive
       by auto
     show "s1 \<cdot> s2 \<in> S" "(fst x \<cdot> snd y + fst y \<cdot> snd x, snd x \<cdot> snd y) \<in> R \<times> S" 
         "(r \<cdot> s' + r' \<cdot> s, s \<cdot> s') \<in> R \<times> S"
@@ -906,7 +919,7 @@ proof -
   finally show ?thesis by auto
 qed
 
-lemma valid_frac_add[intro]:
+lemma valid_frac_add[intro,simp]:
   assumes "valid_frac X" "valid_frac Y"
   shows "valid_frac (add_rel X Y)"
 proof -
@@ -932,31 +945,31 @@ proof -
 qed
 
 definition uminus_rel:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
-  where "uminus_rel X \<equiv> let x = (SOME x. x \<in> X) in (additive.inverse (fst x) / snd x)"
+  where "uminus_rel X \<equiv> let x = (SOME x. x \<in> X) in (comm.additive.inverse (fst x) / snd x)"
 
 lemma uminus_rel_frac:
   assumes "(r,s) \<in> R \<times> S" 
-  shows "uminus_rel (r/s) = (additive.inverse r) / s"
+  shows "uminus_rel (r/s) = (comm.additive.inverse r) / s"
 proof -
   define x where "x=(SOME x. x\<in>(r/s))"
 
   obtain s1 where [simp]:"s1 \<in> S" and x_eq:"s1 \<cdot> s \<cdot> fst x = s1 \<cdot> snd x \<cdot> r" and x_RS:"x \<in> R \<times> S"
     using frac_eq_obtains[OF \<open>(r,s) \<in> R \<times> S\<close> x_def] by auto
 
-  have "uminus_rel (r/s)= (additive.inverse (fst x)) / (snd x )"
+  have "uminus_rel (r/s)= (comm.additive.inverse (fst x)) / (snd x )"
     unfolding uminus_rel_def x_def Let_def by auto
-  also have "... = (additive.inverse r) / s"
+  also have "... = (comm.additive.inverse r) / s"
     apply (rule frac_eqI[of s1])
-    using x_RS assms x_eq by (auto simp add: local.right_minus)
+    using x_RS assms x_eq by (auto simp add: comm.right_minus)
   finally show ?thesis .
 qed
 
-lemma valid_frac_uminus[intro]:
+lemma valid_frac_uminus[intro,simp]:
   assumes "valid_frac X" 
   shows "valid_frac (uminus_rel X)"
 proof -
   obtain r s where "r\<in>R" "s\<in>S"
-      and *:"uminus_rel X = (additive.inverse r) / s"
+      and *:"uminus_rel X = (comm.additive.inverse r) / s"
   proof -
     define x where "x=(SOME x. x\<in>X)"
     have "x\<in>X" 
@@ -964,12 +977,12 @@ proof -
       by blast
     then have "x\<in> R \<times> S" 
       using assms valid_frac_def by (smt case_prodE local.frac_def rel.Class_closed2 subsetD)+
-    moreover have "uminus_rel X = (additive.inverse (fst x) ) / (snd x)"
+    moreover have "uminus_rel X = (comm.additive.inverse (fst x) ) / (snd x)"
       unfolding uminus_rel_def x_def Let_def by auto
     ultimately show ?thesis using that by auto
   qed  
   from this(1-3)
-  have "(additive.inverse r,s) \<in> R \<times> S" by auto
+  have "(comm.additive.inverse r,s) \<in> R \<times> S" by auto
   with * show ?thesis by auto
 qed
 
@@ -1001,7 +1014,7 @@ proof -
     have "(s1 \<cdot> s \<cdot> fst x) \<cdot> (s2 \<cdot> s' \<cdot> fst y)  = (s1 \<cdot> snd x \<cdot> r) \<cdot> (s2 \<cdot> snd y \<cdot> r')"
       using x_eq y_eq by auto
     then show "s1 \<cdot> s2 \<cdot> (s \<cdot> s') \<cdot> (fst x \<cdot> fst y) = s1 \<cdot> s2 \<cdot> (snd x \<cdot> snd y) \<cdot> (r \<cdot> r')"
-      using multiplicative.associative assms x_RS y_RS distributive commutative_mult
+      using comm.multiplicative.associative assms x_RS y_RS comm.distributive comm.commutative_mult
       by auto
     show "s1 \<cdot> s2 \<in> S" "(fst x \<cdot> fst y, snd x \<cdot> snd y) \<in> R \<times> S" 
         "(r \<cdot> r', s \<cdot> s') \<in> R \<times> S"
@@ -1010,7 +1023,7 @@ proof -
   finally show ?thesis by auto
 qed
 
-lemma valid_frac_mult[intro]:
+lemma valid_frac_mult[intro,simp]:
   assumes "valid_frac X" "valid_frac Y"
   shows "valid_frac (mult_rel X Y)"
 proof -
@@ -1035,13 +1048,19 @@ proof -
   with * show ?thesis by auto
 qed
 
-lemma valid_frac_0[simp]:
-  "valid_frac (\<zero> / \<one>)"
-  unfolding valid_frac_def by blast
+definition zero_rel::"('a \<times> 'a) set" where
+  "zero_rel = frac \<zero> \<one>"
 
-lemma valid_frac_1[simp]:
-  "valid_frac (\<one> / \<one>)"
-  unfolding valid_frac_def by blast
+definition one_rel::"('a \<times> 'a) set" where
+  "one_rel = frac \<one> \<one>"
+
+lemma valid_frac_zero[simp]:
+  "valid_frac zero_rel"
+  unfolding zero_rel_def valid_frac_def by blast
+
+lemma valid_frac_one[simp]:
+  "valid_frac one_rel"
+  unfolding one_rel_def valid_frac_def by blast
 
 definition carrier_quotient_ring:: "('a \<times> 'a) set set"
   where "carrier_quotient_ring \<equiv> rel.Partition"
@@ -1054,8 +1073,11 @@ lemma carrier_quotient_ring_iff[iff,simp]:"X \<in> carrier_quotient_ring \<longl
   done
 
 (* ex. 0.26 *)
+(*
 lemma quotient_ring_is_comm_ring:
-  shows "comm_ring carrier_quotient_ring add_rel mult_rel (\<zero> / \<one>) (\<one> / \<one>)"
+  shows "comm_ring carrier_quotient_ring add_rel mult_rel zero_rel one_rel"
+*)
+sublocale comm_ring carrier_quotient_ring add_rel mult_rel zero_rel one_rel
 proof (unfold_locales; unfold carrier_quotient_ring_iff)
   show add_assoc:"add_rel (add_rel a b) c = add_rel a (add_rel b c)" and
        mult_assoc:"mult_rel (mult_rel a b) c = mult_rel a (mult_rel b c)" and 
@@ -1074,7 +1096,7 @@ proof (unfold_locales; unfold carrier_quotient_ring_iff)
     also have "... = ((a1 \<cdot> b2 + b1 \<cdot> a2) \<cdot> c2 + c1 \<cdot> (a2 \<cdot> b2)) / (a2 \<cdot> b2 \<cdot> c2)"
       using a_RS b_RS c_RS by (simp add:add_rel_frac)
     also have "... = add_rel (a1/a2) (add_rel (b1/b2) (c1/c2))"
-      using a_RS b_RS c_RS distributive comm_ring_simps 
+      using a_RS b_RS c_RS comm.distributive comm_ring_simps 
       by (auto simp add:add_rel_frac)
     also have "... = add_rel a (add_rel b c)"
       using a12 b12 c12 by auto
@@ -1090,28 +1112,27 @@ proof (unfold_locales; unfold carrier_quotient_ring_iff)
     also have "... = (a2 \<cdot> (a1 \<cdot> (b1 \<cdot> c2 + c1 \<cdot> b2))) / (a2 \<cdot> (a2 \<cdot> (b2 \<cdot> c2)))"
       using a_RS b_RS c_RS by (simp add:frac_cancel)
     also have "... = add_rel (mult_rel a b) (mult_rel a c)"
-      unfolding a12 b12 c12 using comm_ring_simps a_RS b_RS c_RS distributive  
+      unfolding a12 b12 c12 using comm_ring_simps a_RS b_RS c_RS comm.distributive  
       by (auto simp add:mult_rel_frac add_rel_frac)
     finally show "mult_rel a (add_rel b c) = add_rel (mult_rel a b) (mult_rel a c)" 
       .
   qed
-  show add_0:"add_rel (\<zero> / \<one>) a = a" 
-      and mult_1:"mult_rel (\<one> / \<one>) a = a"
+  show add_0:"add_rel zero_rel a = a" 
+      and mult_1:"mult_rel one_rel a = a"
      if "valid_frac a" for a
   proof -
     obtain a1 a2 where a_RS:"(a1, a2)\<in>R \<times> S" and a12:"a = a1 / a2 "
       using \<open>valid_frac a\<close> unfolding valid_frac_def by auto
-    have "add_rel (\<zero> / \<one>) a = add_rel (\<zero> / \<one>) (a1/a2)"
+    have "add_rel zero_rel a = add_rel zero_rel (a1/a2)"
       using a12 by simp
     also have "... = (a1/a2)"
-      using a_RS  distributive multiplicative.associative additive.associative 
-        commutative_mult
+      using a_RS comm_ring_simps comm.distributive zero_rel_def
       by (auto simp add:add_rel_frac)
     also have "... = a"
       using a12 by auto
-    finally show "add_rel (\<zero> / \<one>) a = a" .
-    show "mult_rel (\<one> / \<one>) a = a" 
-      unfolding a12 using a_RS by (auto simp add:mult_rel_frac) 
+    finally show "add_rel zero_rel a = a" .
+    show "mult_rel one_rel a = a" 
+      unfolding a12 one_rel_def using a_RS by (auto simp add:mult_rel_frac) 
   qed
   show add_commute:"add_rel a b = add_rel b a"
     and mult_commute:"mult_rel a b = mult_rel b a"
@@ -1126,33 +1147,33 @@ proof (unfold_locales; unfold carrier_quotient_ring_iff)
       unfolding a12 b12  using comm_ring_simps a_RS b_RS   
       by (auto simp add:mult_rel_frac add_rel_frac)
   qed
-  show "add_rel a (\<zero> / \<one>) = a" if "valid_frac a" for a 
+  show "add_rel a zero_rel = a" if "valid_frac a" for a 
     using that add_0 add_commute by auto
-  show "mult_rel a (\<one> / \<one>) = a" if "valid_frac a" for a
+  show "mult_rel a one_rel = a" if "valid_frac a" for a
     using that mult_commute mult_1 by auto
-  show "monoid.invertible carrier_quotient_ring add_rel (\<zero> / \<one>) a"
+  show "monoid.invertible carrier_quotient_ring add_rel zero_rel a"
     if "valid_frac a" for a
   proof -
-    have "Group_Theory.monoid carrier_quotient_ring add_rel (\<zero> / \<one>)"
-      apply (unfold_locales; unfold carrier_quotient_ring_iff)
-      using add_0 add_assoc add_commute by auto
-    moreover have "add_rel a (uminus_rel a) = \<zero> / \<one>" "add_rel (uminus_rel a) a = \<zero> / \<one>" 
+    have "Group_Theory.monoid carrier_quotient_ring add_rel zero_rel"
+      apply (unfold_locales)
+      using add_0 add_assoc add_commute by simp_all
+    moreover have "add_rel a (uminus_rel a) = zero_rel" "add_rel (uminus_rel a) a = zero_rel" 
     proof -
       obtain a1 a2 where a_RS:"(a1, a2)\<in>R \<times> S" and a12:"a = a1 / a2 "
         using \<open>valid_frac a\<close> unfolding valid_frac_def by auto
       have "add_rel a (uminus_rel a) =  \<zero> / (a2 \<cdot> a2)"
         unfolding a12 using comm_ring_simps a_RS 
-        by ( simp add:add_rel_frac uminus_rel_frac)
+        by (simp add:add_rel_frac uminus_rel_frac comm.right_minus)
       also have "... = \<zero> / \<one>"
         apply (rule frac_eqI[of \<one>])
         using a_RS by auto
-      finally show "add_rel a (uminus_rel a) = \<zero> / \<one>" .
-      then show "add_rel (uminus_rel a) a = \<zero> / \<one>" using add_commute that by auto
+      also have "... = zero_rel" unfolding zero_rel_def ..
+      finally show "add_rel a (uminus_rel a) = zero_rel" .
+      then show "add_rel (uminus_rel a) a = zero_rel" using add_commute that by auto
     qed
-    ultimately show "monoid.invertible carrier_quotient_ring add_rel (\<zero> / \<one>) a"
+    ultimately show "monoid.invertible carrier_quotient_ring add_rel zero_rel a"
       unfolding monoid.invertible_def
       apply (rule monoid.invertibleI)
-      unfolding carrier_quotient_ring_iff 
       using add_commute \<open>valid_frac a\<close> by auto
   qed
   show "mult_rel (add_rel b c) a = add_rel (mult_rel b a) (mult_rel c a)"
@@ -1174,18 +1195,18 @@ lemma submonoid_prime_ideal:
   shows "submonoid (R \<setminus> I) R (\<cdot>) \<one>"
 proof
   show "a \<cdot> b \<in> R\<setminus>I" if "a \<in> R\<setminus>I" "b \<in> R\<setminus>I" for a b
-    using that by (metis Diff_iff absorbent multiplicative.composition_closed)
+    using that by (metis Diff_iff absorbent comm.multiplicative.composition_closed)
   show "\<one> \<in> R\<setminus>I"
     using ideal.ideal(2) ideal_axioms prime_ideal.carrier_neq prime_ideal_axioms by fastforce
 qed auto
 
-(* definition 0.28 *)
-definition carrier_local_ring_at:: "('a \<times> 'a) set set"
-  where "carrier_local_ring_at \<equiv> (R \<setminus> I)\<^sup>\<inverse> R\<^bsub>(+) (\<cdot>) \<zero>\<^esub>"
-
 interpretation local:cxt_quotient_ring "(R \<setminus> I)" R "(+)" "(\<cdot>)" \<zero> \<one>
   apply intro_locales
-  using submonoid_prime_ideal by (simp add: submonoid_def)
+  by (meson submonoid_def submonoid_prime_ideal)
+
+(* definition 0.28 *)
+definition carrier_local_ring_at:: "('a \<times> 'a) set set"
+  where "carrier_local_ring_at \<equiv> (R \<setminus> I)\<^sup>\<inverse> R\<^bsub>(+) (\<cdot>) \<zero>\<^esub>"    
 
 definition add_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
   where "add_local_ring_at \<equiv> local.add_rel "
@@ -1194,17 +1215,23 @@ definition mult_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times>
   where "mult_local_ring_at \<equiv> local.mult_rel "
 
 definition zero_local_ring_at:: "('a \<times> 'a) set"
-  where "zero_local_ring_at \<equiv> local.frac \<zero> \<one>"
+  where "zero_local_ring_at \<equiv> local.zero_rel"
 
 definition one_local_ring_at:: "('a \<times> 'a) set"
-  where "one_local_ring_at \<equiv> local.frac \<one> \<one>"
+  where "one_local_ring_at \<equiv> local.one_rel"
 
+sublocale comm_ring carrier_local_ring_at add_local_ring_at mult_local_ring_at 
+            zero_local_ring_at one_local_ring_at
+  by (simp add: add_local_ring_at_def carrier_local_ring_at_def local.local.comm_ring_axioms 
+      mult_local_ring_at_def one_local_ring_at_def zero_local_ring_at_def)
+
+(*
 lemma local_ring_at_is_comm_ring:
   shows "comm_ring carrier_local_ring_at add_local_ring_at mult_local_ring_at 
             zero_local_ring_at one_local_ring_at"
-unfolding carrier_local_ring_at_def add_local_ring_at_def mult_local_ring_at_def
-    zero_local_ring_at_def one_local_ring_at_def
-  by (rule local.quotient_ring_is_comm_ring)
+  by (simp add: add_local_ring_at_def carrier_local_ring_at_def local.local.comm_ring_axioms 
+      mult_local_ring_at_def one_local_ring_at_def zero_local_ring_at_def)
+*)
 
 end (* prime_ideal *)
 
@@ -1268,8 +1295,7 @@ proof -
       unfolding is_regular_def using that by blast+
     then show ?thesis
       unfolding add_sheaf_spec_def using that 
-      apply (simp flip:pi.add_local_ring_at_def)
-      using pi.local_ring_at_is_comm_ring by (meson comm_ring.ideal_R_R comm_ring.ideal_add)
+      by (simp flip:pi.add_local_ring_at_def)
   qed  
   moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
             \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
@@ -1315,7 +1341,7 @@ proof -
       then show "add_sheaf_spec U s s' \<qq> = q.frac r3 f3"
         unfolding add_sheaf_spec_def using \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> by auto
       show "f3 \<notin> \<qq>" using that unfolding V3_def f3_def 
-        using \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> \<open>f2 \<in> R\<close> \<open>f2 \<notin> \<qq>\<close> q.sub_composition_closed by auto 
+        using \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> \<open>f2 \<in> R\<close> \<open>f2 \<notin> \<qq>\<close> q.sub_composition_closed by auto
     qed
     ultimately show ?thesis by metis
   qed
@@ -1370,9 +1396,7 @@ proof -
       unfolding is_regular_def using that by blast+
     then show ?thesis
       unfolding mult_sheaf_spec_def using that 
-      apply (simp flip:pi.mult_local_ring_at_def)
-      using pi.local_ring_at_is_comm_ring 
-      by (meson comm_ring.ideal_R_R ideal.ideal(2))
+      by (simp flip:pi.mult_local_ring_at_def)
   qed  
   moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
             \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
@@ -1457,7 +1481,7 @@ proof -
 qed
 
 definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
-  where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"
+  where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.zero_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
 
 lemma is_regular_zero_sheaf_spec:
   assumes "U \<subseteq> Spec"
@@ -1465,10 +1489,10 @@ lemma is_regular_zero_sheaf_spec:
 proof -       
   have "zero_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
     unfolding zero_sheaf_spec_def 
-    using assms closed_subsets_def closed_subsets_empty 
-      cxt_quotient_ring.carrier_quotient_ring_iff cxt_quotient_ring.valid_frac_0 
-      cxt_quotient_ring_def local.comm_ring_axioms prime_ideal.carrier_local_ring_at_def 
-      prime_ideal.submonoid_prime_ideal subsetD that by fastforce 
+    using assms closed_subsets_def closed_subsets_empty cxt_quotient_ring.carrier_quotient_ring_iff 
+      cxt_quotient_ring.valid_frac_zero cxt_quotient_ring_def local.comm_ring_axioms 
+      prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal subsetD that 
+    by fastforce
   moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
             \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
                   zero_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
@@ -1484,7 +1508,14 @@ proof -
         if "\<qq> \<in> V3" for \<qq>
       subgoal using V3_def assms f3_def prime_ideal.submonoid_prime_ideal spectrum_def 
           submonoid.sub_unit_closed that by fastforce  
-      subgoal using V3_def f3_def r3_def that zero_sheaf_spec_def by auto
+      subgoal 
+      proof -
+        interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R 
+          using V3_def assms cxt_quotient_ring_def local.comm_ring_axioms 
+            prime_ideal.submonoid_prime_ideal spectrum_def that by fastforce
+        show ?thesis unfolding zero_sheaf_spec_def 
+          using V3_def f3_def q.zero_rel_def r3_def that by auto
+      qed
       done
     ultimately show ?thesis by metis
   qed
@@ -1512,7 +1543,7 @@ proof -
 qed
 
 definition one_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
-  where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one> \<one>"
+  where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.one_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
 
 lemma is_regular_one_sheaf_spec:
   assumes "U \<subseteq> Spec"
@@ -1521,7 +1552,7 @@ proof -
   have "one_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
     unfolding one_sheaf_spec_def 
     by (smt assms closed_subsets_empty comm_ring.closed_subsets_def 
-        cxt_quotient_ring.carrier_quotient_ring_iff cxt_quotient_ring.valid_frac_1 
+        cxt_quotient_ring.carrier_quotient_ring_iff cxt_quotient_ring.valid_frac_one 
         cxt_quotient_ring_def local.comm_ring_axioms mem_Collect_eq 
         prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal 
         restrict_apply subsetD that)
@@ -1540,7 +1571,14 @@ proof -
         if "\<qq> \<in> V3" for \<qq>
       subgoal using V3_def assms f3_def prime_ideal.submonoid_prime_ideal spectrum_def 
           submonoid.sub_unit_closed that by fastforce  
-      subgoal using V3_def f3_def r3_def that one_sheaf_spec_def by auto
+      subgoal 
+      proof -
+        interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R 
+          using V3_def assms cxt_quotient_ring_def local.comm_ring_axioms 
+            prime_ideal.submonoid_prime_ideal spectrum_def that by fastforce
+        show ?thesis unfolding one_sheaf_spec_def 
+          using V3_def f3_def q.one_rel_def r3_def that by auto
+      qed  
       done
     ultimately show ?thesis by metis
   qed
@@ -1567,10 +1605,108 @@ proof -
     unfolding sheaf_spec_def by (simp add: map.intro)
 qed
 
+lemma zero_sheaf_spec_extensional[simp]:
+  "zero_sheaf_spec U \<in> extensional U"
+  unfolding zero_sheaf_spec_def by simp
+
+lemma one_sheaf_spec_extensional[simp]:
+  "one_sheaf_spec U \<in> extensional U"
+  unfolding one_sheaf_spec_def by simp
+
+lemma add_sheaf_spec_extensional[simp]:
+  "add_sheaf_spec U a b \<in> extensional U"
+  unfolding add_sheaf_spec_def by simp
+
+lemma mult_sheaf_spec_extensional[simp]:
+  "mult_sheaf_spec U a b \<in> extensional U"
+  unfolding mult_sheaf_spec_def by simp
+
+lemma sheaf_spec_extensional[simp]:     
+  "a \<in> \<O> U \<Longrightarrow> a \<in> extensional U"
+  unfolding sheaf_spec_def by (simp add: PiE_iff Set_Theory.map_def)
+
 lemma sheaf_spec_on_open_is_ring:
   assumes "is_zariski_open U" and "U \<subseteq> Spec"
   shows "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
-  sorry
+proof unfold_locales
+  show "add_sheaf_spec U a b \<in> \<O> U" 
+    "mult_sheaf_spec U a b \<in> \<O> U"
+    if "a \<in> \<O> U" "b \<in> \<O> U" for a b
+    subgoal by (simp add: add_sheaf_spec_in_sheaf_spec assms(2) that(1) that(2))
+    subgoal by (simp add: assms(2) mult_sheaf_spec_in_sheaf_spec that(1) that(2))
+    done
+  show "zero_sheaf_spec U \<in> \<O> U" "one_sheaf_spec U \<in> \<O> U"
+    subgoal by (simp add: assms(2) zero_sheaf_spec_in_sheaf_spec)
+    subgoal by (simp add: assms(2) one_sheaf_spec_in_sheaf_spec)
+    done
+  show "add_sheaf_spec U (zero_sheaf_spec U) a = a" if "a \<in> \<O> U" for a
+  proof -
+    have "add_sheaf_spec U (zero_sheaf_spec U) a \<pp> = a \<pp>" if "\<pp> \<in> U" for \<pp>
+    proof - 
+      interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> sorry
+      show ?thesis unfolding add_sheaf_spec_def zero_sheaf_spec_def
+        using that apply simp
+        apply (rule cq.additive.left_unit)
+        sorry
+    qed
+    then show "add_sheaf_spec U (zero_sheaf_spec U) a = a"
+      using that by(auto intro: extensionalityI[where A=U])
+  qed
+  show "add_sheaf_spec U (add_sheaf_spec U a b) c = add_sheaf_spec U a (add_sheaf_spec U b c)"
+    if "a \<in> \<O> U"
+      and "b \<in> \<O> U"
+      and "c \<in> \<O> U"
+    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "add_sheaf_spec U a (zero_sheaf_spec U) = a"
+    if "a \<in> \<O> U"
+    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "monoid.invertible \<O> U (add_sheaf_spec U) (zero_sheaf_spec U) u"
+    if "u \<in> \<O> U"
+    for u :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "add_sheaf_spec U x y = add_sheaf_spec U y x"
+    if "x \<in> \<O> U"
+      and "y \<in> \<O> U"
+    for x :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and y :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "mult_sheaf_spec U (mult_sheaf_spec U a b) c = mult_sheaf_spec U a (mult_sheaf_spec U b c)"
+    if "a \<in> \<O> U"
+      and "b \<in> \<O> U"
+      and "c \<in> \<O> U"
+    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "mult_sheaf_spec U (one_sheaf_spec U) a = a"
+    if "a \<in> \<O> U"
+    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "mult_sheaf_spec U a (one_sheaf_spec U) = a"
+    if "a \<in> \<O> U"
+    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "mult_sheaf_spec U a (add_sheaf_spec U b c) = add_sheaf_spec U (mult_sheaf_spec U a b) (mult_sheaf_spec U a c)"
+    if "a \<in> \<O> U"
+      and "b \<in> \<O> U"
+      and "c \<in> \<O> U"
+    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+  show "mult_sheaf_spec U (add_sheaf_spec U b c) a = add_sheaf_spec U (mult_sheaf_spec U b a) (mult_sheaf_spec U c a)"
+    if "a \<in> \<O> U"
+      and "b \<in> \<O> U"
+      and "c \<in> \<O> U"
+    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
+    using that sorry
+qed
 
 definition sheaf_spec_morphisms:: 
 "'a set set \<Rightarrow> 'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set))"
@@ -1634,7 +1770,7 @@ next
     fix \<pp> assume "\<pp> \<in> U" then obtain i where F: "i \<in> I" "\<pp> \<in> (V i)" "is_zariski_open (V i)" 
       using H(1) open_cover_of_subset.cover_of_select_index_is_open cover_of_subset.cover_of_select_index 
 cover_of_subset.select_index_belongs open_cover_of_open_subset.axioms(1) open_cover_of_subset_def by fastforce
-    then have "sheaf_spec_morphisms U (V i) s \<pp> = cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<zero> \<one>"  
+    then have "sheaf_spec_morphisms U (V i) s \<pp> = cxt_quotient_ring.zero_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"  
       using H(2,4) F by (simp add: zero_sheaf_spec_def) 
     thus "s \<pp> = zero_sheaf_spec U \<pp>" 
       using sheaf_spec_morphisms_def zero_sheaf_spec_def F(2) by (simp add: H(3) \<open>\<pp> \<in> U\<close>)
@@ -1997,14 +2133,14 @@ lemma key_map_is_ring_morphism:
   shows "ring_homomorphism (key_map U) 
 (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)" 
-proof (intro ring_homomorphism.intro) 
+proof (intro ring_homomorphism.intro)
   show "Set_Theory.map (key_map U) (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using key_map_is_map assms(1) by simp 
 next 
   show "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
-    by (simp add: assms(2,3) sheaf_spec_on_open_is_ring) 
+    using assms(2) pr.is_ring_from_is_homomorphism by blast
 next 
   show "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
-    using comm_ring.axioms(1) is_prime pi.local_ring_at_is_comm_ring spectrum_def by fastforce 
+    by (simp add: pi.ring_axioms)
 next 
   show "group_homomorphism (key_map U) (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.zero_local_ring_at)" 
   proof- 
@@ -2013,8 +2149,12 @@ next
     moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow> y \<in> \<O> U \<Longrightarrow>
            (key_map U) (add_sheaf_spec U x y) = pi.add_local_ring_at (key_map U x) (key_map U y)"
       using add_sheaf_spec_in_sheaf_spec key_map_def assms(1-3) pi.add_local_ring_at_def add_sheaf_spec_def spectrum_def by fastforce 
-    thus ?thesis unfolding group_homomorphism_def monoid_homomorphism_def monoid_homomorphism_axioms_def
-      by (metis Group_Theory.group_def abelian_group.axioms(1) assms calculation comm_ring.axioms(1) comm_ring.sheaf_spec_on_open_is_ring key_map_is_map local.comm_ring_axioms pi.local_ring_at_is_comm_ring ring_def) 
+    thus ?thesis 
+      sorry
+      (* my tweaks about locale structures somehow affect this proof, I will fix it later. -- Wenda
+      unfolding group_homomorphism_def monoid_homomorphism_def monoid_homomorphism_axioms_def
+      by (metis Group_Theory.group_def abelian_group.axioms(1) assms calculation comm_ring.axioms(1) comm_ring.sheaf_spec_on_open_is_ring key_map_is_map local.comm_ring_axioms pi.local_ring_at_is_comm_ring ring_def)
+      *)
   qed 
 next 
   show "monoid_homomorphism (key_map U) (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.mult_local_ring_at) (pi.one_local_ring_at)" 
@@ -2025,7 +2165,10 @@ next
            (key_map U) (mult_sheaf_spec U x y) = pi.mult_local_ring_at (key_map U x) (key_map U y)" 
       using mult_sheaf_spec_in_sheaf_spec key_map_def assms(1-3) pi.mult_local_ring_at_def mult_sheaf_spec_def spectrum_def by fastforce 
     thus ?thesis unfolding monoid_homomorphism_def monoid_homomorphism_axioms_def 
+      sorry
+      (* my tweaks about locale structures somehow affect this proof, I will fix it later. -- Wenda
       by (metis assms calculation comm_ring.axioms(1) comm_ring.sheaf_spec_on_open_is_ring key_map_is_map local.comm_ring_axioms pi.local_ring_at_is_comm_ring ring_def) 
+      *)
   qed
 qed
 
@@ -2049,7 +2192,7 @@ lemma key_ring_morphism:
 (\<forall>U\<in>(pr.neighborhood \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> lim.canonical_fun U) s = key_map U s)"
 proof-
   have "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
-    using pi.local_ring_at_is_comm_ring comm_ring.axioms(1) is_prime spectrum_def by fastforce
+    by (simp add: pi.ring_axioms)
   moreover have "V \<in> pr.neighborhood \<pp>" 
     using assms pr.neighborhood_def sheaf_spec_is_presheaf by fastforce
   moreover have "\<And>U. U \<in> pr.neighborhood \<pp> \<Longrightarrow>
