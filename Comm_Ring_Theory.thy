@@ -27,6 +27,10 @@ lemma zero_ring_is_comm_ring:
   shows "comm_ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
   by (simp add: comm_ring_axioms_def comm_ring_def zero_ring_is_ring)
 
+(*Suppresses the built-in plus sign, but why does
+ no_notation minus (infixl "-" 65)
+cause errors with monoid subtraction below? --LCP
+*)
 no_notation plus (infixl "+" 65)
 
 (* def 0.13 *)
@@ -395,7 +399,21 @@ qed
 definition is_zariski_open:: "'a set set \<Rightarrow> bool"
   where "is_zariski_open U \<equiv> generated_topology {U. \<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>} U"
 
-lemma zarisky_is_topological_space:
+lemma is_zariski_open_empty [simp]: "is_zariski_open {}"
+  using UNIV is_zariski_open_def by blast
+
+lemma is_zariski_open_Spec [simp]: "is_zariski_open Spec"
+  by (simp add: UNIV is_zariski_open_def)
+
+lemma is_zariski_open_Union [intro]: 
+  "(\<And>x. x \<in> F \<Longrightarrow> is_zariski_open x) \<Longrightarrow> is_zariski_open (\<Union> F)"
+  by (simp add: UNIV is_zariski_open_def)
+
+lemma is_zariski_open_Int [simp]: 
+  "\<lbrakk>is_zariski_open U; is_zariski_open V\<rbrakk> \<Longrightarrow> is_zariski_open (U \<inter> V)"
+  by (simp add: Int is_zariski_open_def)
+
+lemma zarisky_is_topological_space [iff]:
   shows "topological_space Spec is_zariski_open"
 proof qed (auto simp: is_zariski_open_def spectrum_def UNIV)
 
@@ -520,9 +538,7 @@ next
     using morphism_presheaves_of_rings.comm_diagrams [OF 1]
     using morphism_presheaves_of_rings.comm_diagrams [OF 2]
     using presheaf_of_rings.is_map_from_is_homomorphism [OF morphism_presheaves_of_rings.axioms(1) [OF 1]]
-    apply (auto simp add: fun_eq_iff compose_def)
-    apply (metis map.map_closed morphism_presheaves_of_rings.fam_morphisms_are_maps [OF 1])
-    by (meson map.map_closed)
+    by (metis "1" comp_apply compose_eq map.map_closed morphism_presheaves_of_rings.fam_morphisms_are_maps)
 qed (use assms in \<open>auto simp: morphism_presheaves_of_rings_def\<close>)
 
 locale iso_presheaves_of_rings =
@@ -585,21 +601,21 @@ lemma ind_sheaf_is_presheaf:
 ind_add_str ind_mult_str ind_zero_str ind_one_str"
 proof-
   have "topological_space U ind_is_open" by (simp add: ind_space_is_top_space)
-  moreover have "\<And>U V. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (ind_ring_morphisms U V) 
-                     (ind_sheaf U) (ind_add_str U) (ind_mult_str U) (ind_zero_str U) (ind_one_str U) 
+  moreover have "ring_homomorphism (ind_ring_morphisms W V) 
+                     (ind_sheaf W) (ind_add_str W) (ind_mult_str W) (ind_zero_str W) (ind_one_str W) 
                      (ind_sheaf V) (ind_add_str V) (ind_mult_str V) (ind_zero_str V) (ind_one_str V)"
+    if "ind_is_open W" "ind_is_open V" "V \<subseteq> W" for W V
   proof (intro ring_homomorphism.intro ind_is_open_imp_ring)
-    fix W V
-    assume \<section>: "ind_is_open W" "ind_is_open V" "V \<subseteq> W"
-    then show "Set_Theory.map (ind_ring_morphisms W V) (ind_sheaf W) (ind_sheaf V)"
-      by (metis ind_is_open_def ind_ring_morphisms_def ind_sheaf_def inf.left_idem is_open_subset is_ring_morphism is_subset open_inter ring_homomorphism_def)
+    show "Set_Theory.map (ind_ring_morphisms W V) (ind_sheaf W) (ind_sheaf V)"
+      by (metis that ind_is_open_def ind_ring_morphisms_def ind_sheaf_def inf.left_idem is_open_subset is_ring_morphism is_subset open_inter ring_homomorphism_def)
+    from that
     obtain o: "is_open (U \<inter> V)" "is_open (U \<inter> W)" "U \<inter> V \<subseteq> U \<inter> W"
-      by (metis (no_types) "\<section>" ind_is_open_def inf.absorb_iff2 is_open_subset is_subset open_inter)
+      by (metis (no_types) ind_is_open_def inf.absorb_iff2 is_open_subset is_subset open_inter)  
     then show "group_homomorphism (ind_ring_morphisms W V) (ind_sheaf W) (ind_add_str W) (ind_zero_str W) (ind_sheaf V) (ind_add_str V) (ind_zero_str V)"
       by (metis cxt_ind_sheaf.ind_add_str_def cxt_ind_sheaf_axioms ind_ring_morphisms_def ind_sheaf_def ind_zero_str_def is_ring_morphism ring_homomorphism.axioms(4))
     show "monoid_homomorphism (ind_ring_morphisms W V) (ind_sheaf W) (ind_mult_str W) (ind_one_str W) (ind_sheaf V) (ind_mult_str V) (ind_one_str V)"
       using o by (metis ind_mult_str_def ind_one_str_def ind_ring_morphisms_def ind_sheaf_def is_ring_morphism ring_homomorphism_def) 
-  qed
+  qed (use that in auto)
   moreover have "ind_sheaf {} = {b}"
     by (simp add: ind_sheaf_def)     
   moreover have "\<And>U. ind_is_open U \<Longrightarrow> (\<And>x. x \<in> (ind_sheaf U) \<Longrightarrow> ind_ring_morphisms U U x = x)"
@@ -679,23 +695,22 @@ definition direct_im_sheaf_morphisms:: "'b set \<Rightarrow> 'b set \<Rightarrow
   where "direct_im_sheaf_morphisms U V \<equiv> \<rho> (f\<^sup>\<inverse> X U) (f\<^sup>\<inverse> X V)"
 
 lemma direct_im_sheaf_is_presheaf:
-"presheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_morphisms b
+  "presheaf_of_rings X' (is_open') direct_im_sheaf direct_im_sheaf_morphisms b
 (\<lambda>V x y. +\<^bsub>(f\<^sup>\<inverse> X V)\<^esub> x y) (\<lambda>V x y. \<cdot>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub> x y) (\<lambda>V. \<zero>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<lambda>V. \<one>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>)"
-proof-
-  have "topological_space X' is_open'"
+proof (intro presheaf_of_rings.intro presheaf_of_rings_axioms.intro)
+  show "topological_space X' is_open'"
     by (simp add: target.topological_space_axioms)
-  moreover have "\<And>U V. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> 
-ring_homomorphism (direct_im_sheaf_morphisms U V) 
-(direct_im_sheaf U) (+\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) (\<cdot>\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) (\<zero>\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) (\<one>\<^bsub>(f\<^sup>\<inverse> X U)\<^esub>) 
-(direct_im_sheaf V) (+\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<cdot>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<zero>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>) (\<one>\<^bsub>(f\<^sup>\<inverse> X V)\<^esub>)"
+  show "\<And>U V. \<lbrakk>is_open' U; is_open' V; V \<subseteq> U\<rbrakk>
+           \<Longrightarrow> ring_homomorphism (direct_im_sheaf_morphisms U V)
+                (direct_im_sheaf U) +\<^bsub>f \<^sup>\<inverse> X U\<^esub> \<cdot>\<^bsub>f \<^sup>\<inverse> X U\<^esub> \<zero>\<^bsub>f \<^sup>\<inverse> X U\<^esub>
+                \<one>\<^bsub>f \<^sup>\<inverse> X U\<^esub> (direct_im_sheaf V) +\<^bsub>f \<^sup>\<inverse> X V\<^esub> \<cdot>\<^bsub>f \<^sup>\<inverse> X V\<^esub>
+                \<zero>\<^bsub>f \<^sup>\<inverse> X V\<^esub> \<one>\<^bsub>f \<^sup>\<inverse> X V\<^esub>"
     by (metis Int_commute Int_mono direct_im_sheaf_def direct_im_sheaf_morphisms_def is_continuous is_ring_morphism subset_refl vimage_mono)
-  moreover have "direct_im_sheaf {} = {b}" using direct_im_sheaf_def by simp
-  moreover have "\<And>U. is_open' U \<Longrightarrow> (\<And>x. x \<in> (direct_im_sheaf U) \<Longrightarrow> direct_im_sheaf_morphisms U U x = x)" 
+  show "direct_im_sheaf {} = {b}" using direct_im_sheaf_def by simp
+  show "\<And>U. is_open' U \<Longrightarrow> (\<And>x. x \<in> (direct_im_sheaf U) \<Longrightarrow> direct_im_sheaf_morphisms U U x = x)" 
     using direct_im_sheaf_morphisms_def by (simp add: direct_im_sheaf_def is_continuous) 
-  moreover have "\<And>U V W. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> is_open' W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> 
-(\<And>x. x \<in> (direct_im_sheaf U) \<Longrightarrow> direct_im_sheaf_morphisms U W x = (direct_im_sheaf_morphisms V W \<circ> direct_im_sheaf_morphisms U V) x)"
+  show "\<And>U V W. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> is_open' W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> (\<And>x. x \<in> (direct_im_sheaf U) \<Longrightarrow> direct_im_sheaf_morphisms U W x = (direct_im_sheaf_morphisms V W \<circ> direct_im_sheaf_morphisms U V) x)"
     by (metis Int_mono assoc_comp direct_im_sheaf_def direct_im_sheaf_morphisms_def ind_topology.is_subset is_continuous source.ind_topology_is_open_self vimage_mono)
-  ultimately show ?thesis unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def by meson
 qed
 
 (* ex 0.23 *)
@@ -1744,10 +1759,15 @@ proof-
   qed
   moreover have "\<And>U. is_zariski_open U \<Longrightarrow> (\<And>s. s \<in> (\<O> U) \<Longrightarrow> sheaf_spec_morphisms U U s = s)"
     using sheaf_spec_morphisms_def sheaf_morphisms_sheaf_spec by simp
-  moreover have "\<And>U V W. is_zariski_open U \<Longrightarrow> is_zariski_open V \<Longrightarrow> is_zariski_open W \<Longrightarrow> V \<subseteq> U 
-\<Longrightarrow> W \<subseteq> V \<Longrightarrow> (\<And>s. s \<in> \<O> U \<Longrightarrow> sheaf_spec_morphisms U W s = (sheaf_spec_morphisms V W \<circ> sheaf_spec_morphisms U V) s)"
-    using sheaf_spec_morphisms_def restrict_further sheaf_spec_morphisms_are_maps map.map_closed
-  by (smt FuncSet.restrict_restrict inf.absorb_iff2 o_apply restrict_apply')
+  moreover have "sheaf_spec_morphisms U W s = (sheaf_spec_morphisms V W \<circ> sheaf_spec_morphisms U V) s"
+    if "is_zariski_open U" "is_zariski_open V" "is_zariski_open W" "V \<subseteq> U" "W \<subseteq> V" and "s \<in> \<O> U"
+    for U V W s
+  proof -
+    have "restrict s V \<in> \<O> V"
+      using that by (smt (z3) map.map_closed restrict_apply sheaf_spec_morphisms_are_maps sheaf_spec_morphisms_def)
+    with that show ?thesis
+      by (simp add: sheaf_spec_morphisms_def inf_absorb2)
+  qed
   ultimately show ?thesis 
     unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def using sheaf_spec_morphisms_are_ring_morphisms by blast
 qed
@@ -1803,42 +1823,39 @@ next
       show "t \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
       proof
         fix \<pp> assume "\<pp> \<in> U" then have "t \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-          using D H(1,2) comm_ring.is_regular_def cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs local.comm_ring_axioms open_cover_of_open_subset_def open_cover_of_subset_def sheaf_spec_def by fastforce
+          unfolding D
+          using H(1,2) cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def open_cover_of_open_subset.axioms(1) open_cover_of_subset_def sheaf_spec_def by fastforce
         thus "t \<pp> \<in> (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" using \<open>\<pp> \<in> U\<close> by blast
       next
         fix \<pp> assume "\<pp> \<notin> U" then show "t \<pp> = undefined" using D by simp
       qed
     qed
-    moreover have "is_regular t U"
-    proof-
-      have "\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-      proof-
-        fix \<pp> assume "\<pp> \<in> U"
-        then obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>" 
-          using cover_of_subset.select_index_belongs cover_of_subset.cover_of_select_index open_cover_of_open_subset.axioms(1) 
-open_cover_of_subset_def D H(1) by fastforce 
+    moreover have "is_regular t U" 
+      unfolding is_regular_def
+    proof (intro strip conjI)
+      fix \<pp>
+      assume "\<pp> \<in> U" 
+      show "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+      proof -
+        obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>"
+          using D H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_open_subset.axioms(1) 
+            open_cover_of_subset_def by fastforce 
         thus "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using H(2) sheaf_spec_def is_regular_def by simp
       qed
-      moreover have "(\<And>\<pp>. \<pp> \<in> U \<Longrightarrow> 
-              (\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
-                                                                        f \<notin> \<qq> 
-                                                                          \<and> 
-                                                                        t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
-))))"
-      proof-
-        fix \<pp> assume "\<pp> \<in> U"
-        then have "\<exists>V'. V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
+      show "\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> 
+             (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq>  \<and>  t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f ))" 
+      proof -
+        have "\<exists>V'. V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
                  (\<exists>r f. r \<in> R \<and>
                         f \<in> R \<and>
                         (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow>
                              f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))"
-          using H(1,2) cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def mem_Collect_eq open_cover_of_open_subset_def open_cover_of_subset_def sheaf_spec_def by fastforce
+          using H(1,2) 
+          unfolding sheaf_spec_def open_cover_of_open_subset_def open_cover_of_subset_def
+          using \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def by fastforce
         moreover have "V (cover_of_subset.select_index I V \<pp>) \<subseteq> U" 
           using H(2) by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
-        ultimately show "\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
-                                                                        f \<notin> \<qq> 
-                                                                          \<and> 
-                                                                        t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f))"
+        ultimately show ?thesis
         proof-
           have "\<And>V' \<qq>. V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
             using D F1 cover_of_subset.select_index_belongs
@@ -1847,7 +1864,6 @@ open_cover_of_subset_def D H(1) by fastforce
             by (smt \<open>V (cover_of_subset.select_index I V \<pp>) \<subseteq> U\<close> \<open>\<exists>V'\<subseteq>V (cover_of_subset.select_index I V \<pp>). \<pp> \<in> V' \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow> f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))\<close> subset_trans)
         qed 
       qed
-      ultimately show ?thesis using is_regular_def by simp
     qed
     ultimately show ?thesis using sheaf_spec_def by simp
   qed

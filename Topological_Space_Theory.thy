@@ -111,9 +111,9 @@ next
   show "ind_is_open (\<Union>x\<in>F. x)"
   proof -
     obtain F' where F': "\<And>x. x \<in> F \<and> x \<subseteq> S \<and> ind_is_open x \<Longrightarrow> (F' x) \<subseteq> X \<and> is_open (F' x) \<and> x = S \<inter> (F' x)"
-      using ind_is_open_def by meson
+      using ind_is_open_def by metis
     have "is_open (\<Union> (F' ` F))"
-      by (smt (verit) F' \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> image_ident image_iff open_union)
+      by (metis (mono_tags, lifting) F F' imageE image_ident open_union)
     moreover
     have "(\<Union>x\<in>F. x) = S \<inter> \<Union> (F' ` F)"
         using F' \<open>\<And>x. x \<in> F \<Longrightarrow> x \<subseteq> S \<and> ind_is_open x\<close> by fastforce
