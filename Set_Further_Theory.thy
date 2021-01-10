@@ -61,4 +61,9 @@ lemma map_eq:
   shows "f = g"
   using assms by (metis restrict_ext restrict_on_source)
 
+lemma image_subset_of_target:
+  assumes "map f S T"
+  shows "f ` S \<subseteq> T"
+  using assms by (meson image_subsetI map.map_closed)
+
 end

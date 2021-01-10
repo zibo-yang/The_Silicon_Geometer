@@ -428,7 +428,7 @@ lemma standard_open_is_zariski_open:
   shows "is_zariski_open \<D>(x)"
   sorry
 
-lemma standard_pen_is_subset:
+lemma standard_open_is_subset:
   assumes "x \<in> R"
   shows "\<D>(x) \<subseteq> Spec"
   sorry
@@ -1262,7 +1262,13 @@ lemma local_ring_at_is_comm_ring:
 lemma frac_from_carrier_local:
   assumes "X \<in> carrier_local_ring_at"
   obtains r s where "r \<in> R" "s \<in> R" "s \<notin> I" "X = local.frac r s"
-  using assms carrier_local_ring_at_def local.frac_from_carrier sorry 
+proof-
+  have "X \<in> (R \<setminus> I)\<^sup>\<inverse> R\<^bsub>(+) (\<cdot>) \<zero>\<^esub>" using assms by (simp add: carrier_local_ring_at_def)
+  then have "X \<in> cxt_quotient_ring.carrier_quotient_ring (R \<setminus> I) R (+) (\<cdot>) \<zero>" by blast
+  then obtain r s where "r \<in> R" "s \<in> (R \<setminus> I)" "X = local.frac r s" 
+    using local.frac_from_carrier by (metis local.frac_def)
+  thus thesis using that by blast
+qed
 
 end (* prime_ideal *)
 
@@ -1275,6 +1281,11 @@ subsection \<open>Spectrum of a Ring\<close>
 (* construction 0.29 *)
 context comm_ring
 begin
+
+lemma frac_in_carrier_local:
+  assumes "\<pp> \<in> Spec" and "r \<in> R" and "s \<in> R" and "s \<notin> \<pp>"
+  shows "(cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> r s) \<in> R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>"
+  using assms sorry
 
 definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set) set \<Rightarrow> bool" 
   where "is_regular s U \<equiv> 
@@ -2259,10 +2270,10 @@ proof (intro ring_isomorphism.intro bijective_map.intro bijective.intro)
   show "ring_homomorphism \<phi>
 (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> V) (pr.one_stalk_at \<pp> V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
-    sorry 
+    using assms(4) by simp
 next 
   show "Set_Theory.map \<phi> (pr.stalk_at \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
-    sorry 
+    using assms(4) by (simp add: ring_homomorphism_def)
 next 
   show "bij_betw \<phi> (pr.stalk_at \<pp>) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
   proof-
@@ -2279,27 +2290,31 @@ next
     qed
     moreover have "\<phi> ` (pr.stalk_at \<pp>) = (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
     proof
-      show "\<phi> ` pr.stalk_at \<pp> \<subseteq> pi.carrier_local_ring_at" sorry
+      show "\<phi> ` pr.stalk_at \<pp> \<subseteq> pi.carrier_local_ring_at" 
+        using assms(4) by (simp add: image_subset_of_target ring_homomorphism_def)
     next
       show "pi.carrier_local_ring_at \<subseteq> \<phi> ` pr.stalk_at \<pp>"
       proof 
         fix x assume H:"x \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
         obtain a f where F:"a \<in> R" "f \<in> R" "f \<notin> \<pp>" "x = local.frac a f" 
           using pi.frac_from_carrier_local H by blast
-        define s where sec_def:"s \<equiv> \<lambda>\<qq>\<in>\<D>(f). local.frac a f"
+        define s where sec_def:"s \<equiv> \<lambda>\<qq>\<in>\<D>(f). cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f"
         then have sec:"s \<in> \<O>(\<D>(f))"
-        proof-
-          have "Set_Theory.map s \<D>(f) (\<Union>\<qq>\<in>\<D>(f). (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>))" 
-            using sec_def map_def extensional_funcset_def
-            by (smt F(2-4) Pi_iff UN_iff \<open>x \<in> pi.carrier_local_ring_at\<close> belongs_standard_open_iff is_prime restrict_PiE)
-          moreover have "\<And>\<qq>. \<qq> \<in> \<D>(f) \<Longrightarrow> s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)"
+        proof- 
+          have "\<And>\<qq>. \<qq> \<in> \<D>(f) \<Longrightarrow> s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)"
           proof-
             fix \<qq> assume "\<qq> \<in> \<D>(f)" 
-            hence "f \<notin> \<qq>" using belongs_standard_open_iff F(2) standard_pen_is_subset by blast
-            then have "local.frac a f \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using F(1,2) local.carrier_quotient_ring_def sorry
+            hence "f \<notin> \<qq>" using belongs_standard_open_iff F(2) standard_open_is_subset by blast
+            then have "cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" 
+              using F(1,2) frac_in_carrier_local \<open>\<qq> \<in> \<D> f\<close> standard_open_is_subset by blast
             thus "s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using sec_def by (simp add: \<open>\<qq> \<in> \<D> f\<close>)
-          qed
-          moreover have "is_regular s \<D>(f)" using is_regular_def[of s "\<D>(f)"] sorry
+          qed 
+          hence "Set_Theory.map s \<D>(f) (\<Union>\<qq>\<in>\<D>(f). (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>))" 
+            using sec_def map_def[of "s" "\<D>(f)" "\<Union>\<qq>\<in>\<D>(f). (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)"] extensional_funcset_def extensional_def 
+            by (smt PiE_I UN_iff restrict_apply)
+          moreover have "is_regular s \<D>(f)" 
+            using F(1,2) standard_open_is_subset  belongs_standard_open_iff is_regular_def[of s "\<D>(f)"]
+            by (smt \<open>\<And>\<qq>. \<qq> \<in> \<D> f \<Longrightarrow> s \<qq> \<in> R \<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>\<close> restrict_apply' sec_def subset_iff)
           ultimately show ?thesis using sheaf_spec_def[of "\<D>(f)"] by (smt mem_Collect_eq)
         qed
         then have im:"\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f"
@@ -2307,9 +2322,9 @@ next
           have "\<phi> (pr.class_of \<pp> (\<D>(f), s)) = \<phi> (pr.canonical_fun \<pp> \<D>(f) s)" 
             using pr.canonical_fun_def cxt_direct_lim.canonical_fun_def pr.class_of_def is_prime pr.stalk_is_direct_lim by fastforce
           moreover have "\<dots> = key_map \<D>(f) s" 
-            using assms(5) by (metis (no_types, lifting) F(2,3) belongs_standard_open_iff comp_apply is_prime mem_Collect_eq pr.neighborhoods_def sec standard_open_is_zariski_open standard_pen_is_subset)
-          ultimately show ?thesis 
-            using key_map_def sec_def sec by (metis F(2,3) belongs_standard_open_iff is_prime restrict_apply') 
+            using assms(5) by (metis (no_types, lifting) F(2,3) belongs_standard_open_iff comp_apply is_prime mem_Collect_eq pr.neighborhoods_def sec standard_open_is_zariski_open standard_open_is_subset)
+          ultimately show ?thesis
+            using key_map_def sec_def by (smt F(2,3) belongs_standard_open_iff is_prime restrict_apply' sec)
         qed
         thus "x \<in> \<phi> ` (pr.stalk_at \<pp>)"
         proof- 
@@ -2318,7 +2333,7 @@ next
             show "\<pp> \<in> Spec" using is_prime by simp
           next
             show "fst (\<D> f, s) \<in> pr.neighborhoods \<pp>"
-              using pr.neighborhoods_def belongs_standard_open_iff F(2,3) is_prime standard_open_is_zariski_open standard_pen_is_subset 
+              using pr.neighborhoods_def belongs_standard_open_iff F(2,3) is_prime standard_open_is_zariski_open standard_open_is_subset 
               by (metis (no_types, lifting) fst_conv mem_Collect_eq)
           next
             show "snd (\<D> f, s) \<in> \<O> fst (\<D> f, s)" using sec by simp 
