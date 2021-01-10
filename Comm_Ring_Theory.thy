@@ -1270,6 +1270,12 @@ proof-
   thus thesis using that by blast
 qed
 
+lemma eq_from_eq_frac:
+  assumes "s \<in> (R \<setminus> I)" and "s' \<in> (R \<setminus> I)" and "r \<in> R" "r' \<in> R" and
+"local.frac r s = local.frac r' s'"
+obtains h where "h \<in> (R \<setminus> I)" "h \<cdot> (s' \<cdot> r - s \<cdot> r') = \<zero>"
+  using assms sorry
+
 end (* prime_ideal *)
 
 abbreviation carrier_of_local_ring_at:: 
@@ -2283,10 +2289,28 @@ next
       then obtain U s' t' a f b g where "is_zariski_open U" "U \<subseteq> Spec" "\<pp> \<in> U" "s' \<in> \<O> U" "t' \<in> \<O> U"
 "s = pr.class_of \<pp> (U, s')" "t = pr.class_of \<pp> (U, t')" "s' = (\<lambda>\<qq>\<in>U. local.frac a f)" "t' = (\<lambda>\<qq>\<in>U. local.frac b g)" 
 "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>" sorry
-      hence "local.frac a f = local.frac b g" sorry
-      then obtain h where "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" sorry
-      then have "\<And>\<qq>. \<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h) \<Longrightarrow> s' \<qq> = t' \<qq>" using belongs_standard_open_iff sorry
-      thus "s = t" sorry
+      hence "local.frac a f = local.frac b g"
+      proof-
+        have "local.frac a f = key_map U s'" using key_map_def \<open>\<pp> \<in> U\<close> \<open>s' = (\<lambda>\<qq>\<in>U. local.frac a f)\<close> \<open>s' \<in> \<O> U\<close> by auto
+        moreover have "\<dots> = \<phi> (pr.canonical_fun \<pp> U s')"
+          using \<open>U \<subseteq> Spec\<close> \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> \<open>s' \<in> \<O> U\<close> assms(5) pr.presheaf_of_rings_axioms presheaf_of_rings.neighborhoods_def by fastforce
+        moreover have "\<dots> = \<phi> (pr.class_of \<pp> (U, s'))" using cxt_direct_lim.canonical_fun_def is_prime pr.canonical_fun_def pr.class_of_def pr.stalk_is_direct_lim by fastforce
+        moreover have "\<dots> = \<phi> s" by (simp add: \<open>s = pr.class_of \<pp> (U, s')\<close>)
+        moreover have "\<dots> = \<phi> t" using \<open>\<phi> s = \<phi> t\<close> by simp
+        moreover have "\<dots> = \<phi> (pr.class_of \<pp> (U, t'))" using \<open>t = pr.class_of \<pp> (U, t')\<close> by auto
+        moreover have "\<dots> = \<phi> (pr.canonical_fun \<pp> U t')"
+          using cxt_direct_lim.canonical_fun_def is_prime pr.canonical_fun_def pr.class_of_def pr.stalk_is_direct_lim by fastforce
+        moreover have "\<dots> = key_map U t'" 
+          using \<open>U \<subseteq> Spec\<close> \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> \<open>t' \<in> \<O> U\<close> assms(5) pr.neighborhoods_def by auto
+        ultimately show ?thesis 
+          using key_map_def \<open>\<pp> \<in> U\<close> \<open>t' = (\<lambda>\<qq>\<in>U. local.frac b g)\<close> \<open>t' \<in> \<O> U\<close> by auto
+      qed
+      then obtain h where "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" 
+        using pi.eq_from_eq_frac by (metis Diff_iff \<open>a \<in> R\<close> \<open>b \<in> R\<close> \<open>f \<in> R\<close> \<open>f \<notin> \<pp>\<close> \<open>g \<in> R\<close> \<open>g \<notin> \<pp>\<close>)
+      then have "\<And>\<qq>. \<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h) \<Longrightarrow> s' \<qq> = t' \<qq>" 
+        using belongs_standard_open_iff \<open>local.frac a f = local.frac b g\<close> \<open>s' = (\<lambda>\<qq>\<in>U. local.frac a f)\<close> \<open>t' = (\<lambda>\<qq>\<in>U. local.frac b g)\<close> by presburger
+      thus "s = t"
+        by (simp add: \<open>local.frac a f = local.frac b g\<close> \<open>s = pr.class_of \<pp> (U, s')\<close> \<open>s' = (\<lambda>\<qq>\<in>U. local.frac a f)\<close> \<open>t = pr.class_of \<pp> (U, t')\<close> \<open>t' = (\<lambda>\<qq>\<in>U. local.frac b g)\<close>)
     qed
     moreover have "\<phi> ` (pr.stalk_at \<pp>) = (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
     proof
