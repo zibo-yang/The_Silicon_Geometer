@@ -1297,7 +1297,7 @@ definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarro
   where "is_regular s U \<equiv> 
 (\<forall>\<pp>. \<pp> \<in> U  \<longrightarrow> s \<pp> \<in> R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
 \<and> (\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> 
-              (\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
+              (\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
                                                                         f \<notin> \<qq> 
                                                                           \<and> 
                                                                         s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
@@ -1345,16 +1345,16 @@ proof -
       unfolding add_sheaf_spec_def using that 
       by (simp flip:pi.add_local_ring_at_def)
   qed  
-  moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
             \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
                   add_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
     if "\<pp> \<in> U" for \<pp> 
   proof -
-    obtain V1 r1 f1 where "V1 \<subseteq>U" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
+    obtain V1 r1 f1 where "V1 \<subseteq>U" "is_zariski_open V1" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
         q_V1:"(\<forall>\<qq>. \<qq> \<in> V1 \<longrightarrow> f1 \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r1 f1)"
       using \<open>is_regular s U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
       by blast
-    obtain V2 r2 f2 where "V2 \<subseteq>U" "\<pp> \<in> V2" "r2 \<in> R" "f2 \<in> R" and
+    obtain V2 r2 f2 where "V2 \<subseteq>U" "is_zariski_open V2" "\<pp> \<in> V2" "r2 \<in> R" "f2 \<in> R" and
         q_V2:"(\<forall>\<qq>. \<qq> \<in> V2 \<longrightarrow> f2 \<notin> \<qq> \<and> s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r2 f2)"
       using \<open>is_regular s' U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
       by blast
@@ -1364,7 +1364,8 @@ proof -
     define f3 where "f3 = f1 \<cdot> f2"
     have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
       unfolding V3_def r3_def f3_def
-      using \<open>V1 \<subseteq> U\<close> \<open>\<pp> \<in> V1\<close> \<open>\<pp> \<in> V2\<close> \<open>f1 \<in> R\<close> \<open>f2 \<in> R\<close> \<open>r1 \<in> R\<close> \<open>r2 \<in> R\<close> by blast+
+      using \<open>V1 \<subseteq> U\<close> \<open>\<pp> \<in> V1\<close> \<open>V2 \<subseteq> U\<close> \<open>\<pp> \<in> V2\<close> \<open>f1 \<in> R\<close> \<open>f2 \<in> R\<close> \<open>r1 \<in> R\<close> \<open>r2 \<in> R\<close> by blast+
+    moreover have "is_zariski_open V3" using \<open>is_zariski_open V1\<close> \<open>is_zariski_open V2\<close> topological_space.open_inter by (simp add: V3_def)
     moreover have "f3 \<notin> \<qq>"
         "add_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
         if "\<qq> \<in> V3" for \<qq>
@@ -1393,7 +1394,7 @@ proof -
     qed
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by auto
+  ultimately show ?thesis unfolding is_regular_def by meson
 qed
 
 lemma add_sheaf_spec_in_sheaf_spec:
@@ -1446,16 +1447,16 @@ proof -
       unfolding mult_sheaf_spec_def using that 
       by (simp flip:pi.mult_local_ring_at_def)
   qed  
-  moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
             \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
                   mult_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
     if "\<pp> \<in> U" for \<pp> 
   proof -
-    obtain V1 r1 f1 where "V1 \<subseteq>U" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
+    obtain V1 r1 f1 where "V1 \<subseteq>U" "is_zariski_open V1" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
         q_V1:"(\<forall>\<qq>. \<qq> \<in> V1 \<longrightarrow> f1 \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r1 f1)"
       using \<open>is_regular s U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
       by blast
-    obtain V2 r2 f2 where "V2 \<subseteq>U" "\<pp> \<in> V2" "r2 \<in> R" "f2 \<in> R" and
+    obtain V2 r2 f2 where "V2 \<subseteq>U" "is_zariski_open V2" "\<pp> \<in> V2" "r2 \<in> R" "f2 \<in> R" and
         q_V2:"(\<forall>\<qq>. \<qq> \<in> V2 \<longrightarrow> f2 \<notin> \<qq> \<and> s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r2 f2)"
       using \<open>is_regular s' U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
       by blast
@@ -1466,6 +1467,8 @@ proof -
     have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
       unfolding V3_def r3_def f3_def
       using \<open>V1 \<subseteq> U\<close> \<open>\<pp> \<in> V1\<close> \<open>\<pp> \<in> V2\<close> \<open>f1 \<in> R\<close> \<open>f2 \<in> R\<close> \<open>r1 \<in> R\<close> \<open>r2 \<in> R\<close> by blast+
+    moreover have "is_zariski_open V3" 
+      using topological_space.open_inter by (simp add: V3_def \<open>is_zariski_open V1\<close> \<open>is_zariski_open V2\<close>)
     moreover have "f3 \<notin> \<qq>"
         "mult_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
         if "\<qq> \<in> V3" for \<qq>
@@ -1494,7 +1497,7 @@ proof -
     qed
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by auto
+  ultimately show ?thesis unfolding is_regular_def by meson
 qed
 
 lemma mult_sheaf_spec_in_sheaf_spec:
@@ -1532,7 +1535,7 @@ definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a
   where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.zero_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
 
 lemma is_regular_zero_sheaf_spec:
-  assumes "U \<subseteq> Spec"
+  assumes "U \<subseteq> Spec" and "is_zariski_open U"
   shows "is_regular (zero_sheaf_spec U) U" 
 proof -       
   have "zero_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
@@ -1541,7 +1544,7 @@ proof -
       cxt_quotient_ring.valid_frac_zero cxt_quotient_ring_def local.comm_ring_axioms 
       prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal subsetD that 
     by fastforce
-  moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
             \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
                   zero_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
     if "\<pp> \<in> U" for \<pp>    
@@ -1551,6 +1554,7 @@ proof -
     define f3 where "f3 = \<one>"
     have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
       unfolding V3_def r3_def f3_def using that by auto
+    moreover have "is_zariski_open V3" using assms(2) by (simp add: V3_def)
     moreover have "f3 \<notin> \<qq>"
         "zero_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
         if "\<qq> \<in> V3" for \<qq>
@@ -1567,11 +1571,11 @@ proof -
       done
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by auto
+  ultimately show ?thesis unfolding is_regular_def by meson
 qed  
 
 lemma zero_sheaf_spec_in_sheaf_spec:
-  assumes "U \<subseteq> Spec"
+  assumes "U \<subseteq> Spec" and "is_zariski_open U"
   shows "zero_sheaf_spec U \<in> \<O> U"
 proof -
   have "zero_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" if "\<pp> \<in> U" for \<pp>
@@ -1594,7 +1598,7 @@ definition one_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a 
   where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.one_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
 
 lemma is_regular_one_sheaf_spec:
-  assumes "U \<subseteq> Spec"
+  assumes "U \<subseteq> Spec" and "is_zariski_open U"
   shows "is_regular (one_sheaf_spec U) U" 
 proof -       
   have "one_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
@@ -1604,7 +1608,7 @@ proof -
         cxt_quotient_ring_def local.comm_ring_axioms mem_Collect_eq 
         prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal 
         restrict_apply subsetD that)
-  moreover have "(\<exists>V\<subseteq>U. \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
             \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
                   one_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
     if "\<pp> \<in> U" for \<pp>    
@@ -1614,6 +1618,7 @@ proof -
     define f3 where "f3 = \<one>"
     have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
       unfolding V3_def r3_def f3_def using that by auto
+    moreover have "is_zariski_open V3" using assms(2) by (simp add: V3_def)
     moreover have "f3 \<notin> \<qq>"
         "one_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
         if "\<qq> \<in> V3" for \<qq>
@@ -1630,11 +1635,11 @@ proof -
       done
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by auto
+  ultimately show ?thesis unfolding is_regular_def by meson
 qed
 
 lemma one_sheaf_spec_in_sheaf_spec:
-  assumes "U \<subseteq> Spec"
+  assumes "U \<subseteq> Spec" and "is_zariski_open U"
   shows "one_sheaf_spec U \<in> \<O> U"
 proof -
   have "one_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" if "\<pp> \<in> U" for \<pp>
@@ -1684,8 +1689,8 @@ proof unfold_locales
     subgoal by (simp add: assms(2) mult_sheaf_spec_in_sheaf_spec that(1) that(2))
     done
   show "zero_sheaf_spec U \<in> \<O> U" "one_sheaf_spec U \<in> \<O> U"
-    subgoal by (simp add: assms(2) zero_sheaf_spec_in_sheaf_spec)
-    subgoal by (simp add: assms(2) one_sheaf_spec_in_sheaf_spec)
+    subgoal by (simp add: assms zero_sheaf_spec_in_sheaf_spec)
+    subgoal by (simp add: assms one_sheaf_spec_in_sheaf_spec)
     done
   show "add_sheaf_spec U (zero_sheaf_spec U) a = a" if "a \<in> \<O> U" for a
   proof -
@@ -1874,10 +1879,10 @@ next
             open_cover_of_subset_def by fastforce 
         thus "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using H(2) sheaf_spec_def is_regular_def by simp
       qed
-      show "\<exists>V. V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> 
+      show "\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> 
              (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq>  \<and>  t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f ))" 
       proof -
-        have "\<exists>V'. V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
+        have "\<exists>V'. is_zariski_open V' \<and> V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
                  (\<exists>r f. r \<in> R \<and>
                         f \<in> R \<and>
                         (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow>
@@ -1889,11 +1894,11 @@ next
           using H(2) by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
         ultimately show ?thesis
         proof-
-          have "\<And>V' \<qq>. V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
+          have "\<And>V' \<qq>. is_zariski_open V' \<and> V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
             using D F1 cover_of_subset.select_index_belongs
             by (smt H(1) \<open>V (cover_of_subset.select_index I V \<pp>) \<subseteq> U\<close> \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index in_mono open_cover_of_open_subset.axioms(1) open_cover_of_subset_def restrict_apply)
-          thus ?thesis
-            by (smt \<open>V (cover_of_subset.select_index I V \<pp>) \<subseteq> U\<close> \<open>\<exists>V'\<subseteq>V (cover_of_subset.select_index I V \<pp>). \<pp> \<in> V' \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow> f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))\<close> subset_trans)
+          thus ?thesis sledgehammer
+            by (smt \<open>V (cover_of_subset.select_index I V \<pp>) \<subseteq> U\<close> \<open>\<exists>V'. is_zariski_open V' \<and> V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow> f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))\<close> subset_trans)
         qed 
       qed
     qed
@@ -1919,6 +1924,12 @@ next
   thus "\<exists>t. t \<in> (\<O> U) \<and> (\<forall>i. i \<in> I \<longrightarrow> sheaf_spec_morphisms U (V i) t = s i)"
     using \<open>t \<in> \<O> U\<close> by blast
 qed
+
+(*
+lemma shrinking:
+  assumes "is_zariski_open U" and "U \<subseteq> Spec" and "s \<in> \<O> U" and "t \<in> \<O> U"
+  obtains V a f b g where ""
+*)
 
 end (* comm_ring *)
 
@@ -2051,6 +2062,8 @@ begin
 
 definition neighborhoods:: "'a \<Rightarrow> ('a set) set"
   where "neighborhoods x \<equiv> {U. U \<subseteq> S \<and> is_open U \<and> x \<in> U}"
+
+text \<open>Note that by a neighborhood we mean what some authors call an open neighborhood.\<close>
 
 (* definition 0.37 *)
 definition stalk_at:: "'a \<Rightarrow> ('a set \<times> 'b) set set"
@@ -2337,7 +2350,7 @@ next
             using sec_def map_def[of "s" "\<D>(f)" "\<Union>\<qq>\<in>\<D>(f). (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)"] extensional_funcset_def extensional_def 
             by (smt PiE_I UN_iff restrict_apply)
           moreover have "is_regular s \<D>(f)" 
-            using F(1,2) standard_open_is_subset  belongs_standard_open_iff is_regular_def[of s "\<D>(f)"]
+            using F(1,2) standard_open_is_subset  belongs_standard_open_iff is_regular_def[of s "\<D>(f)"] standard_open_is_zariski_open
             by (smt \<open>\<And>\<qq>. \<qq> \<in> \<D> f \<Longrightarrow> s \<qq> \<in> R \<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>\<close> restrict_apply' sec_def subset_iff)
           ultimately show ?thesis using sheaf_spec_def[of "\<D>(f)"] by (smt mem_Collect_eq)
         qed
