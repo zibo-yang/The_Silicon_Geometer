@@ -397,7 +397,7 @@ qed
 (* ex 0.16 *)
 
 definition is_zariski_open:: "'a set set \<Rightarrow> bool"
-  where "is_zariski_open U \<equiv> generated_topology {U. \<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>} U"
+  where "is_zariski_open U \<equiv> U \<subseteq> Spec \<and> generated_topology {U. \<Union>U \<subseteq> R \<and> (\<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>)} U"
 
 lemma is_zariski_open_empty [simp]: "is_zariski_open {}"
   using UNIV is_zariski_open_def by blast
@@ -407,16 +407,20 @@ lemma is_zariski_open_Spec [simp]: "is_zariski_open Spec"
 
 lemma is_zariski_open_Union [intro]: 
   "(\<And>x. x \<in> F \<Longrightarrow> is_zariski_open x) \<Longrightarrow> is_zariski_open (\<Union> F)"
-  by (simp add: UNIV is_zariski_open_def)
+  by (simp add: UNIV Union_least is_zariski_open_def)
 
 lemma is_zariski_open_Int [simp]: 
   "\<lbrakk>is_zariski_open U; is_zariski_open V\<rbrakk> \<Longrightarrow> is_zariski_open (U \<inter> V)"
-  by (simp add: Int is_zariski_open_def)
+  by (meson UNIV inf_le1 is_zariski_open_def subset_trans)
 
 lemma zarisky_is_topological_space [iff]:
   shows "topological_space Spec is_zariski_open"
-proof qed (auto simp: is_zariski_open_def spectrum_def UNIV)
-
+proof
+  show "U \<subseteq> Spec"
+    if "is_zariski_open U" for U
+    using that
+    using is_zariski_open_def by metis
+qed auto
 
 subsection \<open>Standard Open Sets\<close>
 
@@ -1827,7 +1831,7 @@ next
   proof -
     from that obtain i where F: "i \<in> I" "\<pp> \<in> (V i)" "is_zariski_open (V i)" 
       using H(1) unfolding open_cover_of_subset_def open_cover_of_open_subset_def
-      by (meson UNIV cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_zariski_open_def)
+      by (metis cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_subset_axioms_def)
     then have "sheaf_spec_morphisms U (V i) s \<pp> = cxt_quotient_ring.zero_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"  
       using H(2,4) F by (simp add: zero_sheaf_spec_def) 
     thus "s \<pp> = zero_sheaf_spec U \<pp>" 
@@ -1882,7 +1886,9 @@ next
       show "\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> 
              (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq>  \<and>  t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f ))" 
       proof -
-        have "\<exists>V'. is_zariski_open V' \<and> V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
+        have V: "V (cover_of_subset.select_index I V \<pp>) \<subseteq> U" 
+          using H(2) by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
+        have V2: "\<exists>V'. is_zariski_open V' \<and> V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
                  (\<exists>r f. r \<in> R \<and>
                         f \<in> R \<and>
                         (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow>
@@ -1890,17 +1896,11 @@ next
           using H(1,2) 
           unfolding sheaf_spec_def open_cover_of_open_subset_def open_cover_of_subset_def
           using \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def by fastforce
-        moreover have "V (cover_of_subset.select_index I V \<pp>) \<subseteq> U" 
-          using H(2) by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
-        ultimately show ?thesis
-        proof-
-          have "\<And>V' \<qq>. is_zariski_open V' \<and> V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
-            using D F1 cover_of_subset.select_index_belongs
-            by (smt H(1) \<open>V (cover_of_subset.select_index I V \<pp>) \<subseteq> U\<close> \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index in_mono open_cover_of_open_subset.axioms(1) open_cover_of_subset_def restrict_apply)
-          thus ?thesis sledgehammer
-            by (smt \<open>V (cover_of_subset.select_index I V \<pp>) \<subseteq> U\<close> \<open>\<exists>V'. is_zariski_open V' \<and> V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow> f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))\<close> subset_trans)
-        qed 
-      qed
+        have "\<And>V' \<qq>. is_zariski_open V' \<and> V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
+          by (smt (z3) D F1 H(1) V \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def restrict_apply subsetD)
+        thus ?thesis 
+          by (smt V V2 subset_trans)
+      qed 
     qed
     ultimately show ?thesis using sheaf_spec_def by simp
   qed
