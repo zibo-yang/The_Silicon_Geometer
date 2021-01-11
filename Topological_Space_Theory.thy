@@ -31,6 +31,13 @@ inductive generated_topology :: "'a set set \<Rightarrow> 'a set \<Rightarrow> b
   | UN: "generated_topology B (\<Union>K)" if "(\<And>U. U \<in> K \<Longrightarrow> generated_topology B U)"
   | Basis: "generated_topology B b" if "b \<in> B \<and> b \<subseteq> S"
 
+lemma generated_topology_is_topology:
+  fixes S:: "'a set" and B:: "'a set set"
+  (* assumes "\<And>b. b \<in> B \<Longrightarrow> b \<subseteq> S" I don't think this assumption is needed given how generated_topology
+is defined *)
+  shows "topological_space S (generated_topology B)"
+  sorry
+
 subsection \<open>Covers\<close>
 
 locale cover_of_subset =
