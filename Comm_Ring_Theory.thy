@@ -395,32 +395,29 @@ lemma ex_15:
 qed
 
 (* ex 0.16 *)
-
 definition is_zariski_open:: "'a set set \<Rightarrow> bool"
-  where "is_zariski_open U \<equiv> U \<subseteq> Spec \<and> generated_topology {U. \<Union>U \<subseteq> R \<and> (\<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>)} U"
+  where "is_zariski_open U \<equiv> generated_topology Spec {U. \<Union>U \<subseteq> R \<and> (\<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> U = Spec - \<V> \<aa>)} U"
 
 lemma is_zariski_open_empty [simp]: "is_zariski_open {}"
-  using UNIV is_zariski_open_def by blast
+  using UNIV is_zariski_open_def generated_topology_is_topology topological_space.open_empty 
+  by blast
 
 lemma is_zariski_open_Spec [simp]: "is_zariski_open Spec"
   by (simp add: UNIV is_zariski_open_def)
 
 lemma is_zariski_open_Union [intro]: 
   "(\<And>x. x \<in> F \<Longrightarrow> is_zariski_open x) \<Longrightarrow> is_zariski_open (\<Union> F)"
-  by (simp add: UNIV Union_least is_zariski_open_def)
+  by (simp add: UN is_zariski_open_def)
 
 lemma is_zariski_open_Int [simp]: 
   "\<lbrakk>is_zariski_open U; is_zariski_open V\<rbrakk> \<Longrightarrow> is_zariski_open (U \<inter> V)"
-  by (meson UNIV inf_le1 is_zariski_open_def subset_trans)
+  using Int is_zariski_open_def by blast
+ 
 
 lemma zarisky_is_topological_space [iff]:
   shows "topological_space Spec is_zariski_open"
-proof
-  show "U \<subseteq> Spec"
-    if "is_zariski_open U" for U
-    using that
-    using is_zariski_open_def by metis
-qed auto
+  unfolding is_zariski_open_def using generated_topology_is_topology 
+  by blast
 
 subsection \<open>Standard Open Sets\<close>
 

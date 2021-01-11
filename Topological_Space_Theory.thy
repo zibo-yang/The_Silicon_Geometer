@@ -24,19 +24,27 @@ end (* topological_space *)
 
 subsection \<open>Topological Basis\<close>
 
-inductive generated_topology :: "'a set set \<Rightarrow> 'a set \<Rightarrow> bool" for B :: "'a set set"
+inductive generated_topology :: "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> bool" 
+    for S :: "'a set" and B :: "'a set set"
   where
-    UNIV: "generated_topology B S"
-  | Int: "generated_topology B (U \<inter> V)" if "generated_topology B U" and "generated_topology B V"
-  | UN: "generated_topology B (\<Union>K)" if "(\<And>U. U \<in> K \<Longrightarrow> generated_topology B U)"
-  | Basis: "generated_topology B b" if "b \<in> B \<and> b \<subseteq> S"
+    UNIV: "generated_topology S B S"
+  | Int: "generated_topology S B (U \<inter> V)" 
+            if "generated_topology S B U" and "generated_topology S B V"
+  | UN: "generated_topology S B (\<Union>K)" if "(\<And>U. U \<in> K \<Longrightarrow> generated_topology S B U)"
+  | Basis: "generated_topology S B b" if "b \<in> B \<and> b \<subseteq> S"
 
 lemma generated_topology_is_topology:
   fixes S:: "'a set" and B:: "'a set set"
   (* assumes "\<And>b. b \<in> B \<Longrightarrow> b \<subseteq> S" I don't think this assumption is needed given how generated_topology
 is defined *)
-  shows "topological_space S (generated_topology B)"
-  sorry
+  shows "topological_space S (generated_topology S B)"
+  apply (rule topological_space.intro)
+  subgoal using UNIV by auto
+  subgoal using generated_topology.UN by fastforce
+  subgoal by (induct rule:generated_topology.induct)  auto
+  subgoal by (simp add: Int)
+  subgoal by (simp add: UN)
+  done
 
 subsection \<open>Covers\<close>
 
