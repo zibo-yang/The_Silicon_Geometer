@@ -1299,24 +1299,31 @@ lemma frac_in_carrier_local:
   shows "(cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> r s) \<in> R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>"
   using assms sorry
 
-definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set) set \<Rightarrow> bool" 
+definition is_locally_frac:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> 'a set set \<Rightarrow> bool" 
+  where "is_locally_frac s V \<equiv> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and> 
+s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f))"
+
+definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> 'a set set \<Rightarrow> bool" 
   where "is_regular s U \<equiv> 
-(\<forall>\<pp>. \<pp> \<in> U  \<longrightarrow> s \<pp> \<in> R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)
-\<and> (\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> 
-              (\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> 
-                                                                        f \<notin> \<qq> 
-                                                                          \<and> 
-                                                                        s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f
-))))"
+\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> (\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> (is_locally_frac s V))"
 
 lemma map_on_empty_is_regular: 
   fixes s:: "'a set \<Rightarrow> ('a \<times> 'a) set"
   shows "is_regular s {}"
   by (simp add: is_regular_def)
 
-definition sheaf_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
-  where "\<O> U \<equiv> {s. (Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))) 
-                  \<and> is_regular s U}"
+definition sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
+  where "\<O> U \<equiv> {s\<in>(\<Pi>\<^sub>E \<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)). is_regular s U}"
+
+lemma sec_has_right_codom:
+  assumes "s \<in> \<O> U" and "\<pp> \<in> U"
+  shows "s \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
+  using assms sheaf_spec_def by auto
+
+lemma sec_is_extensional:
+  assumes "s \<in> \<O> U"
+  shows "s \<in> extensional U"
+  using assms sheaf_spec_def by (simp add: PiE_iff)
 
 definition \<O>b::"'a set \<Rightarrow> ('a \<times> 'a) set" 
   where "\<O>b = (\<lambda>\<pp>. undefined)"
@@ -1327,8 +1334,8 @@ lemma \<O>_on_emptyset: "\<O> {} = {\<O>b}"
   
 lemma sheaf_spec_of_empty_is_singleton:
   fixes U:: "'a set set"
-  assumes "U = {}" and "s \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}" and 
-"t \<in> {s. Set_Theory.map s U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))}"
+  assumes "U = {}" and "s \<in> {s. s \<in> extensional U}" and 
+"t \<in> {s. s \<in> extensional U}"
   shows "s = t"
   using assms by (simp add: Set_Theory.map_def)
 
@@ -2239,7 +2246,7 @@ next
       using zero_sheaf_spec_def key_map_def pi.zero_local_ring_at_def assms(1,2) spectrum_def zero_sheaf_spec_in_sheaf_spec by fastforce 
     moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow> y \<in> \<O> U \<Longrightarrow>
            (key_map U) (add_sheaf_spec U x y) = pi.add_local_ring_at (key_map U x) (key_map U y)"
-      using add_sheaf_spec_in_sheaf_spec key_map_def assms(1,2) pi.add_local_ring_at_def add_sheaf_spec_def spectrum_def by fastforce 
+      using add_sheaf_spec_in_sheaf_spec key_map_def assms pi.add_local_ring_at_def add_sheaf_spec_def spectrum_def zariski_open_is_subset by fastforce 
     thus ?thesis 
       sorry
       (* my tweaks about locale structures somehow affect this proof, I will fix it later. -- Wenda
