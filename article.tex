@@ -311,10 +311,10 @@ Remember that the complement of a prime ideal $\mathfrak{p}$ in $R$ is a multipl
 This allows us to introduce the next construction.	\\
 Let $U$ be an open subset of Spec $R$. We define $\mathscr{O}_R(U)$ to be the set of all functions 
 	\[
-	s: U \rightarrow \bigcup \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
+	s: U \rightarrow \coprod \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
 	\]
 such that $s(\mathfrak{p}) \in R_{\mathfrak{p}}$ for every $\mathfrak{p} \in U$ and such that for every $\mathfrak{p} \in U$, there exist a neighborhood $V$ of $\mathfrak{p}$, contained in $U$, and elements $r, f \in R$, such that for each $\mathfrak{q} \in V$, $f \notin \mathfrak{q}$ and $s(\mathfrak{q}) = r/f$. \\
-We endow $\mathscr{O}_R(U)$ with the sum and product of such functions and we take for the multiplicative unit the function that maps each $\mathfrak{p}$ on the multiplicative unit of $R_{\mathfrak{p}}$. \\
+We endow $\mathscr{O}_R(U)$ with the sum and product of such functions and we take for the additive unit (\textit{resp.} multiplicative unit) the function that maps each $\mathfrak{p}$ on the additive unit (\textit{resp.} multiplicative unit) of $R_{\mathfrak{p}}$. \\
 Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}_R(U) \rightarrow \mathscr{O}_R(V)$ maps each $s \in \mathscr{O}_R(U)$ on its restriction to $V$. \\
 One checks $\mathscr{O}_R$ is a sheaf of rings on Spec $R$ and the pair $(\text{Spec}\, R, \mathscr{O}_R)$	is called the \emph{spectrum of the ring $R$}. \\
 This last construction translates smoothly in Isabelle. 
