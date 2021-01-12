@@ -35,8 +35,6 @@ inductive generated_topology :: "'a set \<Rightarrow> 'a set set \<Rightarrow> '
 
 lemma generated_topology_is_topology:
   fixes S:: "'a set" and B:: "'a set set"
-  (* assumes "\<And>b. b \<in> B \<Longrightarrow> b \<subseteq> S" I don't think this assumption is needed given how generated_topology
-is defined *)
   shows "topological_space S (generated_topology S B)"
   apply (rule topological_space.intro)
   subgoal using UNIV by auto

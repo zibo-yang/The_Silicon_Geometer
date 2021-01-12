@@ -26,7 +26,7 @@ section \<open>Schemes\<close>
 
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + comm_ring +
-  assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U. x\<in>U \<and> is_open U \<and> U \<subseteq> X \<and> 
+  assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U. x\<in>U \<and> is_open U \<and> 
 affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
 (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
 (cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
@@ -43,7 +43,7 @@ next
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
 next
   show "\<And>x. x \<in> X \<Longrightarrow>
-         \<exists>U. x \<in> U \<and> is_open U \<and> U \<subseteq> X \<and>
+         \<exists>U. x \<in> U \<and> is_open U \<and>
              affine_scheme U (ind_topology.ind_is_open X is_open U)
               (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
               (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
@@ -57,7 +57,7 @@ next
               (cxt_ind_sheaf.ind_zero_str zero_str X) (cxt_ind_sheaf.ind_one_str one_str X) R (+)
               (\<cdot>) \<zero> \<one>"
       sorry
-    thus "\<exists>U. x \<in> U \<and> is_open U \<and> U \<subseteq> X \<and>
+    thus "\<exists>U. x \<in> U \<and> is_open U \<and>
              affine_scheme U (ind_topology.ind_is_open X is_open U)
               (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
               (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
