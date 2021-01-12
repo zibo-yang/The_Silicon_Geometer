@@ -33,16 +33,16 @@ inductive generated_topology :: "'a set \<Rightarrow> 'a set set \<Rightarrow> '
   | UN: "generated_topology S B (\<Union>K)" if "(\<And>U. U \<in> K \<Longrightarrow> generated_topology S B U)"
   | Basis: "generated_topology S B b" if "b \<in> B \<and> b \<subseteq> S"
 
+lemma generated_topology_empty [simp]: "generated_topology S B {}"
+  by (metis UN Union_empty empty_iff)
+
+lemma generated_topology_subset: "generated_topology S B U \<Longrightarrow> U \<subseteq> S"
+  by (induct rule:generated_topology.induct) auto
+
 lemma generated_topology_is_topology:
   fixes S:: "'a set" and B:: "'a set set"
   shows "topological_space S (generated_topology S B)"
-  apply (rule topological_space.intro)
-  subgoal using UNIV by auto
-  subgoal using generated_topology.UN by fastforce
-  subgoal by (induct rule:generated_topology.induct)  auto
-  subgoal by (simp add: Int)
-  subgoal by (simp add: UN)
-  done
+  by (simp add: Int UN UNIV generated_topology_subset topological_space_def)
 
 subsection \<open>Covers\<close>
 
