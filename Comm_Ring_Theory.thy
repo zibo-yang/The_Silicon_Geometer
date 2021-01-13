@@ -1981,7 +1981,7 @@ next
       using sheaf_spec_morphisms_def that by (simp add: H(2))
     ultimately show "s i \<pp> = s j \<pp>" by blast
   qed
-  moreover have "t \<in> \<O> U"
+  have "t \<in> \<O> U"
   proof-
     have "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" if "\<pp>\<in>U" for \<pp>
       using D H(1) H(2) cover_of_subset.cover_of_select_index 
@@ -1996,23 +1996,19 @@ next
       assume "\<pp> \<in> U" 
       show "\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> is_locally_frac t V" 
       proof -
+        have cov_in_I: "cover_of_subset.select_index I V \<pp> \<in> I"
+          by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
         have V: "V (cover_of_subset.select_index I V \<pp>) \<subseteq> U" 
           using H(2) by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
-        have V2: "\<exists>V'. is_zariski_open V' \<and> V'\<subseteq>V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
-                 (\<exists>r f. r \<in> R \<and>
-                        f \<in> R \<and>
-                        (\<forall>\<qq>. \<qq> \<in> V' \<longrightarrow>
-                             f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))"
+        have V2: "\<exists>V'. is_zariski_open V' \<and> V'\<subseteq> V (cover_of_subset.select_index I V \<pp>) \<and> \<pp> \<in> V' \<and>
+                 is_locally_frac (s (cover_of_subset.select_index I V \<pp>)) V'"
           using H(1,2) 
-          unfolding sheaf_spec_def open_cover_of_open_subset_def open_cover_of_subset_def
-          sorry
-          (* failed to fix
-          using \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def by fastforce
-          *)
+          unfolding sheaf_spec_def open_cover_of_open_subset_def open_cover_of_subset_def is_regular_def
+          using \<open>\<pp> \<in> U\<close> cov_in_I cover_of_subset.cover_of_select_index by fastforce
         have "\<And>V' \<qq>. is_zariski_open V' \<and> V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
           by (smt D F1 H(1) V \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def restrict_apply subsetD)
-        thus ?thesis unfolding is_locally_frac_def
-          by (smt V V2 subset_trans)
+        with V V2 show ?thesis unfolding is_locally_frac_def
+          by (smt subset_trans)
       qed 
     qed
     ultimately show ?thesis unfolding sheaf_spec_def by (simp add:PiE_iff)
@@ -2027,12 +2023,10 @@ next
         unfolding D open_cover_of_subset_def open_cover_of_open_subset_def
         by (meson cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs restrict_apply')
       thus "sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
-        unfolding sheaf_spec_morphisms_def using D F1 
-        
-        sorry
-        (* not sure how to fix this
-        by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> mem_Collect_eq restrict_apply restrict_on_source sheaf_spec_def)
-        *)    
+        using \<open>t \<in> \<O> U\<close> \<open>i \<in> I\<close> H(2) that
+        unfolding sheaf_spec_morphisms_def  
+        apply (simp add: D split: if_split_asm)
+        by (metis (mono_tags, hide_lams) F1  extensional_arb [OF sec_is_extensional])
     qed 
     thus "sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
       using sheaf_spec_morphisms_def D F1
@@ -2128,7 +2122,8 @@ definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Righ
 (\<exists>W. (W \<in> I) \<and> (W \<subseteq> fst x \<inter> fst y) \<and> \<rho> (fst x \<inter> fst y) W (snd x) = \<rho> (fst x \<inter> fst y) W (snd y))"
 
 lemma rel_is_equivalence:
-  shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}" sorry
+  shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}"
+  sorry
 
 definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor> _ , _ \<rfloor>")
   where "\<lfloor>U,s\<rfloor> \<equiv> equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, s)"
