@@ -1832,11 +1832,17 @@ proof unfold_locales
     for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
       and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
       and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
+    apply (rule ext)
+    using that
+    apply (simp add: add_sheaf_spec_def)
+    sorry
   show "add_sheaf_spec U a (zero_sheaf_spec U) = a"
     if "a \<in> \<O> U"
     for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
+    apply (rule ext)
+    using that
+    apply (simp add: add_sheaf_spec_def zero_sheaf_spec_def)
+    sorry
   show "monoid.invertible \<O> U (add_sheaf_spec U) (zero_sheaf_spec U) u"
     if "u \<in> \<O> U"
     for u :: "'a set \<Rightarrow> ('a \<times> 'a) set"
