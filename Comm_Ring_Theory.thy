@@ -850,7 +850,6 @@ notation equivalence.Partition (infixl "'/" 75)
 definition frac:: "'a \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set" (infixl "'/" 75)
   where "r / s \<equiv> rel.Class (r, s)"
 
-
 lemma frac_Pow:"(r, s) \<in> R \<times> S \<Longrightarrow> frac r s \<in> Pow (R \<times> S) "
   using local.frac_def rel.Class_closed2 by auto
 
@@ -866,6 +865,19 @@ proof (rule rel.Class_eq)
     unfolding rel_def by auto
   then show "((r, s), r', s') \<in> {(x, y). (x, y) \<in> (R \<times> S) \<times> R \<times> S \<and> x \<sim> y}"
     using assms(2,3) by auto
+qed
+
+lemma frac_eq_Ex:
+  assumes "(r, s) \<in> R \<times> S" "(r', s') \<in> R \<times> S" "frac r s = frac r' s'"
+  obtains s1 where "s1\<in>S" "s1 \<cdot> (s' \<cdot> r - s \<cdot> r') = \<zero>"
+proof -
+  have "(r, s) \<sim> (r', s')"
+    using \<open>frac r s = frac r' s'\<close> rel.Class_equivalence[OF assms(1,2)]
+    unfolding frac_def by auto
+  then show ?thesis unfolding rel_def 
+    by (metis assms(1) assms(2) comm.additive.cancel_imp_equal comm.inverse_distributive(1) 
+        comm.multiplicative.associative comm.multiplicative.composition_closed 
+        fst_conv mem_Sigma_iff snd_conv sub that)
 qed
 
 lemma frac_cancel:
@@ -1278,9 +1290,9 @@ qed
 
 lemma eq_from_eq_frac:
   assumes "s \<in> (R \<setminus> I)" and "s' \<in> (R \<setminus> I)" and "r \<in> R" "r' \<in> R" and
-"local.frac r s = local.frac r' s'"
-obtains h where "h \<in> (R \<setminus> I)" "h \<cdot> (s' \<cdot> r - s \<cdot> r') = \<zero>"
-  using assms sorry
+          "local.frac r s = local.frac r' s'"
+  obtains h where "h \<in> (R \<setminus> I)" "h \<cdot> (s' \<cdot> r - s \<cdot> r') = \<zero>"
+    using local.frac_eq_Ex[of r s r' s'] assms by blast
 
 end (* prime_ideal *)
 
@@ -1294,14 +1306,32 @@ subsection \<open>Spectrum of a Ring\<close>
 context comm_ring
 begin
 
+find_theorems cxt_quotient_ring.frac cxt_quotient_ring.valid_frac
+
+lemma spectrum_imp_cxt_quotient_ring:
+  "\<pp> \<in> Spec \<Longrightarrow> cxt_quotient_ring (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
+  apply (intro_locales)
+  using prime_ideal.submonoid_prime_ideal spectrum_def submonoid_def by fastforce
+
+lemma spectrum_imp_pr:
+  "\<pp> \<in> Spec \<Longrightarrow> prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
+  unfolding spectrum_def by auto
+
 lemma frac_in_carrier_local:
   assumes "\<pp> \<in> Spec" and "r \<in> R" and "s \<in> R" and "s \<notin> \<pp>"
   shows "(cxt_quotient_ring.frac (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> r s) \<in> R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>"
-  using assms sorry
+proof -
+  interpret qr:cxt_quotient_ring "R \<setminus> \<pp>" R "(+)" "(\<cdot>)" \<zero> \<one>
+    using spectrum_imp_cxt_quotient_ring[OF \<open>\<pp> \<in> Spec\<close>] .
+  interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    using spectrum_imp_pr[OF \<open>\<pp> \<in> Spec\<close>] .
+  show ?thesis unfolding pi.carrier_local_ring_at_def
+    using assms(2-) by (auto intro:qr.frac_non_empty)
+qed
 
 definition is_locally_frac:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> 'a set set \<Rightarrow> bool" 
-  where "is_locally_frac s V \<equiv> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and> 
-s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f))"
+  where "is_locally_frac s V \<equiv> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq> \<in> V. f \<notin> \<qq> \<and> 
+            s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f))"
 
 definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> 'a set set \<Rightarrow> bool" 
   where "is_regular s U \<equiv> 
@@ -1353,7 +1383,8 @@ proof -
     have "s \<pp> \<in> pi.carrier_local_ring_at" 
       "s' \<pp> \<in> pi.carrier_local_ring_at"
       using \<open>is_regular s U\<close> \<open>is_regular s' U\<close>
-      unfolding is_regular_def using that by blast+
+      unfolding is_regular_def is_locally_frac_def using that
+      using assms(3) frac_in_carrier_local by fastforce+
     then show ?thesis
       unfolding add_sheaf_spec_def using that 
       by (simp flip:pi.add_local_ring_at_def)
@@ -1365,12 +1396,12 @@ proof -
   proof -
     obtain V1 r1 f1 where "V1 \<subseteq>U" "is_zariski_open V1" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
         q_V1:"(\<forall>\<qq>. \<qq> \<in> V1 \<longrightarrow> f1 \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r1 f1)"
-      using \<open>is_regular s U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
-      by blast
+      using \<open>is_regular s U\<close>[unfolded is_regular_def] \<open>\<pp> \<in> U\<close>  
+      unfolding is_locally_frac_def by auto
     obtain V2 r2 f2 where "V2 \<subseteq>U" "is_zariski_open V2" "\<pp> \<in> V2" "r2 \<in> R" "f2 \<in> R" and
         q_V2:"(\<forall>\<qq>. \<qq> \<in> V2 \<longrightarrow> f2 \<notin> \<qq> \<and> s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r2 f2)"
-      using \<open>is_regular s' U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
-      by blast
+      using \<open>is_regular s' U\<close>[unfolded is_regular_def]  \<open>\<pp> \<in> U\<close>  
+      unfolding is_locally_frac_def by auto
 
     define V3 where "V3 = V1 \<inter> V2"
     define r3 where "r3 = r1 \<cdot> f2 + r2 \<cdot> f1 "
@@ -1407,38 +1438,35 @@ proof -
     qed
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by meson
+  ultimately show ?thesis unfolding is_regular_def is_locally_frac_def by meson
 qed
 
 lemma add_sheaf_spec_in_sheaf_spec:
   assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "U \<subseteq> Spec"
   shows "add_sheaf_spec U s t \<in> \<O> U"
 proof -
-  have "\<exists>I\<in>U. cxt_quotient_ring.add_rel (R\<setminus>S) R (+) (\<cdot>) \<zero> (s S) (t S) \<in> R \<^bsub>I (+) (\<cdot>) \<zero>\<^esub>"
-    if "S \<in> U" for S
+  have "add_sheaf_spec U s t \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" 
+      if "\<pp> \<in> U" for \<pp>
   proof -
-    interpret cr:cxt_quotient_ring "(R\<setminus>S)" R "(+)" "(\<cdot>)" \<zero> \<one>
-      using assms(3) cxt_quotient_ring_def local.comm_ring_axioms prime_ideal.submonoid_prime_ideal 
-        spectrum_def that 
-      by fastforce
-    interpret pi:prime_ideal R S "(+)" "(\<cdot>)" \<zero> \<one>
-      using assms(3) spectrum_def that by auto
-    have "s S \<in> cr.carrier_quotient_ring" using \<open>s \<in> \<O> U\<close> 
-      apply (simp add:sheaf_spec_def)
-      using is_regular_def pi.carrier_local_ring_at_def that by blast
-    moreover have "t S \<in> cr.carrier_quotient_ring" using \<open>t \<in> \<O> U\<close>
-      apply (simp add:sheaf_spec_def)
-      using is_regular_def pi.carrier_local_ring_at_def that by blast
-    ultimately have "cr.add_rel (s S) (t S) \<in> pi.carrier_local_ring_at"
-      unfolding pi.carrier_local_ring_at_def by blast
-    then show ?thesis using that by blast
+    interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+      apply (rule spectrum_imp_cxt_quotient_ring)
+      using that \<open>U \<subseteq> Spec\<close> by auto
+    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+      using that \<open>U \<subseteq> Spec\<close> by (auto intro:spectrum_imp_pr)
+    have "qr.valid_frac (s \<pp>)" "qr.valid_frac (t \<pp>)" 
+      using sec_has_right_codom[OF _ that] \<open>s \<in> \<O> U\<close> \<open>t \<in> \<O> U\<close>
+      by (auto simp:pi.carrier_local_ring_at_def)
+    then show ?thesis 
+      using that unfolding add_sheaf_spec_def pi.carrier_local_ring_at_def
+      by auto
   qed
-  then have "Set_Theory.map (add_sheaf_spec U s t) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
-    unfolding add_sheaf_spec_def sheaf_spec_def
-    by (auto intro:map.intro)
-  then show ?thesis  
-    using assms is_regular_add_sheaf_spec
-    unfolding add_sheaf_spec_def sheaf_spec_def by auto
+  moreover have "is_regular (add_sheaf_spec U s t) U" 
+    using \<open>s \<in> \<O> U\<close> \<open>t \<in> \<O> U\<close> \<open>U \<subseteq> Spec\<close> is_regular_add_sheaf_spec 
+    unfolding sheaf_spec_def by auto
+  moreover have "add_sheaf_spec U s t \<in> extensional U"
+    unfolding add_sheaf_spec_def by auto
+  ultimately show ?thesis
+    unfolding sheaf_spec_def by (simp add: PiE_iff)
 qed
 
 definition mult_sheaf_spec:: "('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
@@ -1455,7 +1483,8 @@ proof -
     have "s \<pp> \<in> pi.carrier_local_ring_at" 
       "s' \<pp> \<in> pi.carrier_local_ring_at"
       using \<open>is_regular s U\<close> \<open>is_regular s' U\<close>
-      unfolding is_regular_def using that by blast+
+      unfolding is_regular_def using that 
+      using assms(3) frac_in_carrier_local in_mono is_locally_frac_def by fastforce+
     then show ?thesis
       unfolding mult_sheaf_spec_def using that 
       by (simp flip:pi.mult_local_ring_at_def)
@@ -1467,12 +1496,12 @@ proof -
   proof -
     obtain V1 r1 f1 where "V1 \<subseteq>U" "is_zariski_open V1" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
         q_V1:"(\<forall>\<qq>. \<qq> \<in> V1 \<longrightarrow> f1 \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r1 f1)"
-      using \<open>is_regular s U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
-      by blast
+      using \<open>is_regular s U\<close>[unfolded is_regular_def] \<open>\<pp> \<in> U\<close> unfolding is_locally_frac_def
+      by auto
     obtain V2 r2 f2 where "V2 \<subseteq>U" "is_zariski_open V2" "\<pp> \<in> V2" "r2 \<in> R" "f2 \<in> R" and
         q_V2:"(\<forall>\<qq>. \<qq> \<in> V2 \<longrightarrow> f2 \<notin> \<qq> \<and> s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r2 f2)"
-      using \<open>is_regular s' U\<close>[unfolded is_regular_def, THEN conjunct2,rule_format,OF \<open>\<pp> \<in> U\<close>]  
-      by blast
+      using \<open>is_regular s' U\<close>[unfolded is_regular_def] \<open>\<pp> \<in> U\<close> unfolding is_locally_frac_def   
+      by auto
 
     define V3 where "V3 = V1 \<inter> V2"
     define r3 where "r3 = r1 \<cdot> r2  "
@@ -1510,38 +1539,35 @@ proof -
     qed
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by meson
+  ultimately show ?thesis unfolding is_regular_def is_locally_frac_def by meson
 qed
 
 lemma mult_sheaf_spec_in_sheaf_spec:
   assumes "s \<in> \<O> U" and "t \<in> \<O> U" and "U \<subseteq> Spec"
   shows "mult_sheaf_spec U s t \<in> \<O> U"
 proof -
-  have "\<exists>I\<in>U. cxt_quotient_ring.mult_rel (R\<setminus>S) R (+) (\<cdot>) \<zero> (s S) (t S) \<in> R \<^bsub>I (+) (\<cdot>) \<zero>\<^esub>"
-    if "S \<in> U" for S
+  have "mult_sheaf_spec U s t \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" 
+      if "\<pp> \<in> U" for \<pp>
   proof -
-    interpret cr:cxt_quotient_ring "(R\<setminus>S)" R "(+)" "(\<cdot>)" \<zero> \<one>
-      using assms(3) cxt_quotient_ring_def local.comm_ring_axioms prime_ideal.submonoid_prime_ideal 
-        spectrum_def that 
-      by fastforce
-    interpret pi:prime_ideal R S "(+)" "(\<cdot>)" \<zero> \<one>
-      using assms(3) spectrum_def that by auto
-    have "s S \<in> cr.carrier_quotient_ring" using \<open>s \<in> \<O> U\<close> 
-      apply (simp add:sheaf_spec_def)
-      using is_regular_def pi.carrier_local_ring_at_def that by blast
-    moreover have "t S \<in> cr.carrier_quotient_ring" using \<open>t \<in> \<O> U\<close>
-      apply (simp add:sheaf_spec_def)
-      using is_regular_def pi.carrier_local_ring_at_def that by blast
-    ultimately have "cr.mult_rel (s S) (t S) \<in> pi.carrier_local_ring_at"
-      unfolding pi.carrier_local_ring_at_def by blast
-    then show ?thesis using that by blast
+    interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+      apply (rule spectrum_imp_cxt_quotient_ring)
+      using that \<open>U \<subseteq> Spec\<close> by auto
+    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+      using that \<open>U \<subseteq> Spec\<close> by (auto intro:spectrum_imp_pr)
+    have "qr.valid_frac (s \<pp>)" "qr.valid_frac (t \<pp>)" 
+      using sec_has_right_codom[OF _ that] \<open>s \<in> \<O> U\<close> \<open>t \<in> \<O> U\<close>
+      by (auto simp:pi.carrier_local_ring_at_def)
+    then show ?thesis 
+      using that unfolding mult_sheaf_spec_def pi.carrier_local_ring_at_def
+      by auto
   qed
-  then have "Set_Theory.map (mult_sheaf_spec U s t) U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
-    unfolding mult_sheaf_spec_def sheaf_spec_def
-    by (auto intro:map.intro)
-  then show ?thesis  
-    using assms is_regular_mult_sheaf_spec
-    unfolding mult_sheaf_spec_def sheaf_spec_def by auto
+  moreover have "is_regular (mult_sheaf_spec U s t) U" 
+    using \<open>s \<in> \<O> U\<close> \<open>t \<in> \<O> U\<close> \<open>U \<subseteq> Spec\<close> is_regular_mult_sheaf_spec 
+    unfolding sheaf_spec_def by auto
+  moreover have "mult_sheaf_spec U s t \<in> extensional U"
+    unfolding mult_sheaf_spec_def by auto
+  ultimately show ?thesis
+    unfolding sheaf_spec_def by (simp add: PiE_iff)
 qed
 
 definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
@@ -1584,29 +1610,30 @@ proof -
       done
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by meson
+  ultimately show ?thesis unfolding is_regular_def is_locally_frac_def  by meson
 qed  
 
 lemma zero_sheaf_spec_in_sheaf_spec:
   assumes "is_zariski_open U"
   shows "zero_sheaf_spec U \<in> \<O> U"
 proof -
-  have "zero_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" if "\<pp> \<in> U" for \<pp>
+  have "zero_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>"if "\<pp> \<in> U" for \<pp> 
   proof -
-    have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" using assms that spectrum_def zariski_open_is_subset by auto
-    hence "zero_sheaf_spec U \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-      using assms is_regular_def is_regular_zero_sheaf_spec that by auto
-    then show ?thesis using that by auto
+    interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+      by (meson assms comm_ring.zariski_open_is_subset local.comm_ring_axioms 
+          spectrum_imp_cxt_quotient_ring subsetD that)
+    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+      by (meson assms spectrum_imp_pr subsetD that zariski_open_is_subset)
+    show ?thesis unfolding zero_sheaf_spec_def pi.carrier_local_ring_at_def
+      using that by auto
   qed
-  then have "zero_sheaf_spec U \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
-    using extensional_funcset_def 
-    by (smt Pi_iff restrict_PiE restrict_apply' zero_sheaf_spec_def)
-  moreover have "U \<subseteq> Spec" using assms zariski_open_is_subset by simp
-  show ?thesis
-    using assms is_regular_zero_sheaf_spec 
-    unfolding sheaf_spec_def
-    using Set_Theory.map_def calculation by blast
+  moreover have "is_regular (zero_sheaf_spec U) U" 
+    using is_regular_zero_sheaf_spec assms by auto
+  moreover have "zero_sheaf_spec U \<in> extensional U" 
+    by (simp add: zero_sheaf_spec_def)
+  ultimately show ?thesis unfolding sheaf_spec_def by (simp add: PiE_iff)
 qed
+
 
 definition one_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "one_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.one_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
@@ -1649,28 +1676,28 @@ proof -
       done
     ultimately show ?thesis by metis
   qed
-  ultimately show ?thesis unfolding is_regular_def by meson
+  ultimately show ?thesis unfolding is_regular_def is_locally_frac_def by meson
 qed
 
 lemma one_sheaf_spec_in_sheaf_spec:
   assumes "is_zariski_open U"
   shows "one_sheaf_spec U \<in> \<O> U"
 proof -
-  have "one_sheaf_spec U \<pp> \<in> (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" if "\<pp> \<in> U" for \<pp>
+  have "one_sheaf_spec U \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>"if "\<pp> \<in> U" for \<pp> 
   proof -
-    have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>" using assms that spectrum_def zariski_open_is_subset by auto
-    hence "one_sheaf_spec U \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-      using assms is_regular_def is_regular_one_sheaf_spec that by auto
-    then show ?thesis using that by auto
+    interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+      by (meson assms comm_ring.zariski_open_is_subset local.comm_ring_axioms 
+          spectrum_imp_cxt_quotient_ring subsetD that)
+    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+      by (meson assms spectrum_imp_pr subsetD that zariski_open_is_subset)
+    show ?thesis unfolding one_sheaf_spec_def pi.carrier_local_ring_at_def
+      using that by auto
   qed
-  then have "one_sheaf_spec U \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" 
-    using extensional_funcset_def 
-    by (smt Pi_iff restrict_PiE restrict_apply' one_sheaf_spec_def)
-  moreover have "U \<subseteq> Spec" using assms zariski_open_is_subset by simp
-  show ?thesis
-    using assms is_regular_zero_sheaf_spec 
-    unfolding sheaf_spec_def
-    using calculation comm_ring.is_regular_one_sheaf_spec local.comm_ring_axioms map.intro by fastforce
+  moreover have "is_regular (one_sheaf_spec U) U" 
+    using is_regular_one_sheaf_spec assms by auto
+  moreover have "one_sheaf_spec U \<in> extensional U" 
+    by (simp add: one_sheaf_spec_def)
+  ultimately show ?thesis unfolding sheaf_spec_def by (simp add: PiE_iff)
 qed
 
 lemma zero_sheaf_spec_extensional[simp]:
@@ -1784,7 +1811,8 @@ lemma sheaf_morphisms_sheaf_spec:
   assumes "s \<in> \<O> U" 
   shows "sheaf_spec_morphisms U U s = s"
   using assms sheaf_spec_def restrict_on_source sheaf_spec_morphisms_def
-  by (metis (no_types, lifting) mem_Collect_eq restrict_apply)
+  by auto
+
 
 lemma sheaf_spec_morphisms_are_maps:
   assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
@@ -1848,8 +1876,9 @@ next
     thus "s \<pp> = zero_sheaf_spec U \<pp>" 
       using sheaf_spec_morphisms_def zero_sheaf_spec_def F(2) by (simp add: H(3) \<open>\<pp> \<in> U\<close>)
   qed
-  then show "s = zero_sheaf_spec U"
-    by (metis (mono_tags, lifting) H(3) comm_ring.sheaf_spec_def comm_ring.zero_sheaf_spec_def local.comm_ring_axioms mem_Collect_eq restrict_apply' restrict_ext restrict_on_source)
+  moreover have "s \<in> extensional U" " zero_sheaf_spec U \<in> extensional U" 
+    by (simp_all add: H(3))
+  ultimately show "s = zero_sheaf_spec U" using extensionalityI by blast
 next
   fix U I V s assume H: "open_cover_of_open_subset Spec is_zariski_open U I V"
                         "\<forall>i. i \<in> I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<O> (V i)"
@@ -1870,32 +1899,18 @@ next
   qed
   moreover have "t \<in> \<O> U"
   proof-
-    have "Set_Theory.map t U (\<Union>\<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
-    proof
-      show "t \<in> U \<rightarrow>\<^sub>E (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))"
-      proof
-        fix \<pp> assume "\<pp> \<in> U" then have "t \<pp> \<in> (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-          unfolding D
-          using H(1,2) cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def open_cover_of_open_subset.axioms(1) open_cover_of_subset_def sheaf_spec_def by fastforce
-        thus "t \<pp> \<in> (\<Union>\<pp>\<in>U. (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>))" using \<open>\<pp> \<in> U\<close> by blast
-      next
-        fix \<pp> assume "\<pp> \<notin> U" then show "t \<pp> = undefined" using D by simp
-      qed
-    qed
+    have "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" if "\<pp>\<in>U" for \<pp>
+      using D H(1) H(2) cover_of_subset.cover_of_select_index 
+        cover_of_subset.select_index_belongs open_cover_of_open_subset.axioms(1) 
+        open_cover_of_subset_def sec_has_right_codom that by fastforce
+    moreover have "t \<in> extensional U" 
+      using D by blast
     moreover have "is_regular t U" 
       unfolding is_regular_def
     proof (intro strip conjI)
       fix \<pp>
       assume "\<pp> \<in> U" 
-      show "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
-      proof -
-        obtain i where "i \<in> I \<and> \<pp> \<in> V i \<and> t \<pp> = (s i) \<pp>"
-          using D H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_open_subset.axioms(1) 
-            open_cover_of_subset_def by fastforce 
-        thus "t \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using H(2) sheaf_spec_def is_regular_def by simp
-      qed
-      show "\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> 
-             (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq>  \<and>  t \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f ))" 
+      show "\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> is_locally_frac t V" 
       proof -
         have V: "V (cover_of_subset.select_index I V \<pp>) \<subseteq> U" 
           using H(2) by (meson H(1) \<open>\<pp> \<in> U\<close> cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def)
@@ -1906,14 +1921,17 @@ next
                              f \<notin> \<qq> \<and> s (cover_of_subset.select_index I V \<pp>) \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f))"
           using H(1,2) 
           unfolding sheaf_spec_def open_cover_of_open_subset_def open_cover_of_subset_def
+          sorry
+          (* failed to fix
           using \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs is_regular_def by fastforce
+          *)
         have "\<And>V' \<qq>. is_zariski_open V' \<and> V' \<subseteq> V (cover_of_subset.select_index I V \<pp>) \<Longrightarrow> \<qq> \<in> V' \<Longrightarrow> t \<qq> = s (cover_of_subset.select_index I V \<pp>) \<qq>"
-          by (smt (z3) D F1 H(1) V \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def restrict_apply subsetD)
-        thus ?thesis 
+          by (smt D F1 H(1) V \<open>\<pp> \<in> U\<close> cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs open_cover_of_open_subset_def open_cover_of_subset_def restrict_apply subsetD)
+        thus ?thesis unfolding is_locally_frac_def
           by (smt V V2 subset_trans)
       qed 
     qed
-    ultimately show ?thesis using sheaf_spec_def by simp
+    ultimately show ?thesis unfolding sheaf_spec_def by (simp add:PiE_iff)
   qed
   have "sheaf_spec_morphisms U (V i) t = s i" if "i \<in> I" for i
   proof
@@ -1925,8 +1943,12 @@ next
         unfolding D open_cover_of_subset_def open_cover_of_open_subset_def
         by (meson cover_of_subset.cover_of_select_index cover_of_subset.select_index_belongs restrict_apply')
       thus "sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
-        using sheaf_spec_morphisms_def D F1 
+        unfolding sheaf_spec_morphisms_def using D F1 
+        
+        sorry
+        (* not sure how to fix this
         by (smt H(2) \<open>i \<in> I\<close> \<open>t \<in> \<O> U\<close> mem_Collect_eq restrict_apply restrict_on_source sheaf_spec_def)
+        *)    
     qed 
     thus "sheaf_spec_morphisms U (V i) t \<pp> = s i \<pp>" 
       using sheaf_spec_morphisms_def D F1
@@ -1945,10 +1967,10 @@ lemma shrinking:
 proof-
   obtain Vs a f where "is_zariski_open Vs" "Vs \<subseteq> U" "\<pp> \<in> Vs" "a \<in> R" "f \<in> R"
 "\<And>\<qq>. \<qq> \<in> Vs \<Longrightarrow> f \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f"
-    using assms(2,3) sheaf_spec_def is_regular_def by auto 
+    using assms(2,3) sheaf_spec_def is_regular_def is_locally_frac_def by auto 
   obtain Vt b g where "is_zariski_open Vt" "Vt \<subseteq> U" "\<pp> \<in> Vt" "b \<in> R" "g \<in> R"
 "\<And>\<qq>. \<qq> \<in> Vt \<Longrightarrow> g \<notin> \<qq> \<and> t \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g"
-    using assms(2,4) sheaf_spec_def is_regular_def by auto
+    using assms(2,4) sheaf_spec_def is_regular_def is_locally_frac_def by auto
   then have "is_zariski_open (Vs \<inter> Vt)" "Vs \<inter> Vt \<subseteq> U" "\<pp> \<in> Vs \<inter> Vt"
 "\<And>\<qq>. \<qq> \<in> (Vs \<inter> Vt) \<Longrightarrow> f \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f"
 "\<And>\<qq>. \<qq> \<in> (Vs \<inter> Vt) \<Longrightarrow> g \<notin> \<qq> \<and> t \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g"
@@ -2456,13 +2478,13 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
               using F(1,2) frac_in_carrier_local \<open>\<qq> \<in> \<D> f\<close> standard_open_is_subset by blast
             thus "s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using sec_def by (simp add: \<open>\<qq> \<in> \<D> f\<close>)
           qed 
-          hence "Set_Theory.map s \<D>(f) (\<Union>\<qq>\<in>\<D>(f). (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>))" 
-            using sec_def map_def[of "s" "\<D>(f)" "\<Union>\<qq>\<in>\<D>(f). (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)"] extensional_funcset_def extensional_def 
-            by (smt PiE_I UN_iff restrict_apply)
+          moreover have "s \<in>  extensional (\<D> f)"
+            using sec_def by auto
           moreover have "is_regular s \<D>(f)" 
             using F(1,2) standard_open_is_subset  belongs_standard_open_iff is_regular_def[of s "\<D>(f)"] standard_open_is_zariski_open
-            by (smt \<open>\<And>\<qq>. \<qq> \<in> \<D> f \<Longrightarrow> s \<qq> \<in> R \<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>\<close> restrict_apply' sec_def subset_iff)
-          ultimately show ?thesis using sheaf_spec_def[of "\<D>(f)"] by (smt mem_Collect_eq)
+            by (smt is_locally_frac_def restrict_apply sec_def subsetD subsetI)
+          ultimately show ?thesis unfolding sheaf_spec_def[of "\<D>(f)"] 
+            by (simp add:PiE_iff)
         qed
         then have im:"\<phi> (pr.class_of \<pp> (\<D>(f), s)) = local.frac a f"
         proof-
@@ -2547,7 +2569,7 @@ local_ring (pi.carrier_local_ring_at \<pp>) (pi.add_local_ring_at \<pp>) (pi.mul
            is_zariski_open U \<Longrightarrow>
            \<exists>f. ring_isomorphism f
 (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> U) (pr.one_stalk_at \<pp> U)
-(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at \<pp>) (pi.mult_local_ring_at \<pp>) (pi.zero_local_ring_at \<pp>) (pi.one_local_ring_at \<pp>)" sledgehammer
+(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at \<pp>) (pi.mult_local_ring_at \<pp>) (pi.zero_local_ring_at \<pp>) (pi.one_local_ring_at \<pp>)" 
       using pi.carrier_neq by auto
   qed
 qed
