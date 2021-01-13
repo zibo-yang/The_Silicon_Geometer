@@ -2276,10 +2276,56 @@ assumes is_unique: "\<lbrakk>I \<subseteq> R; J \<subseteq> R\<rbrakk> \<Longrig
 and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
 
 lemma isomorphic_to_local_is_local:
-  assumes "ring A addA multA zeroA oneA" and "local_ring B addB multB zeroB oneB" and 
-"\<exists>f. ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
-shows "local_ring A addA multA zeroA oneA"
-  sorry
+  assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB" 
+    and iso: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
+  shows "local_ring A addA multA zeroA oneA"
+  proof intro_locales
+  show "Group_Theory.monoid A addA zeroA"
+    by (meson abelian_group.axioms(2) assms(1) commutative_monoid_def ring_def)
+  show "Group_Theory.group_axioms A addA zeroA"
+    by (meson Group_Theory.group.axioms(2) abelian_group.axioms(1) assms(1) ring.axioms(1))
+  show "commutative_monoid_axioms A addA"
+    by (meson abelian_group_def assms(1) commutative_monoid_def ring_def)
+  show "Group_Theory.monoid A multA oneA"
+    by (meson assms(1) ring_def)
+  show "ring_axioms A addA multA"
+    by (meson assms(1) ring_def)
+  show "comm_ring_axioms A multA"
+  proof (clarsimp simp: comm_ring_def comm_ring_axioms_def)
+    fix a b
+    assume "a \<in> A" and "b \<in> A"
+    have hom: "monoid_homomorphism f A multA oneA B multB oneB"
+      by (meson iso ring_homomorphism_def ring_isomorphism.axioms(1))
+    have "bij_betw f A B"
+      using iso map.graph
+      by (simp add: bijective.bijective ring_isomorphism_def bijective_map_def)
+    have "f a \<in> B"
+      using \<open>a \<in> A\<close> \<open>bij_betw f A B\<close> bij_betwE by blast
+    have "f b \<in> B"
+      using \<open>b \<in> A\<close> \<open>bij_betw f A B\<close> bij_betwE by blast
+    have "f (multA a b) = multB (f a) (f b)"
+      by (meson \<open>a \<in> A\<close> \<open>b \<in> A\<close> hom monoid_homomorphism.commutes_with_composition)
+    also have "... = multB (f b) (f a)"
+      using lring \<open>f a \<in> B\<close> \<open>f b \<in> B\<close>
+      by (auto simp: local_ring_def local_ring_axioms_def comm_ring_def comm_ring_axioms_def)
+    also have "... = f (multA b a)"
+      using \<open>a \<in> A\<close> \<open>b \<in> A\<close> hom monoid_homomorphism.commutes_with_composition by fastforce
+    finally show "multA a b = multA b a"
+      by (metis (full_types) \<open>Group_Theory.monoid A multA oneA\<close> \<open>a \<in> A\<close> \<open>b \<in> A\<close> \<open>bij_betw f A B\<close> bij_betw_iff_bijections monoid.composition_closed)
+  qed
+  show "local_ring_axioms A addA multA zeroA oneA"
+  proof unfold_locales
+    fix I J
+    assume "I \<subseteq> A"
+        and "J \<subseteq> A"
+        and "max_ideal A I addA multA zeroA oneA"
+        and "max_ideal A J addA multA zeroA oneA"
+    show "(I::'a set) = J" sorry
+  next
+    show "\<exists>\<ww>. max_ideal A \<ww> addA multA zeroA oneA"
+      sorry
+  qed
+qed
 
 context prime_ideal
 begin
