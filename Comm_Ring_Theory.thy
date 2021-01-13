@@ -505,17 +505,21 @@ definition standard_open:: "'a \<Rightarrow> 'a set set" ("\<D>'(_')")
 lemma standard_open_is_zariski_open:
   assumes "x \<in> R"
   shows "is_zariski_open \<D>(x)"
-  sorry
+  unfolding is_zariski_open_def standard_open_def
+  using assms gen_ideal_ideal generated_topology.simps by fastforce
 
 lemma standard_open_is_subset:
   assumes "x \<in> R"
   shows "\<D>(x) \<subseteq> Spec"
-  sorry
+  by (simp add: assms standard_open_is_zariski_open zariski_open_is_subset)
 
 lemma belongs_standard_open_iff:
   assumes "x \<in> R" and "\<pp> \<in> Spec"
   shows "x \<notin> \<pp> \<longleftrightarrow> \<pp> \<in> \<D>(x)"
-  sorry
+  using assms
+  apply (auto simp: standard_open_def closed_subsets_def spectrum_def gen_ideal_def subset_iff)
+  apply (metis prime_ideal.absorbent)
+  by (meson ideal.ideal(1) prime_ideal_def)
 
 end (* comm_ring *)
 
@@ -1811,11 +1815,12 @@ proof unfold_locales
   proof -
     have "add_sheaf_spec U (zero_sheaf_spec U) a \<pp> = a \<pp>" if "\<pp> \<in> U" for \<pp>
     proof - 
-      interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> sorry
+      interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one>
+        by (meson assms comm_ring.zariski_open_is_subset in_mono local.comm_ring_axioms spectrum_imp_cxt_quotient_ring that)
       show ?thesis unfolding add_sheaf_spec_def zero_sheaf_spec_def
         using that apply simp
         apply (rule cq.additive.left_unit)
-        sorry
+        using \<open>a \<in> \<O> U\<close> assms comm_ring.spectrum_def comm_ring.zariski_open_is_subset local.comm_ring_axioms prime_ideal.carrier_local_ring_at_def sec_has_right_codom by fastforce
     qed
     then show "add_sheaf_spec U (zero_sheaf_spec U) a = a"
       using that by(auto intro: extensionalityI[where A=U])
