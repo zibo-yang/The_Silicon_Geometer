@@ -2253,12 +2253,18 @@ locale max_ideal = comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I  R
 unit ("\<one>") +
 assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
 begin
-lemma
-  shows "\<not>(\<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> \<aa> \<noteq> R \<and> I \<subset> \<aa>)" sorry
 
-(* A maximal ideal is prime: *)
+lemma
+  shows "\<not>(\<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> \<aa> \<noteq> R \<and> I \<subset> \<aa>)"
+  using is_max by blast
+
+(* A maximal ideal is prime:
+Let A be a maximal ideal. Then R/A contains no proper ideals, by the correspondence theorem.
+Indeed, R/A is a field (assuming that R contains an identity). Hence, A is a prime ideal.
+https://math.stackexchange.com/questions/68489/why-are-maximal-ideals-prime *)
 lemma 
-  shows "prime_ideal I R (+) (\<cdot>) \<zero> \<one>" sorry
+  shows "prime_ideal R I (+) (\<cdot>) \<zero> \<one>" 
+    sorry
 
 end (* locale max_ideal *)
 
