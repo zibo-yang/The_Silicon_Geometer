@@ -426,7 +426,7 @@ lemma zariski_open_is_subset:
 
 subsection \<open>Standard Open Sets\<close>
 
-definition standard_open:: "'a \<Rightarrow> 'a set set" ("\<D> _")
+definition standard_open:: "'a \<Rightarrow> 'a set set" ("\<D>'(_')")
   where "\<D>(x) \<equiv> (Spec \<setminus> \<V>(\<langle>x\<rangle>))"
 
 lemma standard_open_is_zariski_open:
@@ -2437,7 +2437,7 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
         then have Fq: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
           using belongs_standard_open_iff
           apply (meson FU(11) IntD1 IntD2 standard_open_is_subset subsetD)
-           apply (metis Diff_iff IntD1 IntD2 \<open>\<qq> \<in> U \<inter> \<D> f \<inter> \<D> g \<inter> \<D> h\<close> \<open>g \<in> R\<close> belongs_standard_open_iff standard_open_def)
+           apply (metis Diff_iff IntD1 IntD2 \<open>\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)\<close> \<open>g \<in> R\<close> belongs_standard_open_iff standard_open_def)
           by (meson Hh(1) Hq IntD2 belongs_standard_open_iff standard_open_is_subset subsetD)
         then have "cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g" 
           using Fq(1-3) FU(9-13) sorry
@@ -2449,11 +2449,11 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
         have "is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))" 
           using local.standard_open_is_zariski_open by (simp add: FU(1,11,12) Hh(1) standard_open_is_zariski_open)
         have "s = pr.class_of \<pp> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h), sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s')"
-          by (simp add: FU(1,3,5) \<open>is_zariski_open (U \<inter> \<D> f \<inter> \<D> g \<inter> \<D> h)\<close> inf.coboundedI1 same_class_from_restrict)
+          by (simp add: FU(1,3,5) \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> inf.coboundedI1 same_class_from_restrict)
         moreover have "\<dots> = pr.class_of \<pp> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h), sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')" 
           using fact same_class_from_restrict sorry
         moreover have "\<dots> = t"
-          by (metis FU(1,4,6) Int_assoc Int_lower1 \<open>is_zariski_open (U \<inter> \<D> f \<inter> \<D> g \<inter> \<D> h)\<close> same_class_from_restrict)
+          by (metis FU(1,4,6) Int_assoc Int_lower1 \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> same_class_from_restrict)
         ultimately show ?thesis by simp
       qed
     qed 
@@ -2475,10 +2475,10 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
             fix \<qq> assume "\<qq> \<in> \<D>(f)" 
             hence "f \<notin> \<qq>" using belongs_standard_open_iff F(2) standard_open_is_subset by blast
             then have "cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" 
-              using F(1,2) frac_in_carrier_local \<open>\<qq> \<in> \<D> f\<close> standard_open_is_subset by blast
-            thus "s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using sec_def by (simp add: \<open>\<qq> \<in> \<D> f\<close>)
+              using F(1,2) frac_in_carrier_local \<open>\<qq> \<in> \<D>(f)\<close> standard_open_is_subset by blast
+            thus "s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using sec_def by (simp add: \<open>\<qq> \<in> \<D>(f)\<close>)
           qed 
-          moreover have "s \<in>  extensional (\<D> f)"
+          moreover have "s \<in>  extensional (\<D>(f))"
             using sec_def by auto
           moreover have "is_regular s \<D>(f)" 
             using F(1,2) standard_open_is_subset  belongs_standard_open_iff is_regular_def[of s "\<D>(f)"] standard_open_is_zariski_open
@@ -2501,11 +2501,11 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
           proof (rule pr.class_of_in_stalk_at)
             show "\<pp> \<in> Spec" using is_prime by simp
           next
-            show "fst (\<D> f, s) \<in> pr.neighborhoods \<pp>"
+            show "fst (\<D>(f), s) \<in> pr.neighborhoods \<pp>"
               using pr.neighborhoods_def belongs_standard_open_iff F(2,3) is_prime standard_open_is_zariski_open standard_open_is_subset 
               by (metis (no_types, lifting) fst_conv mem_Collect_eq)
           next
-            show "snd (\<D> f, s) \<in> \<O> fst (\<D> f, s)" using sec by simp 
+            show "snd (\<D>(f), s) \<in> \<O> fst (\<D>(f), s)" using sec by simp 
           qed
           thus ?thesis using F(4) im by blast 
         qed 
