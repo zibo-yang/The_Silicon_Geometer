@@ -68,6 +68,9 @@
 % To make the index and bibliography appear in the table of contents:
 \usepackage[nottoc]{tocbibind}
 
+% notations:
+\def\spec{\text{Spec}\,R}
+
 \makeindex
 
 \begin{document}
@@ -121,8 +124,6 @@ The definition of an ideal of $R$ was introduced in Isabelle in \cite{ballarin20
 One easily checks that $\lbrace 0 \rbrace$ and $R$ are ideals of $R$. In our formalization this translates as follows.
 
 % snippet of code to be inserted for `lemma ideal_R_R` and `lemma ideal_0_R`
-
-% ajouter une remarque ici pour expliquer pourquoi `lemma ideal_R_R` should be named `lemma ideal_ring_ring` instead, cf discussion ta remarque a ce sujet https://isabelle.zulipchat.com/#narrow/stream/234961-alexandria/topic/SEraPIS
 
 Given $\mathfrak{a}$ and $\mathfrak{b}$ be two ideals of $R$, one defines $\mathfrak{a} \mathfrak{b}$ to be the ideal whose underlying set is 
 \[
@@ -180,15 +181,7 @@ Note that $V(R) = \emptyset$ and $V(\lbrace 0 \rbrace)$ is the set of all prime 
 
 % snippet of code to be inserted `lemma closed_subsets_empty` and `lemma closed_subsets_R`	
 
-%\begin{ex}
-%	Prove the equality $V(\mathfrak{a} \mathfrak{b}) = V(\mathfrak{a}) \cup V(\mathfrak{b})$.	
-%\end{ex}
-
-%\begin{ex}
-%	Prove the equality $\displaystyle V(\sum_{i \in I} \mathfrak{a}_i) = \bigcap_{i \in I} V(\mathfrak{a}_i)$ for any family of prime ideals indexed by a set $I$.
-%\end{ex}
-
-Then, one proves in Isabelle the subsets of the form $V(\mathfrak{a})$ as the closed subsets define a topology, the so-called \emph{Zariski topology}\label{zariskitop}, on the set of all primes ideals of $R$. In the rest of this text \emph{Spec $R$} will denote the set of all prime ideals of $R$ equipped with its Zariski topology.
+Then, one proves in Isabelle the subsets of the form $V(\mathfrak{a})$ as the closed subsets define a topology, the so-called \emph{Zariski topology}\label{zariskitop}, on the set of all primes ideals of $R$. In the rest of this text $\text{Spec}\,R$ will denote the set of all prime ideals of $R$ equipped with its Zariski topology.
 
 % snippets of code to be inserted here `definition is_zariski_open` and `zariski_is_topological_space`
 
@@ -309,15 +302,16 @@ Remember that the complement of a prime ideal $\mathfrak{p}$ in $R$ is a multipl
 % snippet of code to be inserted for the subsection <Local Rings at Prime Ideals>
 
 This allows us to introduce the next construction.	\\
-Let $U$ be an open subset of Spec $R$. We define $\mathscr{O}_R(U)$ to be the set of all functions 
+Let $U$ be an open subset of $\text{Spec}\,R$. We define $\mathscr{O}_{\spec}(U)$ to be the set of all functions 
 	\[
-	s: U \rightarrow \bigcup \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
+	s: U \rightarrow \coprod \limits_{\mathfrak{p} \in U} R_{\mathfrak{p}}
 	\]
 such that $s(\mathfrak{p}) \in R_{\mathfrak{p}}$ for every $\mathfrak{p} \in U$ and such that for every $\mathfrak{p} \in U$, there exist a neighborhood $V$ of $\mathfrak{p}$, contained in $U$, and elements $r, f \in R$, such that for each $\mathfrak{q} \in V$, $f \notin \mathfrak{q}$ and $s(\mathfrak{q}) = r/f$. \\
-We endow $\mathscr{O}_R(U)$ with the sum and product of such functions and we take for the multiplicative unit the function that maps each $\mathfrak{p}$ on the multiplicative unit of $R_{\mathfrak{p}}$. \\
-Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}_R(U) \rightarrow \mathscr{O}_R(V)$ maps each $s \in \mathscr{O}_R(U)$ on its restriction to $V$. \\
-One checks $\mathscr{O}_R$ is a sheaf of rings on Spec $R$ and the pair $(\text{Spec}\, R, \mathscr{O}_R)$	is called the \emph{spectrum of the ring $R$}. \\
+We endow $\mathscr{O}_{\spec}(U)$ with the sum and product of such functions and we take for the additive unit (\textit{resp.} multiplicative unit) the function that maps each $\mathfrak{p}$ on the additive unit (\textit{resp.} multiplicative unit) of $R_{\mathfrak{p}}$. \\
+Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}_{\spec}(U) \rightarrow \mathscr{O}_{\spec}(V)$ maps each $s \in \mathscr{O}_{\spec}(U)$ on its restriction to $V$. \\
+One checks $\mathscr{O}_{\spec}$ is a sheaf of rings on $\text{Spec}\,R$ and the pair $(\text{Spec}\,R, \mathscr{O}_{\spec})$ is called the \emph{spectrum of the ring $R$}. \\
 This last construction translates smoothly in Isabelle. 
+
 % snippet of code corresponding to the subsection <Spectrum of a ring> to be inserted here. 		
 
 Next, we introduce ringed spaces and their morphisms.
@@ -415,14 +409,14 @@ Finally, we are able to introduce \emph{locally ringed spaces}.
 Moreover, on has the following result.
 
 \begin{proposition}
-	Prove $(Spec R, \mathscr{O}_R)$ is a locally ringed space.
+	Prove $(\text{Spec}\,R, \mathscr{O}_{\spec})$ is a locally ringed space.
 \end{proposition}
 
 As a sanity check for our formal definitions, we prove in Isabelle that the spectrum of a commutative ring is indeed a locally ringed space, a result that requires a large amount of formal machinery.
 
 % snippet of code to be inserted here for the corresponding lemma in Isabelle `lemma spec_is_locally_ringed_space`
 
-The required formal machinery and our formalization as a whole benefit from the interpretation mechanism that allows to keep statements and proof scripts concise. Without this mechanism the terms involved in the statements and proof scripts of such an intricate hierarchy of nested algebraic structures would have to be fed with many arguments, cluttering these statements and proof scripts to the point where they would become unreadable and difficult to use. Fortunately, the interpretation mechanism that goes along with locales allows for concise and manageable terms with many invisible arguments which are declared beforehand using the interpretation mechanism. \\   
+The required formal machinery and our formalization as a whole benefit from the interpretation mechanism that allows to keep statements and proof scripts concise. Without this mechanism the terms involved in the statements and proof scripts of such an intricate hierarchy of nested algebraic structures would have to be fed with many arguments, cluttering these statements and proof scripts to the point where they would become unreadable and difficult to use. Fortunately, the interpretation mechanism that comes with locales allows for concise and manageable terms with many invisible arguments which are declared beforehand using the interpretation mechanism. \\   
 Now, we introduce our last construction. \\
 	Let $(X, \mathscr{O}_X)$, $(Y, \mathscr{O}_Y)$ be two ringed spaces and $(f, \phi_f)$ a morphism between them. Given $x \in X$, consider 
 	\[
@@ -454,7 +448,7 @@ This last construction is required to define morphisms between locally ringed sp
 Ultimately, we reach our goal: teaching schemes to Isabelle.	
 
 \begin{definition}[affine scheme]
-	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic (as a locally ringed space) to the spectrum $(Spec R, \mathscr{O}_R)$ for some commutative ring $R$. 
+	An affine scheme is a locally ringed space $(X, \mathscr{O}_X)$ which is isomorphic (as a locally ringed space) to the spectrum $(\text{Spec}\,R, \mathscr{O}_{\spec})$ for some commutative ring $R$. 
 \end{definition}
 
 % snippet of code to be introduced for `locale affine_scheme`
