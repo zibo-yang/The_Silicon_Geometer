@@ -1466,9 +1466,7 @@ proof -
       unfolding add_sheaf_spec_def using that 
       by (simp flip:pi.add_local_ring_at_def)
   qed  
-  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
-            \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
-                  add_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> is_locally_frac (add_sheaf_spec U s s') V)"
     if "\<pp> \<in> U" for \<pp> 
   proof -
     obtain V1 r1 f1 where "V1 \<subseteq>U" "is_zariski_open V1" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
@@ -1513,7 +1511,7 @@ proof -
       show "f3 \<notin> \<qq>" using that unfolding V3_def f3_def 
         using \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> \<open>f2 \<in> R\<close> \<open>f2 \<notin> \<qq>\<close> q.sub_composition_closed by auto
     qed
-    ultimately show ?thesis by metis
+    ultimately show ?thesis using is_locally_frac_def by metis
   qed
   ultimately show ?thesis unfolding is_regular_def is_locally_frac_def by meson
 qed
@@ -1566,9 +1564,7 @@ proof -
       unfolding mult_sheaf_spec_def using that 
       by (simp flip:pi.mult_local_ring_at_def)
   qed  
-  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R 
-            \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
-                  mult_sheaf_spec U s s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> is_locally_frac (mult_sheaf_spec U s s') V)"
     if "\<pp> \<in> U" for \<pp> 
   proof -
     obtain V1 r1 f1 where "V1 \<subseteq>U" "is_zariski_open V1" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
@@ -1614,7 +1610,7 @@ proof -
       show "f3 \<notin> \<qq>" using that unfolding V3_def f3_def 
         using \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> \<open>f2 \<in> R\<close> \<open>f2 \<notin> \<qq>\<close> q.sub_composition_closed by auto 
     qed
-    ultimately show ?thesis by metis
+    ultimately show ?thesis using is_locally_frac_def by metis
   qed
   ultimately show ?thesis unfolding is_regular_def is_locally_frac_def by meson
 qed
@@ -1660,9 +1656,7 @@ proof -
       cxt_quotient_ring.valid_frac_zero cxt_quotient_ring_def local.comm_ring_axioms 
       prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal subsetD that zariski_open_is_subset
     by fastforce
-  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
-            \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
-                  zero_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> is_locally_frac (zero_sheaf_spec U) V)"
     if "\<pp> \<in> U" for \<pp>    
   proof -
     define V3 where "V3 = U"
@@ -1685,7 +1679,7 @@ proof -
           using V3_def f3_def q.zero_rel_def r3_def that by auto
       qed
       done
-    ultimately show ?thesis by metis
+    ultimately show ?thesis using is_locally_frac_def  by metis
   qed
   ultimately show ?thesis unfolding is_regular_def is_locally_frac_def  by meson
 qed  
@@ -1726,9 +1720,7 @@ proof -
         cxt_quotient_ring_def local.comm_ring_axioms mem_Collect_eq 
         prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal 
         restrict_apply subsetD that zariski_open_is_subset)
-  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> (\<exists>r f. r \<in> R \<and> f \<in> R
-            \<and> (\<forall>\<qq>. \<qq> \<in> V \<longrightarrow> f \<notin> \<qq> \<and>
-                  one_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r f)))"
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> is_locally_frac (one_sheaf_spec U) V)"
     if "\<pp> \<in> U" for \<pp>    
   proof -
     define V3 where "V3 = U"
@@ -1751,7 +1743,7 @@ proof -
           using V3_def f3_def q.one_rel_def r3_def that by auto
       qed  
       done
-    ultimately show ?thesis by metis
+    ultimately show ?thesis using is_locally_frac_def by metis
   qed
   ultimately show ?thesis unfolding is_regular_def is_locally_frac_def by meson
 qed
@@ -1804,8 +1796,8 @@ proof unfold_locales
   show "add_sheaf_spec U a b \<in> \<O> U" 
     "mult_sheaf_spec U a b \<in> \<O> U"
     if "a \<in> \<O> U" "b \<in> \<O> U" for a b
-    subgoal by (simp add: add_sheaf_spec_in_sheaf_spec assms that(1) that(2) zariski_open_is_subset)
-    subgoal by (simp add: assms mult_sheaf_spec_in_sheaf_spec that(1) that(2) zariski_open_is_subset)
+    subgoal by (simp add: add_sheaf_spec_in_sheaf_spec assms that(1,2) zariski_open_is_subset)
+    subgoal by (simp add: assms mult_sheaf_spec_in_sheaf_spec that(1,2) zariski_open_is_subset)
     done
   show "zero_sheaf_spec U \<in> \<O> U" "one_sheaf_spec U \<in> \<O> U"
     subgoal by (simp add: assms zero_sheaf_spec_in_sheaf_spec)
@@ -2363,7 +2355,7 @@ interpretation pr:presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spec
             \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
   by (fact local.sheaf_spec_is_presheaf)
 
-interpretation local: cxt_quotient_ring "(R \<setminus> \<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+interpretation local:cxt_quotient_ring "(R \<setminus> \<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
   using is_prime spectrum_imp_cxt_quotient_ring by presburger
 
 definition key_map:: "'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a \<times> 'a) set)"
@@ -2653,7 +2645,7 @@ lemma key_ring_iso:
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
   using key_ring_morphism key_ring_iso_aux assms by metis
 
-end (* key_map*)
+end (* key_map *)
 
 (* def. 0.42 *)
 locale locally_ringed_space = ringed_space +
