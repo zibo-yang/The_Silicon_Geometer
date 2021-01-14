@@ -2357,14 +2357,14 @@ locale cxt_key_map = comm_ring +
 begin
 
 interpretation pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
-  sorry
+  by (simp add: is_prime spectrum_imp_pr)
 
 interpretation pr:presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms
             \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-  sorry
+  by (fact local.sheaf_spec_is_presheaf)
 
-interpretation local:cxt_quotient_ring "(R \<setminus> \<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
-  sorry
+interpretation local: cxt_quotient_ring "(R \<setminus> \<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+  using is_prime spectrum_imp_cxt_quotient_ring by presburger
 
 definition key_map:: "'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a \<times> 'a) set)"
   where "key_map U \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
@@ -2517,48 +2517,48 @@ next
 "t' = (\<lambda>\<qq>\<in>U. cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)" 
 "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>"
       proof-
-        obtain V s' t' where HV:"s = pr.class_of \<pp> (V, s')" "t = pr.class_of \<pp> (V, t')" "s' \<in> \<O> V" "t' \<in> \<O> V" 
-"is_zariski_open V" "\<pp> \<in> V"
+        obtain V s' t' where HV: "s = pr.class_of \<pp> (V, s')" "t = pr.class_of \<pp> (V, t')" 
+                            "s' \<in> \<O> V" "t' \<in> \<O> V" "is_zariski_open V" "\<pp> \<in> V"
           using shrinking_from_belong_stalk by (metis \<open>s \<in> pr.stalk_at \<pp>\<close> \<open>t \<in> pr.stalk_at \<pp>\<close>)
-        then obtain U a f b g where HU:"is_zariski_open U" "U \<subseteq> V" "\<pp> \<in> U" "a \<in> R" "f \<in> R" "b \<in> R" "g \<in> R"
-"f \<notin> \<pp>" "g \<notin> \<pp>" 
-"\<And>\<qq>. \<qq> \<in> U \<Longrightarrow> f \<notin> \<qq> \<and> s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f"
-"\<And>\<qq>. \<qq> \<in> U \<Longrightarrow> g \<notin> \<qq> \<and> t' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g"
+        then obtain U a f b g where HU: "is_zariski_open U" "U \<subseteq> V" "\<pp> \<in> U" "a \<in> R" "f \<in> R" "b \<in> R" "g \<in> R"
+          "f \<notin> \<pp>" "g \<notin> \<pp>" 
+          "\<And>\<qq>. \<qq> \<in> U \<Longrightarrow> f \<notin> \<qq> \<and> s' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f"
+          "\<And>\<qq>. \<qq> \<in> U \<Longrightarrow> g \<notin> \<qq> \<and> t' \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g"
           using shrinking[of V \<pp> s' t'] by blast
-        thus ?thesis
-        proof- 
-          have "sheaf_spec_morphisms V U s' \<in> \<O> U"
+        show ?thesis
+        proof
+          show "sheaf_spec_morphisms V U s' \<in> \<O> U"
             using HU(1,2) HV(3,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce
-        moreover have "sheaf_spec_morphisms V U t' \<in> \<O> U"
-          using HU(1,2) HV(4,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce
-        moreover have "s = pr.class_of \<pp> (U, sheaf_spec_morphisms V U s')"
-          using same_class_from_restrict by (simp add: HU(1,2) HV(1,3,5,6))
-        moreover have "t = pr.class_of \<pp> (U, sheaf_spec_morphisms V U t')"
-          using same_class_from_restrict HV(2,4-6) HU(1,2) by blast
-        moreover have "sheaf_spec_morphisms V U s' = (\<lambda>\<qq>\<in>U. cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)"
-          using HV(3)  sheaf_spec_morphisms_def HU(10) by fastforce
-        moreover have "sheaf_spec_morphisms V U t' = (\<lambda>\<qq>\<in>U. cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)"
-          using HV(4) HU(11) sheaf_spec_morphisms_def by fastforce
-        thus ?thesis sorry (* Here Sledgehammer should be able to conclude, I guess it's just a matter
-of using isar more wisely to better help Sledgehammer -- Anthony *)
-      qed
+          show "sheaf_spec_morphisms V U t' \<in> \<O> U"
+            using HU(1,2) HV(4,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce
+
+          show "s = pr.class_of \<pp> (U, sheaf_spec_morphisms V U s')"
+            using same_class_from_restrict by (simp add: HU(1,2) HV(1,3,5,6))
+          show "t = pr.class_of \<pp> (U, sheaf_spec_morphisms V U t')"
+            using same_class_from_restrict HV(2,4-6) HU(1,2) by blast
+          show "sheaf_spec_morphisms V U s' = (\<lambda>\<qq>\<in>U. cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)"
+            using HV(3)  sheaf_spec_morphisms_def HU(10) by fastforce
+          show "sheaf_spec_morphisms V U t' = (\<lambda>\<qq>\<in>U. cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)"
+            using HV(4) HU(11) sheaf_spec_morphisms_def by fastforce
+        qed (use HU in auto)
     qed 
     hence fact:"local.frac a f = local.frac b g"
       proof-
         have "local.frac a f = key_map U s'" 
           using key_map_def \<open>\<pp> \<in> U\<close> \<open>s' = (\<lambda>\<qq>\<in>U. cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)\<close> \<open>s' \<in> \<O> U\<close> by auto
-        moreover have "\<dots> = \<phi> (pr.canonical_fun \<pp> U s')"
+        also have "\<dots> = \<phi> (pr.canonical_fun \<pp> U s')"
           using \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> \<open>s' \<in> \<O> U\<close> assms(4) pr.presheaf_of_rings_axioms presheaf_of_rings.neighborhoods_def by fastforce
-        moreover have "\<dots> = \<phi> (pr.class_of \<pp> (U, s'))" using cxt_direct_lim.canonical_fun_def is_prime pr.canonical_fun_def pr.class_of_def pr.stalk_is_direct_lim by fastforce
-        moreover have "\<dots> = \<phi> s" by (simp add: \<open>s = pr.class_of \<pp> (U, s')\<close>)
-        moreover have "\<dots> = \<phi> t" using \<open>\<phi> s = \<phi> t\<close> by simp
-        moreover have "\<dots> = \<phi> (pr.class_of \<pp> (U, t'))" using \<open>t = pr.class_of \<pp> (U, t')\<close> by auto
-        moreover have "\<dots> = \<phi> (pr.canonical_fun \<pp> U t')"
+        also have "\<dots> = \<phi> (pr.class_of \<pp> (U, s'))" using cxt_direct_lim.canonical_fun_def is_prime pr.canonical_fun_def pr.class_of_def pr.stalk_is_direct_lim by fastforce
+        also have "\<dots> = \<phi> s" by (simp add: \<open>s = pr.class_of \<pp> (U, s')\<close>)
+        also have "\<dots> = \<phi> t" using \<open>\<phi> s = \<phi> t\<close> by simp
+        also have "\<dots> = \<phi> (pr.class_of \<pp> (U, t'))" using \<open>t = pr.class_of \<pp> (U, t')\<close> by auto
+        also have "\<dots> = \<phi> (pr.canonical_fun \<pp> U t')"
           using cxt_direct_lim.canonical_fun_def is_prime pr.canonical_fun_def pr.class_of_def pr.stalk_is_direct_lim by fastforce
-        moreover have "\<dots> = key_map U t'" 
+        also have "\<dots> = key_map U t'" 
           using \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> \<open>t' \<in> \<O> U\<close> assms(4) pr.neighborhoods_def by auto
-        ultimately show ?thesis 
-          using key_map_def \<open>\<pp> \<in> U\<close> \<open>t' = (\<lambda>\<qq>\<in>U. cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)\<close> \<open>t' \<in> \<O> U\<close> by auto
+        also have "\<dots> = local.frac b g"
+          using FU(2) FU(4) FU(8) key_map_def by force
+        finally show ?thesis .
       qed
       then obtain h where Hh:"h \<in> R" "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" 
         using pi.eq_from_eq_frac by (metis Diff_iff \<open>a \<in> R\<close> \<open>b \<in> R\<close> \<open>f \<in> R\<close> \<open>f \<notin> \<pp>\<close> \<open>g \<in> R\<close> \<open>g \<notin> \<pp>\<close>)
@@ -2581,11 +2581,11 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
           using local.standard_open_is_zariski_open by (simp add: FU(1,11,12) Hh(1) standard_open_is_zariski_open)
         have "s = pr.class_of \<pp> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h), sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s')"
           by (simp add: FU(1,3,5) \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> inf.coboundedI1 same_class_from_restrict)
-        moreover have "\<dots> = pr.class_of \<pp> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h), sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')" 
+        also have "\<dots> = pr.class_of \<pp> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h), sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')" 
           using fact same_class_from_restrict sorry
-        moreover have "\<dots> = t"
+        also have "\<dots> = t"
           by (metis FU(1,4,6) Int_assoc Int_lower1 \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> same_class_from_restrict)
-        ultimately show ?thesis by simp
+        finally show ?thesis .
       qed
     qed 
     moreover have "\<phi> ` (pr.stalk_at \<pp>) = (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
@@ -2601,10 +2601,9 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
         define s where sec_def:"s \<equiv> \<lambda>\<qq>\<in>\<D>(f). cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f"
         then have sec:"s \<in> \<O>(\<D>(f))"
         proof- 
-          have "\<And>\<qq>. \<qq> \<in> \<D>(f) \<Longrightarrow> s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)"
-          proof-
-            fix \<qq> assume "\<qq> \<in> \<D>(f)" 
-            hence "f \<notin> \<qq>" using belongs_standard_open_iff F(2) standard_open_is_subset by blast
+          have "s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" if "\<qq> \<in> \<D>(f)" for \<qq>
+          proof -
+            have "f \<notin> \<qq>" using that belongs_standard_open_iff F(2) standard_open_is_subset by blast
             then have "cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" 
               using F(1,2) frac_in_carrier_local \<open>\<qq> \<in> \<D>(f)\<close> standard_open_is_subset by blast
             thus "s \<qq> \<in> (R\<^bsub>\<qq> (+) (\<cdot>) \<zero>\<^esub>)" using sec_def by (simp add: \<open>\<qq> \<in> \<D>(f)\<close>)
@@ -2621,10 +2620,11 @@ of using isar more wisely to better help Sledgehammer -- Anthony *)
         proof-
           have "\<phi> (pr.class_of \<pp> (\<D>(f), s)) = \<phi> (pr.canonical_fun \<pp> \<D>(f) s)" 
             using pr.canonical_fun_def cxt_direct_lim.canonical_fun_def pr.class_of_def is_prime pr.stalk_is_direct_lim by fastforce
-          moreover have "\<dots> = key_map \<D>(f) s" 
+          also have "\<dots> = key_map \<D>(f) s" 
             using assms(4) by (metis (no_types, lifting) F(2,3) belongs_standard_open_iff comp_apply is_prime mem_Collect_eq pr.neighborhoods_def sec standard_open_is_zariski_open)
-          ultimately show ?thesis
-            using key_map_def sec_def by (smt F(2,3) belongs_standard_open_iff is_prime restrict_apply' sec)
+          also have "... = local.frac a f"
+            by (metis (mono_tags, lifting) F(2) F(3) belongs_standard_open_iff is_prime key_map_def restrict_apply sec sec_def)
+          finally show ?thesis .
         qed
         thus "x \<in> \<phi> ` (pr.stalk_at \<pp>)"
         proof- 
@@ -2663,12 +2663,49 @@ local_ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x U) (
 context comm_ring
 begin
 
-interpretation pr:presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms
+interpretation pr: presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms
             \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-  sorry
+  by (simp add: comm_ring.sheaf_spec_is_presheaf local.comm_ring_axioms)
 
-interpretation pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
-  sorry
+interpretation pi: prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+proof intro_locales
+  show "submonoid_axioms \<pp> R (+) \<zero>"
+  proof 
+    show "\<pp> \<subseteq> R"
+      sorry
+    show "a + b \<in> \<pp>"
+      if "a \<in> \<pp>" "b \<in> \<pp>" for a b
+      using that sorry
+    show "\<zero> \<in> \<pp>"
+      sorry
+  qed
+  then show "Group_Theory.monoid \<pp> (+) \<zero>"
+    unfolding submonoid_axioms_def Group_Theory.monoid_def
+    by (meson additive.associative additive.monoid_axioms monoid.left_unit monoid.right_unit subset_eq)
+  show "Group_Theory.group_axioms \<pp> (+) \<zero>"
+  proof unfold_locales
+    show "monoid.invertible \<pp> (+) \<zero> u"
+      if "u \<in> \<pp>" for u
+      using that sorry
+  qed
+  show "ideal_axioms \<pp> R (\<cdot>)"
+  proof 
+    fix a b
+    assume "a \<in> R" "b \<in> \<pp>" 
+    then show "a \<cdot> b \<in> \<pp>"
+      sorry
+    with \<open>submonoid_axioms \<pp> R (+) \<zero>\<close> show "b \<cdot> a \<in> \<pp>"
+      unfolding submonoid_axioms_def by (metis \<open>a \<in> R\<close> \<open>b \<in> \<pp>\<close>  commutative_mult in_mono)
+  qed
+  show "prime_ideal_axioms R \<pp> (\<cdot>)"
+  proof 
+    show "\<pp> \<noteq> R"
+      sorry
+    show "x \<in> \<pp> \<or> y \<in> \<pp>"
+      if "x \<in> R" "y \<in> R" "x \<cdot> y \<in> \<pp>" for x y
+      using that sorry
+  qed
+qed
 
 (* ex. 0.43 *)
 lemma spec_is_locally_ringed_space:
