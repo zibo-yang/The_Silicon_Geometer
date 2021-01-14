@@ -401,18 +401,24 @@ Local rings have their corresponding notion of morphisms.
 Finally, we are able to introduce \emph{locally ringed spaces}.
 
 \begin{definition}[locally ringed space]
-	A locally ringed space is a ringed space $(X, \mathscr{O}_X)$ such that the stalk $(\mathscr{O}_X)_x$ is a local ring for every $x \in X$.
+	A locally ringed space is a ringed space $(X, \mathscr{O}_X)$ such that the stalk $\mathscr{O}_{X, x}$ at $x$ is a local ring for every $x \in X$.
 \end{definition}
 
 % snippet of code to be introduced here for `locale locally_ringed_space`
 
-Moreover, on has the following result.
+Moreover, one has the following results.
 
 \begin{proposition}
-	Prove $(\text{Spec}\,R, \mathscr{O}_{\spec})$ is a locally ringed space.
-\end{proposition}
+	For every $\mathfrak{p} \in \text{Spec}\,R$, the stalk $\mathscr{O}_{\spec, \mathfrak{p}}$ is isomorphic as a ring to $R_{\mathfrak{p}}$.	
+\end{proposition}	
 
-As a sanity check for our formal definitions, we prove in Isabelle that the spectrum of a commutative ring is indeed a locally ringed space, a result that requires a large amount of formal machinery.
+% snippet of code to be inserted here for `lemma stalk_at_prime_is_iso_to_local_ring_at_prime`
+	
+\begin{cor}
+	$(\text{Spec}\,R, \mathscr{O}_{\spec})$ is a locally ringed space.
+\end{cor}
+
+As a sanity check for our formal definitions, we prove in Isabelle that the spectrum of a commutative ring is indeed a locally ringed space, a result that requires some amount of formal machinery.
 
 % snippet of code to be inserted here for the corresponding lemma in Isabelle `lemma spec_is_locally_ringed_space`
 
@@ -424,9 +430,9 @@ Now, we introduce our last construction. \\
 	\]
 	Since we have a morphism $\phi_f: \mathscr{O}_Y \rightarrow f_* \mathscr{O}_X $ of sheaves on $Y$, we get a map between the direct limits over $I$. 
 	\[
-	(\mathscr{O}_Y)_{f(x)} \rightarrow \displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)
+	\mathscr{O}_{Y, f(x)} \rightarrow \displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)
 	\]
-	Last, there is a natural inclusion from $\displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)$ to $(\mathscr{O}_X)_x$, so eventually we get an induced morphism of rings from $(\mathscr{O}_Y)_{f(x)}$ to $(\mathscr{O}_X)_x$ which we will denote $\phi_{f, x}$. \\	
+	Last, there is a natural inclusion from $\displaystyle \varinjlim_I \mathscr{O}_X (f^{-1} V)$ to $\mathscr{O}_{X, x}$, so eventually we get an induced morphism of rings from $\mathscr{O}_{Y, f(x)}$ to $\mathscr{O}_{X, x}$ which we will denote $\phi_{f, x}$. \\	
 As usual we embed this construction into a dedicated locale in Isabelle.
 
 % snippet of code to be inserted here for `locale cxt_ind_morphism_bwt_lim`	
@@ -434,7 +440,7 @@ As usual we embed this construction into a dedicated locale in Isabelle.
 This last construction is required to define morphisms between locally ringed spaces.
 			
 \begin{definition}[morphism of locally ringed spaces]
-	A morphism of locally ringed spaces from $(X, \mathscr{O}_X)$ to $(Y, \mathscr{O}_Y)$ is a morphism $(f, \phi_f)$ between locally ringed spaces such that the induced map of local rings $\phi_{f, x}: (\mathscr{O}_Y)_{f(x)} \rightarrow (\mathscr{O}_X)_x$ is a local homomorphism for every $x \in X$.  
+	A morphism of locally ringed spaces from $(X, \mathscr{O}_X)$ to $(Y, \mathscr{O}_Y)$ is a morphism $(f, \phi_f)$ between locally ringed spaces such that the induced map of local rings $\phi_{f, x}: \mathscr{O}_{Y, f(x)} \rightarrow \mathscr{O}_{X, x}$ is a local homomorphism for every $x \in X$.  
 \end{definition}
 
 % snippet of code to be introduced here for `locale morphism_locally_ringed_spaces`
