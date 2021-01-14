@@ -2480,7 +2480,7 @@ lemma same_class_from_restrict:
   shows "pr.class_of \<pp> (V, s) = pr.class_of \<pp> (U, sheaf_spec_morphisms V U s)"
   using assms sorry
 
-lemma key_ring_iso_aux:
+lemma stalk_at_prime_is_iso_to_local_ring_at_prime_aux:
   assumes "is_zariski_open V" and "\<pp> \<in> V" and
 "ring_homomorphism \<phi>
 (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> V) (pr.one_stalk_at \<pp> V)
@@ -2638,12 +2638,12 @@ next
   qed
 qed
 
-lemma key_ring_iso:
+lemma stalk_at_prime_is_iso_to_local_ring_at_prime:
   assumes "is_zariski_open V" and "\<pp> \<in> V"
   shows "\<exists>\<phi>. ring_isomorphism \<phi>
 (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> V) (pr.one_stalk_at \<pp> V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
-  using key_ring_morphism key_ring_iso_aux assms by metis
+  using key_ring_morphism stalk_at_prime_is_iso_to_local_ring_at_prime_aux assms by metis
 
 end (* key_map *)
 
