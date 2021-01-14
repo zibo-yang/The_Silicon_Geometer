@@ -2264,14 +2264,43 @@ subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
 locale local_ring = comm_ring +
-assumes is_unique: "\<lbrakk>I \<subseteq> R; J \<subseteq> R\<rbrakk> \<Longrightarrow> max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
+assumes is_unique: "\<And>I J. max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
 and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
+
+lemma im_of_ideal_is_ideal:
+  assumes "ideal I A addA multA zeroA oneA" and 
+"ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+shows "ideal (f ` I) B addB multB zeroB oneB"
+  sorry
+
+lemma im_of_max_ideal_is_max:
+  assumes "max_ideal A I addA multA zeroA oneA" and
+"ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+shows "max_ideal B (f ` I) addB multB zeroB oneB"
+  sorry
+
+lemma preim_of_ideal_is_ideal:
+  assumes "ideal J B addb multB zeroB oneB" and 
+"ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+shows "ideal (f\<^sup>\<inverse> A J) A addA multA zeroA oneA"
+  sorry
+
+lemma preim_of_max_ideal_is_max:
+  assumes "max_ideal B J addB multB zeroB oneB" and
+"ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+shows "max_ideal A (f\<^sup>\<inverse> A J) addA multA zeroA oneA"
+  sorry
+
+lemma ring_iso_is_epi:
+  assumes "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  sorry
 
 lemma isomorphic_to_local_is_local:
   assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB" 
     and iso: "\<exists>f. ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
-  shows "local_ring A addA multA zeroA oneA" sorry
-(*  proof intro_locales
+  shows "local_ring A addA multA zeroA oneA"
+proof intro_locales
   show "Group_Theory.monoid A addA zeroA"
     by (meson abelian_group.axioms(2) assms(1) commutative_monoid_def ring_def)
   show "Group_Theory.group_axioms A addA zeroA"
@@ -2282,11 +2311,11 @@ lemma isomorphic_to_local_is_local:
     by (meson assms(1) ring_def)
   show "ring_axioms A addA multA"
     by (meson assms(1) ring_def)
-  show "comm_ring_axioms A multA"
-  proof (clarsimp simp: comm_ring_def comm_ring_axioms_def)
+  show "comm_ring_axioms A multA" sorry 
+(*  proof (clarsimp simp: comm_ring_def comm_ring_axioms_def)
     fix a b
     assume "a \<in> A" and "b \<in> A"
-    have hom: "monoid_homomorphism f A multA oneA B multB oneB"
+    have hom: "monoid_homomorphism f A multA oneA B multB oneB" sorry
       by (meson iso ring_homomorphism_def ring_isomorphism.axioms(1))
     have "bij_betw f A B"
       using iso map.graph
@@ -2305,20 +2334,34 @@ lemma isomorphic_to_local_is_local:
     finally show "multA a b = multA b a"
       by (metis (full_types) \<open>Group_Theory.monoid A multA oneA\<close> \<open>a \<in> A\<close> \<open>b \<in> A\<close> \<open>bij_betw f A B\<close> bij_betw_iff_bijections monoid.composition_closed)
   qed
+*)
   show "local_ring_axioms A addA multA zeroA oneA"
   proof unfold_locales
     fix I J
-    assume "I \<subseteq> A"
-        and "J \<subseteq> A"
-        and "max_ideal A I addA multA zeroA oneA"
-        and "max_ideal A J addA multA zeroA oneA"
-    show "(I::'a set) = J" sorry
+    assume H1:"max_ideal A I addA multA zeroA oneA"
+        and H2:"max_ideal A J addA multA zeroA oneA"
+    obtain f where is_iso:"ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+      using assms(3) by auto
+    show "(I::'a set) = J"
+    proof-
+      have "max_ideal B (f ` I) addB multB zeroB oneB" 
+        using im_of_max_ideal_is_max H1 is_iso ring_iso_is_epi by fastforce
+      also have "max_ideal B (f ` J) addB multB zeroB oneB" 
+        using im_of_max_ideal_is_max H2 is_iso ring_iso_is_epi by fastforce
+      hence "f ` I = f ` J"
+        by (meson calculation local_ring.is_unique lring)
+      thus ?thesis using is_iso ring_isomorphism_def sorry
+    qed
   next
     show "\<exists>\<ww>. max_ideal A \<ww> addA multA zeroA oneA"
-      sorry
+    proof-
+      obtain J where "max_ideal B J addB multB zeroB oneB" 
+        using lring by (meson local_ring.has_max_ideal)
+      thus ?thesis using preim_of_max_ideal_is_max iso by fastforce
+    qed
   qed
 qed
-*)
+
 context pr_ideal
 begin
 
