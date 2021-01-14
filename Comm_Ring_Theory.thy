@@ -1193,6 +1193,23 @@ lemma frac_from_carrier:
   using assms carrier_quotient_ring_def
   by (metis (no_types, lifting) SigmaE rel.representant_exists)
 
+lemma add_minus_zero_rel:
+  assumes "valid_frac a"
+  shows "add_rel a (uminus_rel a) = zero_rel"
+proof -
+  obtain a1 a2 where a_RS:"(a1, a2)\<in>R \<times> S" and a12:"a = a1 / a2 "
+    using \<open>valid_frac a\<close> unfolding valid_frac_def by auto
+  have "add_rel a (uminus_rel a) =  \<zero> / (a2 \<cdot> a2)"
+    unfolding a12 using comm_ring_simps a_RS 
+    by (simp add:add_rel_frac uminus_rel_frac comm.right_minus)
+  also have "... = \<zero> / \<one>"
+    apply (rule frac_eqI[of \<one>])
+    using a_RS by auto
+  also have "... = zero_rel" unfolding zero_rel_def ..
+  finally show "add_rel a (uminus_rel a) = zero_rel" .
+qed
+
+
 (* ex. 0.26 *)
 (*
 lemma quotient_ring_is_comm_ring:
@@ -1279,19 +1296,7 @@ proof (unfold_locales; unfold carrier_quotient_ring_iff)
       apply (unfold_locales)
       using add_0 add_assoc add_commute by simp_all
     moreover have "add_rel a (uminus_rel a) = zero_rel" "add_rel (uminus_rel a) a = zero_rel" 
-    proof -
-      obtain a1 a2 where a_RS:"(a1, a2)\<in>R \<times> S" and a12:"a = a1 / a2 "
-        using \<open>valid_frac a\<close> unfolding valid_frac_def by auto
-      have "add_rel a (uminus_rel a) =  \<zero> / (a2 \<cdot> a2)"
-        unfolding a12 using comm_ring_simps a_RS 
-        by (simp add:add_rel_frac uminus_rel_frac comm.right_minus)
-      also have "... = \<zero> / \<one>"
-        apply (rule frac_eqI[of \<one>])
-        using a_RS by auto
-      also have "... = zero_rel" unfolding zero_rel_def ..
-      finally show "add_rel a (uminus_rel a) = zero_rel" .
-      then show "add_rel (uminus_rel a) a = zero_rel" using add_commute that by auto
-    qed
+      using add_minus_zero_rel add_commute that by auto
     ultimately show "monoid.invertible carrier_quotient_ring add_rel zero_rel a"
       unfolding monoid.invertible_def
       apply (rule monoid.invertibleI)
@@ -1334,6 +1339,9 @@ definition add_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 
 
 definition mult_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
   where "mult_local_ring_at \<equiv> local.mult_rel "
+
+definition uminus_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
+  where "uminus_local_ring_at \<equiv> local.uminus_rel "
 
 definition zero_local_ring_at:: "('a \<times> 'a) set"
   where "zero_local_ring_at \<equiv> local.zero_rel"
@@ -1383,8 +1391,6 @@ subsection \<open>Spectrum of a Ring\<close>
 context comm_ring
 begin
 
-find_theorems cxt_quotient_ring.frac cxt_quotient_ring.valid_frac
-
 lemma spectrum_imp_cxt_quotient_ring:
   "\<pp> \<in> Spec \<Longrightarrow> cxt_quotient_ring (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
   apply (intro_locales)
@@ -1425,7 +1431,20 @@ definition sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<ti
 lemma sec_has_right_codom:
   assumes "s \<in> \<O> U" and "\<pp> \<in> U"
   shows "s \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
-  using assms sheaf_spec_def by auto
+using assms sheaf_spec_def by auto
+
+
+lemma is_regular_has_right_codom:
+  assumes "U \<subseteq> Spec" "\<pp> \<in> U" "is_regular s U"
+  shows "s \<pp> \<in> R\<setminus>\<pp> \<^sup>\<inverse> R\<^bsub>(+) (\<cdot>) \<zero>\<^esub>"
+proof -
+  interpret qr:cxt_quotient_ring "(R \<setminus> \<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+    using spectrum_imp_cxt_quotient_ring assms by auto
+  show ?thesis using assms 
+    by (smt frac_in_carrier_local is_locally_frac_def is_regular_def 
+          prime_ideal.carrier_local_ring_at_def spectrum_imp_pr subset_eq)
+qed
+
 
 lemma sec_is_extensional:
   assumes "s \<in> \<O> U"
@@ -1643,6 +1662,99 @@ proof -
     unfolding sheaf_spec_def by (simp add: PiE_iff)
 qed
 
+definition uminus_sheaf_spec::"('a set) set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
+  where "uminus_sheaf_spec U s \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.uminus_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> (s \<pp>) "
+
+lemma is_regular_uminus_sheaf_spec:
+  assumes "is_regular s U" and "U \<subseteq> Spec"
+  shows "is_regular (uminus_sheaf_spec U s) U" 
+proof -     
+  have "uminus_sheaf_spec U s \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
+  proof -
+    interpret pi: prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+      using \<open>U \<subseteq> Spec\<close>[unfolded spectrum_def] \<open>\<pp> \<in> U\<close> by blast
+    interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)"
+      by (simp add: cxt_quotient_ring_def local.comm_ring_axioms pi.submonoid_prime_ideal)
+
+    have "s \<pp> \<in> pi.carrier_local_ring_at" 
+      using \<open>is_regular s U\<close> 
+      unfolding is_regular_def using that 
+      using assms(2) frac_in_carrier_local in_mono is_locally_frac_def by fastforce
+    then show ?thesis
+      unfolding uminus_sheaf_spec_def pi.carrier_local_ring_at_def using that 
+      by simp
+  qed
+  moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> is_locally_frac (uminus_sheaf_spec U s) V)"
+    if "\<pp> \<in> U" for \<pp> 
+  proof -
+    obtain V1 r1 f1 where "V1 \<subseteq>U" "is_zariski_open V1" "\<pp> \<in> V1" "r1 \<in> R" "f1 \<in> R" and
+        q_V1:"(\<forall>\<qq>. \<qq> \<in> V1 \<longrightarrow> f1 \<notin> \<qq> \<and> s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r1 f1)"
+      using \<open>is_regular s U\<close>[unfolded is_regular_def] \<open>\<pp> \<in> U\<close> unfolding is_locally_frac_def
+      by auto
+
+    define V3 where "V3 = V1 "
+    define r3 where "r3 = additive.inverse r1"
+    define f3 where "f3 = f1"
+    have "V3 \<subseteq>U" "\<pp> \<in> V3" "r3 \<in> R" "f3 \<in> R"
+      unfolding V3_def r3_def f3_def
+      using \<open>V1 \<subseteq> U\<close> \<open>\<pp> \<in> V1\<close> \<open>f1 \<in> R\<close>  \<open>r1 \<in> R\<close> by blast+
+    moreover have "is_zariski_open V3" 
+      using topological_space.open_inter by (simp add: V3_def \<open>is_zariski_open V1\<close>)
+    moreover have "f3 \<notin> \<qq>"
+        "uminus_sheaf_spec U s \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
+        if "\<qq> \<in> V3" for \<qq>
+    proof -
+      interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
+        using \<open>U \<subseteq> Spec\<close> \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> cxt_quotient_ring_def local.comm_ring_axioms 
+          prime_ideal.submonoid_prime_ideal spectrum_def 
+        by fastforce
+      have "f1 \<notin> \<qq>" "s \<qq> = q.frac r1 f1"
+        using q_V1 \<open>\<qq> \<in> V3\<close>  unfolding V3_def by auto
+  
+      have "q.uminus_rel (q.frac r1 f1) = q.frac (additive.inverse r1) f1"
+        apply (rule q.uminus_rel_frac)
+        by (simp add: \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> \<open>r1 \<in> R\<close>)
+      then have "q.uminus_rel (s \<qq>) = q.frac r3 f3"
+        unfolding r3_def f3_def using \<open>s \<qq> = q.frac r1 f1\<close> by auto
+      then show "uminus_sheaf_spec U s \<qq> = q.frac r3 f3"
+        unfolding uminus_sheaf_spec_def using \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> by auto
+      show "f3 \<notin> \<qq>" using that unfolding V3_def f3_def 
+        using \<open>f1 \<in> R\<close> \<open>f1 \<notin> \<qq>\<close> q.sub_composition_closed by auto 
+    qed
+    ultimately show ?thesis using is_locally_frac_def by metis
+  qed
+  ultimately show ?thesis unfolding is_regular_def is_locally_frac_def by meson
+qed
+
+lemma uminus_sheaf_spec_in_sheaf_spec:
+  assumes "s \<in> \<O> U" and "U \<subseteq> Spec"
+  shows "uminus_sheaf_spec U s \<in> \<O> U"
+proof -
+  have "uminus_sheaf_spec U s \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" 
+      if "\<pp> \<in> U" for \<pp>
+  proof -
+    interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
+      apply (rule spectrum_imp_cxt_quotient_ring)
+      using that \<open>U \<subseteq> Spec\<close> by auto
+    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+      using that \<open>U \<subseteq> Spec\<close> by (auto intro:spectrum_imp_pr)
+    have "qr.valid_frac (s \<pp>)" 
+      using sec_has_right_codom[OF _ that] \<open>s \<in> \<O> U\<close> 
+      by (auto simp:pi.carrier_local_ring_at_def)
+    then show ?thesis 
+      using that unfolding uminus_sheaf_spec_def pi.carrier_local_ring_at_def
+      by auto
+  qed
+  moreover have "is_regular (uminus_sheaf_spec U s) U" 
+    using \<open>s \<in> \<O> U\<close>  \<open>U \<subseteq> Spec\<close> is_regular_uminus_sheaf_spec 
+    unfolding sheaf_spec_def by auto
+  moreover have "uminus_sheaf_spec U s \<in> extensional U"
+    unfolding uminus_sheaf_spec_def by auto
+  ultimately show ?thesis
+    unfolding sheaf_spec_def by (simp add: PiE_iff)
+qed
+
+
 definition zero_sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set)"
   where "zero_sheaf_spec U \<equiv> \<lambda>\<pp>\<in>U. cxt_quotient_ring.zero_rel (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
 
@@ -1789,12 +1901,12 @@ lemma sheaf_spec_extensional[simp]:
   "a \<in> \<O> U \<Longrightarrow> a \<in> extensional U"
   unfolding sheaf_spec_def by (simp add: PiE_iff Set_Theory.map_def)
 
-lemma sheaf_spec_on_open_is_ring:
+lemma sheaf_spec_on_open_is_comm_ring:
   assumes "is_zariski_open U"
-  shows "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
+  shows "comm_ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
 proof unfold_locales
-  show "add_sheaf_spec U a b \<in> \<O> U" 
-    "mult_sheaf_spec U a b \<in> \<O> U"
+  show add_\<O>:"add_sheaf_spec U a b \<in> \<O> U" 
+    and "mult_sheaf_spec U a b \<in> \<O> U"
     if "a \<in> \<O> U" "b \<in> \<O> U" for a b
     subgoal by (simp add: add_sheaf_spec_in_sheaf_spec assms that(1,2) zariski_open_is_subset)
     subgoal by (simp add: assms mult_sheaf_spec_in_sheaf_spec that(1,2) zariski_open_is_subset)
@@ -1803,80 +1915,130 @@ proof unfold_locales
     subgoal by (simp add: assms zero_sheaf_spec_in_sheaf_spec)
     subgoal by (simp add: assms one_sheaf_spec_in_sheaf_spec)
     done
-  show "add_sheaf_spec U (zero_sheaf_spec U) a = a" if "a \<in> \<O> U" for a
+
+  have imp_qr:"cxt_quotient_ring (R\<setminus>\<pp>) R (+) (\<cdot>) \<zero> \<one>" if "\<pp> \<in> U" for \<pp>
+    using that 
+    by (meson assms comm_ring.spectrum_imp_cxt_quotient_ring in_mono local.comm_ring_axioms 
+          zariski_open_is_subset)
+  have qr_valid_frac:"cxt_quotient_ring.valid_frac (R\<setminus>\<pp>) R (+) (\<cdot>) \<zero> (s \<pp>)" 
+      if "s \<in> \<O> U" "\<pp> \<in> U" for s \<pp>
+    using assms comm_ring.zariski_open_is_subset cxt_quotient_ring.carrier_quotient_ring_iff 
+      imp_qr local.comm_ring_axioms prime_ideal.carrier_local_ring_at_def sec_has_right_codom 
+      spectrum_imp_pr that(1) that(2) by fastforce
+
+  show add_zero:"add_sheaf_spec U (zero_sheaf_spec U) a = a" if "a \<in> \<O> U" for a
   proof -
     have "add_sheaf_spec U (zero_sheaf_spec U) a \<pp> = a \<pp>" if "\<pp> \<in> U" for \<pp>
     proof - 
       interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one>
-        by (meson assms comm_ring.zariski_open_is_subset in_mono local.comm_ring_axioms spectrum_imp_cxt_quotient_ring that)
+        using imp_qr that by auto
       show ?thesis unfolding add_sheaf_spec_def zero_sheaf_spec_def
-        using that apply simp
-        apply (rule cq.additive.left_unit)
-        using \<open>a \<in> \<O> U\<close> assms comm_ring.spectrum_def comm_ring.zariski_open_is_subset local.comm_ring_axioms prime_ideal.carrier_local_ring_at_def sec_has_right_codom by fastforce
+        using that by (simp add: \<open>a \<in> \<O> U\<close> qr_valid_frac)
     qed
     then show "add_sheaf_spec U (zero_sheaf_spec U) a = a"
       using that by(auto intro: extensionalityI[where A=U])
   qed
-  show "add_sheaf_spec U (add_sheaf_spec U a b) c = add_sheaf_spec U a (add_sheaf_spec U b c)"
-    if "a \<in> \<O> U"
-      and "b \<in> \<O> U"
-      and "c \<in> \<O> U"
-    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    apply (rule ext)
-    using that
-    apply (simp add: add_sheaf_spec_def)
-    sorry
-  show "add_sheaf_spec U a (zero_sheaf_spec U) = a"
-    if "a \<in> \<O> U"
-    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    apply (rule ext)
-    using that
-    apply (simp add: add_sheaf_spec_def zero_sheaf_spec_def)
-    sorry
-  show "monoid.invertible \<O> U (add_sheaf_spec U) (zero_sheaf_spec U) u"
-    if "u \<in> \<O> U"
-    for u :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
-  show "add_sheaf_spec U x y = add_sheaf_spec U y x"
-    if "x \<in> \<O> U"
-      and "y \<in> \<O> U"
-    for x :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and y :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
+  show add_assoc:"add_sheaf_spec U (add_sheaf_spec U a b) c 
+      = add_sheaf_spec U a (add_sheaf_spec U b c)"
+    if "a \<in> \<O> U" and "b \<in> \<O> U" and "c \<in> \<O> U"
+    for a b c
+  proof (rule extensionalityI)
+    fix \<pp> assume "\<pp> \<in> U"
+    interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> using \<open>\<pp> \<in> U\<close> imp_qr by auto
+    show "add_sheaf_spec U (add_sheaf_spec U a b) c \<pp> = add_sheaf_spec U a (add_sheaf_spec U b c) \<pp>"
+      unfolding add_sheaf_spec_def using \<open>\<pp> \<in> U\<close>
+      by (simp add: cq.additive.associative qr_valid_frac that(1) that(2) that(3))
+  qed (auto simp add:add_sheaf_spec_def)
+  show add_comm:"add_sheaf_spec U x y = add_sheaf_spec U y x"
+    if "x \<in> \<O> U" and "y \<in> \<O> U" for x y 
+  proof (rule extensionalityI)
+    fix \<pp> assume "\<pp> \<in> U"
+    interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> using \<open>\<pp> \<in> U\<close> imp_qr by auto
+    show " add_sheaf_spec U x y \<pp> = add_sheaf_spec U y x \<pp>" 
+      unfolding add_sheaf_spec_def using \<open>\<pp> \<in> U\<close> 
+      by (simp add: cq.additive.commutative qr_valid_frac that(1) that(2))
+  qed auto
+  show mult_comm:"mult_sheaf_spec U x y = mult_sheaf_spec U y x"
+    if "x \<in> \<O> U" and "y \<in> \<O> U" for x y 
+  proof (rule extensionalityI)
+    fix \<pp> assume "\<pp> \<in> U"
+    interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> using \<open>\<pp> \<in> U\<close> imp_qr by auto
+    show "mult_sheaf_spec U x y \<pp> = mult_sheaf_spec U y x \<pp>" 
+      unfolding mult_sheaf_spec_def using \<open>\<pp> \<in> U\<close> 
+      by (simp add: cq.commutative_mult qr_valid_frac that(1) that(2))
+  qed auto
+  show add_zero:"add_sheaf_spec U a (zero_sheaf_spec U) = a"
+      if "a \<in> \<O> U" for a 
+    using add_zero add_comm that by (simp add: \<open>zero_sheaf_spec U \<in> \<O> U\<close>)
+  
   show "mult_sheaf_spec U (mult_sheaf_spec U a b) c = mult_sheaf_spec U a (mult_sheaf_spec U b c)"
-    if "a \<in> \<O> U"
-      and "b \<in> \<O> U"
+    if "a \<in> \<O> U" and "b \<in> \<O> U"
       and "c \<in> \<O> U"
-    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
+    for a b c
+  proof (rule extensionalityI)
+    fix \<pp> assume "\<pp> \<in> U"
+    interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> using \<open>\<pp> \<in> U\<close> imp_qr by auto
+    show "mult_sheaf_spec U (mult_sheaf_spec U a b) c \<pp> 
+                = mult_sheaf_spec U a (mult_sheaf_spec U b c) \<pp>" 
+      unfolding mult_sheaf_spec_def using \<open>\<pp> \<in> U\<close> 
+      by (simp add: cq.multiplicative.associative qr_valid_frac that(1) that(2) that(3))
+  qed (auto simp add:add_sheaf_spec_def)
+
   show "mult_sheaf_spec U (one_sheaf_spec U) a = a"
-    if "a \<in> \<O> U"
-    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
-  show "mult_sheaf_spec U a (one_sheaf_spec U) = a"
-    if "a \<in> \<O> U"
-    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
-  show "mult_sheaf_spec U a (add_sheaf_spec U b c) = add_sheaf_spec U (mult_sheaf_spec U a b) (mult_sheaf_spec U a c)"
-    if "a \<in> \<O> U"
-      and "b \<in> \<O> U"
-      and "c \<in> \<O> U"
-    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
-  show "mult_sheaf_spec U (add_sheaf_spec U b c) a = add_sheaf_spec U (mult_sheaf_spec U b a) (mult_sheaf_spec U c a)"
-    if "a \<in> \<O> U"
-      and "b \<in> \<O> U"
-      and "c \<in> \<O> U"
-    for a :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and b :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-      and c :: "'a set \<Rightarrow> ('a \<times> 'a) set"
-    using that sorry
+    if "a \<in> \<O> U" for a
+  proof (rule extensionalityI)
+    fix \<pp> assume "\<pp> \<in> U"
+    interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> using \<open>\<pp> \<in> U\<close> imp_qr by auto
+    show "mult_sheaf_spec U (one_sheaf_spec U) a \<pp> = a \<pp>" 
+      unfolding mult_sheaf_spec_def using \<open>\<pp> \<in> U\<close> 
+      by (simp add: one_sheaf_spec_def qr_valid_frac that)
+  qed (auto simp add: \<open>a \<in> \<O> U\<close>)
+  then show "mult_sheaf_spec U a (one_sheaf_spec U) = a"
+    if "a \<in> \<O> U" for a
+    by (simp add: \<open>one_sheaf_spec U \<in> \<O> U\<close> mult_comm that)
+
+  show "mult_sheaf_spec U a (add_sheaf_spec U b c) 
+          = add_sheaf_spec U (mult_sheaf_spec U a b) (mult_sheaf_spec U a c)"
+    if "a \<in> \<O> U" and "b \<in> \<O> U" and "c \<in> \<O> U" for a b c
+  proof (rule extensionalityI)
+    fix \<pp> assume "\<pp> \<in> U"
+    interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> using \<open>\<pp> \<in> U\<close> imp_qr by auto
+    show "mult_sheaf_spec U a (add_sheaf_spec U b c) \<pp> =
+         add_sheaf_spec U (mult_sheaf_spec U a b) (mult_sheaf_spec U a c) \<pp>"
+      unfolding mult_sheaf_spec_def add_sheaf_spec_def
+      by (simp add: cq.distributive(1) qr_valid_frac that(1) that(2) that(3))
+  qed auto
+  then show "mult_sheaf_spec U (add_sheaf_spec U b c) a 
+                = add_sheaf_spec U (mult_sheaf_spec U b a) (mult_sheaf_spec U c a)"
+    if "a \<in> \<O> U" and "b \<in> \<O> U" and "c \<in> \<O> U" for a b c
+    by (simp add: add_\<O> mult_comm that(1) that(2) that(3))
+  show "monoid.invertible \<O> U (add_sheaf_spec U) (zero_sheaf_spec U) u"
+    if "u \<in> \<O> U" for u 
+  proof (rule monoid.invertibleI)
+    show "Group_Theory.monoid \<O> U (add_sheaf_spec U) (zero_sheaf_spec U)"
+      apply unfold_locales
+      using add_\<O> \<open>zero_sheaf_spec U \<in> \<O> U\<close> add_assoc \<open>zero_sheaf_spec U \<in> \<O> U\<close> 
+        add_comm add_zero  add_zero
+      by simp_all
+    show "add_sheaf_spec U u (uminus_sheaf_spec U u) = zero_sheaf_spec U"
+    proof (rule extensionalityI)
+      fix \<pp> assume "\<pp> \<in> U"
+      interpret cq:cxt_quotient_ring "R\<setminus>\<pp>" R "(+)" "(\<cdot>)" \<zero> \<one> using \<open>\<pp> \<in> U\<close> imp_qr by auto 
+
+      have "cq.add_rel (u \<pp>) (cq.uminus_rel (u \<pp>)) = cq.zero_rel"
+        by (simp add: \<open>\<pp> \<in> U\<close> cq.add_minus_zero_rel qr_valid_frac that)
+      then show "add_sheaf_spec U u (uminus_sheaf_spec U u) \<pp> = zero_sheaf_spec U \<pp>"
+        unfolding add_sheaf_spec_def uminus_sheaf_spec_def zero_sheaf_spec_def
+        using \<open>\<pp> \<in> U\<close> by simp
+    qed auto
+    then show "add_sheaf_spec U (uminus_sheaf_spec U u) u = zero_sheaf_spec U"
+      by (simp add: add_comm assms comm_ring.zariski_open_is_subset local.comm_ring_axioms 
+          that uminus_sheaf_spec_in_sheaf_spec)
+    show "u \<in> \<O> U" using that .
+    show "uminus_sheaf_spec U u \<in> \<O> U" 
+      by (simp add: assms comm_ring.zariski_open_is_subset local.comm_ring_axioms 
+            that uminus_sheaf_spec_in_sheaf_spec)
+  qed
 qed
 
 definition sheaf_spec_morphisms:: 
