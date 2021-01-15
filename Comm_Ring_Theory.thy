@@ -1442,7 +1442,7 @@ proof -
     using spectrum_imp_cxt_quotient_ring assms by auto
   show ?thesis using assms 
     by (smt frac_in_carrier_local is_locally_frac_def is_regular_def 
-          prime_ideal.carrier_local_ring_at_def spectrum_imp_pr subset_eq)
+          pr_ideal.carrier_local_ring_at_def spectrum_imp_pr subset_eq)
 qed
 
 
@@ -1671,10 +1671,10 @@ lemma is_regular_uminus_sheaf_spec:
 proof -     
   have "uminus_sheaf_spec U s \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
   proof -
-    interpret pi: prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi: pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       using \<open>U \<subseteq> Spec\<close>[unfolded spectrum_def] \<open>\<pp> \<in> U\<close> by blast
     interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)"
-      by (simp add: cxt_quotient_ring_def local.comm_ring_axioms pi.submonoid_prime_ideal)
+      by (simp add: cxt_quotient_ring_def local.comm_ring_axioms pi.submonoid_pr_ideal)
 
     have "s \<pp> \<in> pi.carrier_local_ring_at" 
       using \<open>is_regular s U\<close> 
@@ -1706,7 +1706,7 @@ proof -
     proof -
       interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
         using \<open>U \<subseteq> Spec\<close> \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> cxt_quotient_ring_def local.comm_ring_axioms 
-          prime_ideal.submonoid_prime_ideal spectrum_def 
+          pr_ideal.submonoid_pr_ideal spectrum_def 
         by fastforce
       have "f1 \<notin> \<qq>" "s \<qq> = q.frac r1 f1"
         using q_V1 \<open>\<qq> \<in> V3\<close>  unfolding V3_def by auto
@@ -1736,7 +1736,7 @@ proof -
     interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
       apply (rule spectrum_imp_cxt_quotient_ring)
       using that \<open>U \<subseteq> Spec\<close> by auto
-    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       using that \<open>U \<subseteq> Spec\<close> by (auto intro:spectrum_imp_pr)
     have "qr.valid_frac (s \<pp>)" 
       using sec_has_right_codom[OF _ that] \<open>s \<in> \<O> U\<close> 
@@ -1923,7 +1923,7 @@ proof unfold_locales
   have qr_valid_frac:"cxt_quotient_ring.valid_frac (R\<setminus>\<pp>) R (+) (\<cdot>) \<zero> (s \<pp>)" 
       if "s \<in> \<O> U" "\<pp> \<in> U" for s \<pp>
     using assms comm_ring.zariski_open_is_subset cxt_quotient_ring.carrier_quotient_ring_iff 
-      imp_qr local.comm_ring_axioms prime_ideal.carrier_local_ring_at_def sec_has_right_codom 
+      imp_qr local.comm_ring_axioms pr_ideal.carrier_local_ring_at_def sec_has_right_codom 
       spectrum_imp_pr that(1) that(2) by fastforce
 
   show add_zero:"add_sheaf_spec U (zero_sheaf_spec U) a = a" if "a \<in> \<O> U" for a
