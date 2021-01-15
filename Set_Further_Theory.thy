@@ -25,7 +25,7 @@ abbreviation complement_in_of:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a se
 
 section \<open>Functions\<close>
 
-abbreviation preimage:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> 'a set" ("_ \<^sup>\<inverse> _ _" [1000,1000,1000]1000)
+abbreviation preimage:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> 'a set" ("_ \<^sup>\<inverse> _ _" [90,90,1000]90)
   where "f\<^sup>\<inverse> X V \<equiv> (vimage f V) \<inter> X"
 
 definition inverse_map:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> ('b \<Rightarrow> 'a)"
