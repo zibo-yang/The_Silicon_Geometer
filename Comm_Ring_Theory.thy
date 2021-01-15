@@ -2595,8 +2595,7 @@ proof -
         proof 
           fix x
           assume "x \<in> f \<^sup>\<inverse> A J"
-          then
-          show "monoid.invertible (f \<^sup>\<inverse> A J) addA zeroA x"
+          then show "monoid.invertible (f \<^sup>\<inverse> A J) addA zeroA x"
             apply clarify
             by (smt (verit, best) IJ.additive.sub.invertible IJ.additive.submonoid_inverse_closed IntI \<open>Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA\<close> fiso.additive.invertible_commutes_with_inverse maxI.additive.inverse_equality maxI.additive.invertible maxI.additive.invertibleE monoid.invertible_def vimageI)
         qed
@@ -2622,10 +2621,49 @@ proof -
 qed
 
 lemma preim_of_ideal_is_ideal:
-  assumes "ideal J B addb multB zeroB oneB" 
-    and "ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  fixes f :: "'a\<Rightarrow>'b"
+  assumes J: "ideal J B addB multB zeroB oneB" 
+    and  f: "ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
   shows "ideal (f\<^sup>\<inverse> A J) A addA multA zeroA oneA"
-  sorry
+proof -
+  interpret JB: ideal J B addB multB zeroB oneB
+    using J by blast
+  interpret fhom: ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB
+    using f by force
+  show ?thesis
+  proof intro_locales
+    show "submonoid_axioms (f \<^sup>\<inverse> A J) A addA zeroA"
+    proof
+      fix a1 a2
+      assume "a1 \<in> f \<^sup>\<inverse> A J" and "a2 \<in> f \<^sup>\<inverse> A J"
+      then show "addA a1 a2 \<in> f \<^sup>\<inverse> A J"
+        apply (simp add: )
+        using JB.additive.sub_composition_closed fhom.additive.commutes_with_composition by presburger
+    qed blast+
+    then show grp_fAJ: "Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA"
+      by (auto simp: submonoid_axioms_def Group_Theory.monoid_def)
+    show "Group_Theory.group_axioms (f \<^sup>\<inverse> A J) addA zeroA"
+    proof
+      fix x
+      assume x: "x \<in> f \<^sup>\<inverse> A J"
+      then have "f x \<in> J" "x \<in> A"
+        by auto
+      then obtain xa where "f xa \<in> J \<and> xa \<in> A \<and> addA x xa = zeroA"
+        by (metis JB.additive.sub.invertible JB.additive.submonoid_inverse_closed fhom.additive.invertible_commutes_with_inverse fhom.source.additive.invertible fhom.source.additive.invertible_inverse_closed fhom.source.additive.invertible_right_inverse)
+      then have "\<exists>v\<in>f \<^sup>\<inverse> A J. addA x v = zeroA \<and> addA v x = zeroA"
+        by (metis Int_iff \<open>x \<in> A\<close> fhom.source.additive.commutative vimage_eq)
+      then show "monoid.invertible (f \<^sup>\<inverse> A J) addA zeroA x"
+        by (metis grp_fAJ monoid.invertibleI x)
+    qed
+    show "ideal_axioms (f \<^sup>\<inverse> A J) A multA"
+    proof
+      fix a j
+      assume \<section>: "a \<in> A" "j \<in> f \<^sup>\<inverse> A J"
+      then show "multA j a \<in> f \<^sup>\<inverse> A J" "multA a j \<in> f \<^sup>\<inverse> A J"
+        using JB.ideal fhom.map_closed fhom.multiplicative.commutes_with_composition by force+
+    qed
+  qed
+qed
 
 lemma preim_of_max_ideal_is_max:
   assumes "max_ideal B J addB multB zeroB oneB" 
