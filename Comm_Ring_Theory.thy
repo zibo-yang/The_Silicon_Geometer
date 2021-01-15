@@ -277,7 +277,7 @@ qed
 end (* comm_ring *)
 
 text \<open>def. 0.18, see remark 0.20\<close>
-locale prime_ideal = comm:comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
+locale pr_ideal = comm:comm_ring R "(+)" "(\<cdot>)" "\<zero>" "\<one>" + ideal I R "(+)" "(\<cdot>)" "\<zero>" "\<one>" 
   for R and I and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and 
 unit ("\<one>")
 (* 
@@ -319,7 +319,7 @@ proof
     using assms carrier_neq ideal(1) by fastforce
 qed
 
-end (* prime_ideal *)
+end (* pr_ideal *)
 
 
 section \<open>Spectrum of a ring\<close>
@@ -330,17 +330,17 @@ context comm_ring begin
 
 text \<open>Notation 1\<close>
 definition closed_subsets :: "'a set \<Rightarrow> ('a set) set" ("\<V> _" [900] 900)
-  where "\<V> \<aa> \<equiv> {I. prime_ideal R I (+) (\<cdot>) \<zero> \<one> \<and> \<aa> \<subseteq> I}"
+  where "\<V> \<aa> \<equiv> {I. pr_ideal R I (+) (\<cdot>) \<zero> \<one> \<and> \<aa> \<subseteq> I}"
 
 text \<open>Notation 2\<close>
 definition spectrum :: "('a set) set" ("Spec")
-  where "Spec \<equiv> {I. prime_ideal R I (+) (\<cdot>) \<zero> \<one>}"
+  where "Spec \<equiv> {I. pr_ideal R I (+) (\<cdot>) \<zero> \<one>}"
 
 text \<open>remark 0.11\<close>
 lemma closed_subsets_R [simp]:
   shows "\<V> R = {}"
   using ideal_implies_subset
-  by (auto simp: closed_subsets_def prime_ideal_axioms_def prime_ideal_def)
+  by (auto simp: closed_subsets_def pr_ideal_axioms_def pr_ideal_def)
 
 lemma closed_subsets_empty [simp]:
   shows "\<V> {} = Spec"
@@ -348,7 +348,7 @@ lemma closed_subsets_empty [simp]:
 
 lemma closed_subsets_ideal_aux:
   assumes \<aa>: "ideal \<aa> R (+) (\<cdot>) \<zero> \<one>" and \<bb>: "ideal \<bb> R (+) (\<cdot>) \<zero> \<one>"
-      and prime: "prime_ideal R x (+) (\<cdot>) \<zero> \<one>" and disj: "\<aa> \<subseteq> x \<or> \<bb> \<subseteq> x" 
+      and prime: "pr_ideal R x (+) (\<cdot>) \<zero> \<one>" and disj: "\<aa> \<subseteq> x \<or> \<bb> \<subseteq> x" 
   shows "ideal_gen_by_prod \<aa> \<bb> \<subseteq> x"
   unfolding ideal_gen_by_prod_def additive.subgroup_generated_def
 proof
@@ -360,23 +360,23 @@ proof
   proof induction
     case unit
     then show ?case
-      by (meson comm_ring.ideal_zero prime prime_ideal_def)
+      by (meson comm_ring.ideal_zero prime pr_ideal_def)
   next
     case (incl a)
     then have "a \<in> R"
       by blast
-    with incl prime_ideal.axioms [OF prime] show ?case
+    with incl pr_ideal.axioms [OF prime] show ?case
       by clarsimp (metis \<open>\<aa> \<subseteq> R\<close> \<open>\<bb> \<subseteq> R\<close> disj ideal.ideal subset_iff)
   next
     case (inv a)
     then have "a \<in> R"
       by blast
-    with inv prime_ideal.axioms [OF prime] show ?case
+    with inv pr_ideal.axioms [OF prime] show ?case
       by clarsimp (metis \<open>\<aa> \<subseteq> R\<close> \<open>\<bb> \<subseteq> R\<close> disj ideal.ideal ideal_inverse subset_iff)
   next
     case (mult a b)
     then show ?case
-      by (meson prime comm_ring.ideal_add prime_ideal_def)
+      by (meson prime comm_ring.ideal_add pr_ideal_def)
   qed
 qed
 
@@ -388,7 +388,7 @@ lemma closed_subsets_ideal_iff:
 proof
   show "?lhs \<subseteq> ?rhs"
     unfolding closed_subsets_def
-    by clarsimp (meson assms ideal_implies_subset ideal_mult_in_subgroup_generated in_mono prime_ideal.absorbent)
+    by clarsimp (meson assms ideal_implies_subset ideal_mult_in_subgroup_generated in_mono pr_ideal.absorbent)
   show "?rhs \<subseteq> ?lhs"
     unfolding closed_subsets_def
     using closed_subsets_ideal_aux [OF assms] by auto
@@ -431,7 +431,7 @@ lemma ex_15:
   proof -
   have "y \<in> U"
     if j: "j \<in> J" "y \<in> \<aa> j"
-      and "prime_ideal R U (+) (\<cdot>) \<zero> \<one>"
+      and "pr_ideal R U (+) (\<cdot>) \<zero> \<one>"
       and U: "{finsum I f |I f. I \<subseteq> J \<and> finite I \<and> (\<forall>i. i \<in> I \<longrightarrow> f i \<in> \<aa> i)} \<subseteq> U"
     for U j y
   proof -
@@ -444,11 +444,11 @@ lemma ex_15:
     then show ?thesis
       by (rule subsetD [OF U])
   qed
-  moreover have PI: "prime_ideal R x (+) (\<cdot>) \<zero> \<one>" if "\<forall>j\<in>J. prime_ideal R x (+) (\<cdot>) \<zero> \<one> \<and> \<aa> j \<subseteq> x" for x 
+  moreover have PI: "pr_ideal R x (+) (\<cdot>) \<zero> \<one>" if "\<forall>j\<in>J. pr_ideal R x (+) (\<cdot>) \<zero> \<one> \<and> \<aa> j \<subseteq> x" for x 
     using that assms(1) by fastforce
   moreover have "finsum I f \<in> U"
     if "finite I"
-      and "\<forall>j\<in>J. prime_ideal R U (+) (\<cdot>) \<zero> \<one> \<and> \<aa> j \<subseteq> U"
+      and "\<forall>j\<in>J. pr_ideal R U (+) (\<cdot>) \<zero> \<one> \<and> \<aa> j \<subseteq> U"
       and "I \<subseteq> J" "\<forall>i. i \<in> I \<longrightarrow> f i \<in> \<aa> i" for U I f
     using that
   proof (induction I rule: finite_induct)
@@ -460,7 +460,7 @@ lemma ex_15:
     then have "finsum (insert i I) f = f i + finsum I f"
       by (metis assms(2) finsum_insert ideal_implies_subset insertCI subset_iff)
     also have "... \<in> U"
-      using insert by (metis ideal_add insertCI prime_ideal.axioms(2) subset_eq)
+      using insert by (metis ideal_add insertCI pr_ideal.axioms(2) subset_eq)
     finally show ?case .
   qed
   ultimately show ?thesis
@@ -518,8 +518,8 @@ lemma belongs_standard_open_iff:
   shows "x \<notin> \<pp> \<longleftrightarrow> \<pp> \<in> \<D>(x)"
   using assms
   apply (auto simp: standard_open_def closed_subsets_def spectrum_def gen_ideal_def subset_iff)
-  apply (metis prime_ideal.absorbent)
-  by (meson ideal.ideal(1) prime_ideal_def)
+  apply (metis pr_ideal.absorbent)
+  by (meson ideal.ideal(1) pr_ideal_def)
 
 end (* comm_ring *)
 
@@ -1314,21 +1314,21 @@ notation cxt_quotient_ring.carrier_quotient_ring ("_ \<^sup>\<inverse> _\<^bsub>
 
 subsection \<open>Local Rings at Prime Ideals\<close>
 
-context prime_ideal 
+context pr_ideal 
 begin
 
-lemma submonoid_prime_ideal:
+lemma submonoid_pr_ideal:
   shows "submonoid (R \<setminus> I) R (\<cdot>) \<one>"
 proof
   show "a \<cdot> b \<in> R\<setminus>I" if "a \<in> R\<setminus>I" "b \<in> R\<setminus>I" for a b
     using that by (metis Diff_iff absorbent comm.multiplicative.composition_closed)
   show "\<one> \<in> R\<setminus>I"
-    using ideal.ideal(2) ideal_axioms prime_ideal.carrier_neq prime_ideal_axioms by fastforce
+    using ideal.ideal(2) ideal_axioms pr_ideal.carrier_neq pr_ideal_axioms by fastforce
 qed auto
 
 interpretation local:cxt_quotient_ring "(R \<setminus> I)" R "(+)" "(\<cdot>)" \<zero> \<one>
   apply intro_locales
-  by (meson submonoid_def submonoid_prime_ideal)
+  by (meson submonoid_def submonoid_pr_ideal)
 
 (* definition 0.28 *)
 definition carrier_local_ring_at:: "('a \<times> 'a) set set"
@@ -1379,11 +1379,11 @@ lemma eq_from_eq_frac:
   obtains h where "h \<in> (R \<setminus> I)" "h \<cdot> (s' \<cdot> r - s \<cdot> r') = \<zero>"
     using local.frac_eq_Ex[of r s r' s'] assms by blast
 
-end (* prime_ideal *)
+end (* pr_ideal *)
 
 abbreviation carrier_of_local_ring_at:: 
 "'a set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> ('a \<times> 'a) set set" ("_ \<^bsub>_ _ _ _\<^esub>")
-where "R \<^bsub>I add mult zero\<^esub> \<equiv> prime_ideal.carrier_local_ring_at R I add mult zero" 
+where "R \<^bsub>I add mult zero\<^esub> \<equiv> pr_ideal.carrier_local_ring_at R I add mult zero" 
 
 subsection \<open>Spectrum of a Ring\<close>
 
@@ -1394,10 +1394,10 @@ begin
 lemma spectrum_imp_cxt_quotient_ring:
   "\<pp> \<in> Spec \<Longrightarrow> cxt_quotient_ring (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
   apply (intro_locales)
-  using prime_ideal.submonoid_prime_ideal spectrum_def submonoid_def by fastforce
+  using pr_ideal.submonoid_pr_ideal spectrum_def submonoid_def by fastforce
 
 lemma spectrum_imp_pr:
-  "\<pp> \<in> Spec \<Longrightarrow> prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
+  "\<pp> \<in> Spec \<Longrightarrow> pr_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
   unfolding spectrum_def by auto
 
 lemma frac_in_carrier_local:
@@ -1406,7 +1406,7 @@ lemma frac_in_carrier_local:
 proof -
   interpret qr:cxt_quotient_ring "R \<setminus> \<pp>" R "(+)" "(\<cdot>)" \<zero> \<one>
     using spectrum_imp_cxt_quotient_ring[OF \<open>\<pp> \<in> Spec\<close>] .
-  interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+  interpret pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
     using spectrum_imp_pr[OF \<open>\<pp> \<in> Spec\<close>] .
   show ?thesis unfolding pi.carrier_local_ring_at_def
     using assms(2-) by (auto intro:qr.frac_non_empty)
@@ -1474,7 +1474,7 @@ lemma is_regular_add_sheaf_spec:
 proof -     
   have "add_sheaf_spec U s s' \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
   proof -
-    interpret pi: prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi: pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       using \<open>U \<subseteq> Spec\<close>[unfolded spectrum_def] \<open>\<pp> \<in> U\<close> by blast
     have "s \<pp> \<in> pi.carrier_local_ring_at" 
       "s' \<pp> \<in> pi.carrier_local_ring_at"
@@ -1510,7 +1510,7 @@ proof -
     proof -
       interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
         using \<open>U \<subseteq> Spec\<close> \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> cxt_quotient_ring_def local.comm_ring_axioms 
-          prime_ideal.submonoid_prime_ideal spectrum_def 
+          pr_ideal.submonoid_pr_ideal spectrum_def 
         by fastforce
       have "f1 \<notin> \<qq>" "s \<qq> = q.frac r1 f1"
         using q_V1 \<open>\<qq> \<in> V3\<close>  unfolding V3_def by auto
@@ -1545,7 +1545,7 @@ proof -
     interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
       apply (rule spectrum_imp_cxt_quotient_ring)
       using that \<open>U \<subseteq> Spec\<close> by auto
-    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       using that \<open>U \<subseteq> Spec\<close> by (auto intro:spectrum_imp_pr)
     have "qr.valid_frac (s \<pp>)" "qr.valid_frac (t \<pp>)" 
       using sec_has_right_codom[OF _ that] \<open>s \<in> \<O> U\<close> \<open>t \<in> \<O> U\<close>
@@ -1572,7 +1572,7 @@ lemma is_regular_mult_sheaf_spec:
 proof -     
   have "mult_sheaf_spec U s s' \<pp> \<in> R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" if "\<pp> \<in> U" for \<pp>
   proof -
-    interpret pi: prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi: pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       using \<open>U \<subseteq> Spec\<close>[unfolded spectrum_def] \<open>\<pp> \<in> U\<close> by blast
     have "s \<pp> \<in> pi.carrier_local_ring_at" 
       "s' \<pp> \<in> pi.carrier_local_ring_at"
@@ -1609,7 +1609,7 @@ proof -
     proof -
       interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
         using \<open>U \<subseteq> Spec\<close> \<open>V3 \<subseteq> U\<close> \<open>\<qq> \<in> V3\<close> cxt_quotient_ring_def local.comm_ring_axioms 
-          prime_ideal.submonoid_prime_ideal spectrum_def 
+          pr_ideal.submonoid_pr_ideal spectrum_def 
         by fastforce
       have "f1 \<notin> \<qq>" "s \<qq> = q.frac r1 f1"
         using q_V1 \<open>\<qq> \<in> V3\<close>  unfolding V3_def by auto
@@ -1644,7 +1644,7 @@ proof -
     interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
       apply (rule spectrum_imp_cxt_quotient_ring)
       using that \<open>U \<subseteq> Spec\<close> by auto
-    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       using that \<open>U \<subseteq> Spec\<close> by (auto intro:spectrum_imp_pr)
     have "qr.valid_frac (s \<pp>)" "qr.valid_frac (t \<pp>)" 
       using sec_has_right_codom[OF _ that] \<open>s \<in> \<O> U\<close> \<open>t \<in> \<O> U\<close>
@@ -1766,7 +1766,7 @@ proof -
     unfolding zero_sheaf_spec_def 
     using assms closed_subsets_def closed_subsets_empty cxt_quotient_ring.carrier_quotient_ring_iff 
       cxt_quotient_ring.valid_frac_zero cxt_quotient_ring_def local.comm_ring_axioms 
-      prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal subsetD that zariski_open_is_subset
+      pr_ideal.carrier_local_ring_at_def pr_ideal.submonoid_pr_ideal subsetD that zariski_open_is_subset
     by fastforce
   moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> is_locally_frac (zero_sheaf_spec U) V)"
     if "\<pp> \<in> U" for \<pp>    
@@ -1780,13 +1780,13 @@ proof -
     moreover have "f3 \<notin> \<qq>"
         "zero_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
         if "\<qq> \<in> V3" for \<qq>
-      subgoal using V3_def assms f3_def prime_ideal.submonoid_prime_ideal spectrum_def 
+      subgoal using V3_def assms f3_def pr_ideal.submonoid_pr_ideal spectrum_def 
           submonoid.sub_unit_closed that zariski_open_is_subset by fastforce  
       subgoal 
       proof -
         interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R 
           using V3_def assms cxt_quotient_ring_def local.comm_ring_axioms 
-            prime_ideal.submonoid_prime_ideal spectrum_def that zariski_open_is_subset by fastforce
+            pr_ideal.submonoid_pr_ideal spectrum_def that zariski_open_is_subset by fastforce
         show ?thesis unfolding zero_sheaf_spec_def 
           using V3_def f3_def q.zero_rel_def r3_def that by auto
       qed
@@ -1805,7 +1805,7 @@ proof -
     interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
       by (meson assms comm_ring.zariski_open_is_subset local.comm_ring_axioms 
           spectrum_imp_cxt_quotient_ring subsetD that)
-    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       by (meson assms spectrum_imp_pr subsetD that zariski_open_is_subset)
     show ?thesis unfolding zero_sheaf_spec_def pi.carrier_local_ring_at_def
       using that by auto
@@ -1830,7 +1830,7 @@ proof -
     by (smt assms closed_subsets_empty comm_ring.closed_subsets_def 
         cxt_quotient_ring.carrier_quotient_ring_iff cxt_quotient_ring.valid_frac_one 
         cxt_quotient_ring_def local.comm_ring_axioms mem_Collect_eq 
-        prime_ideal.carrier_local_ring_at_def prime_ideal.submonoid_prime_ideal 
+        pr_ideal.carrier_local_ring_at_def pr_ideal.submonoid_pr_ideal 
         restrict_apply subsetD that zariski_open_is_subset)
   moreover have "(\<exists>V\<subseteq>U. is_zariski_open V \<and> \<pp> \<in> V \<and> is_locally_frac (one_sheaf_spec U) V)"
     if "\<pp> \<in> U" for \<pp>    
@@ -1844,13 +1844,13 @@ proof -
     moreover have "f3 \<notin> \<qq>"
         "one_sheaf_spec U \<qq> = cxt_quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> r3 f3"
         if "\<qq> \<in> V3" for \<qq>
-      subgoal using V3_def assms f3_def prime_ideal.submonoid_prime_ideal spectrum_def 
+      subgoal using V3_def assms f3_def pr_ideal.submonoid_pr_ideal spectrum_def 
           submonoid.sub_unit_closed that zariski_open_is_subset by fastforce  
       subgoal 
       proof -
         interpret q:cxt_quotient_ring "R\<setminus>\<qq>" R 
           using V3_def assms cxt_quotient_ring_def local.comm_ring_axioms 
-            prime_ideal.submonoid_prime_ideal spectrum_def that zariski_open_is_subset by fastforce
+            pr_ideal.submonoid_pr_ideal spectrum_def that zariski_open_is_subset by fastforce
         show ?thesis unfolding one_sheaf_spec_def 
           using V3_def f3_def q.one_rel_def r3_def that by auto
       qed  
@@ -1869,7 +1869,7 @@ proof -
     interpret qr:cxt_quotient_ring "(R\<setminus>\<pp>)" R "(+)" "(\<cdot>)" \<zero> \<one>
       by (meson assms comm_ring.zariski_open_is_subset local.comm_ring_axioms 
           spectrum_imp_cxt_quotient_ring subsetD that)
-    interpret pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       by (meson assms spectrum_imp_pr subsetD that zariski_open_is_subset)
     show ?thesis unfolding one_sheaf_spec_def pi.carrier_local_ring_at_def
       using that by auto
@@ -2417,7 +2417,7 @@ Let A be a maximal ideal. Then R/A contains no proper ideals, by the corresponde
 Indeed, R/A is a field (assuming that R contains an identity). Hence, A is a prime ideal.
 https://math.stackexchange.com/questions/68489/why-are-maximal-ideals-prime *)
 lemma 
-  shows "prime_ideal R I (+) (\<cdot>) \<zero> \<one>" 
+  shows "pr_ideal R I (+) (\<cdot>) \<zero> \<one>" 
     sorry
 
 end (* locale max_ideal *)
@@ -2426,14 +2426,108 @@ subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
 locale local_ring = comm_ring +
-assumes is_unique: "\<lbrakk>I \<subseteq> R; J \<subseteq> R\<rbrakk> \<Longrightarrow> max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
+assumes is_unique: "\<And>I J. max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
 and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
+
+lemma im_of_ideal_is_ideal:
+  assumes I: "ideal I A addA multA zeroA oneA" 
+    and f: "ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "ideal (f ` I) B addB multB zeroB oneB"
+proof intro_locales
+  interpret IA: ideal I A addA multA zeroA oneA
+    using I by blast
+  interpret fh: ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB
+    using f by force
+  show "Group_Theory.monoid B addB zeroB"
+    by (meson abelian_group_def f commutative_monoid_def ring_def ring_homomorphism_def)
+  have fPi: "f \<in> A \<rightarrow>\<^sub>E B"
+    by blast
+  have fmonhom: "monoid_homomorphism_axioms f A addA zeroA addB zeroB"
+    by (meson fh.additive.monoid_homomorphism_axioms monoid_homomorphism_def)
+  have "I \<subseteq> A"
+    by simp
+  show "submonoid_axioms (f ` I) B addB zeroB"
+  proof
+    show "f ` I \<subseteq> B"
+      using \<open>I \<subseteq> A\<close> fPi by (metis IA.additive.sub PiE_iff image_subsetI)
+    have "zeroA \<in> I"
+      by simp
+    then show "zeroB \<in> f ` I"
+      using fh.additive.commutes_with_unit by blast
+    fix b1 b2
+    assume "b1 \<in> f ` I" and "b2 \<in> f ` I"
+    then obtain i1 i2 where "b1 = f i1" "b2 = f i2" "i1 \<in> I" "i2 \<in> I"
+      by blast
+    then have "addA i1 i2 \<in> I"
+      by simp
+    then show "addB b1 b2 \<in> f ` I"
+      by (metis IA.additive.sub \<open>b1 = f i1\<close> \<open>b2 = f i2\<close> \<open>i1 \<in> I\<close> \<open>i2 \<in> I\<close> fh.additive.commutes_with_composition image_iff)
+  qed
+  show "Group_Theory.monoid (f ` I) addB zeroB"
+    by (smt (verit, ccfv_threshold) Group_Theory.monoid_def \<open>Group_Theory.monoid B addB zeroB\<close> \<open>submonoid_axioms (f ` I) B addB zeroB\<close> submonoid_axioms_def subset_iff)
+  show "Group_Theory.group_axioms (f ` I) addB zeroB"
+  proof
+    fix b
+    assume "b \<in> f ` I"
+    then obtain i where "b = f i" "i \<in> I"
+      by blast
+    then obtain j where "addA i j = zeroA" "j \<in> I"
+      using IA.additive.sub.invertible_right_inverse by blast
+    then show "monoid.invertible (f ` I) addB zeroB b"
+      by (metis IA.additive.commutative IA.additive.sub \<open>Group_Theory.monoid (f ` I) addB zeroB\<close> \<open>b = f i\<close> \<open>i \<in> I\<close> fh.additive.commutes_with_composition fh.additive.commutes_with_unit image_eqI monoid.invertibleI)
+  qed
+  show "Group_Theory.group_axioms B addB zeroB"
+    by (meson Group_Theory.group_def fh.target.additive.group_axioms)
+  show "commutative_monoid_axioms B addB"
+    using commutative_monoid_axioms_def fh.target.additive.commutative by blast
+  show "Group_Theory.monoid B multB oneB"
+    using fh.target.multiplicative.monoid_axioms by blast
+  show "ring_axioms B addB multB"
+    by (meson fh.target.ring_axioms ring_def)
+  show "ideal_axioms (f ` I) B multB"
+  proof
+    fix b fi
+    assume "b \<in> B" and "fi \<in> f ` I"
+    then obtain i where i: "fi = f i" "i \<in> I"
+      by blast
+    obtain a where a: "a \<in> A" "f a = b"
+      sorry
+    then show "multB b fi \<in> f ` I"
+      by (metis IA.additive.submonoid_axioms IA.ideal(1) \<open>fi = f i\<close> \<open>i \<in> I\<close> fh.multiplicative.commutes_with_composition image_iff submonoid.sub)
+    then show "multB fi b \<in> f ` I"
+      by (metis IA.additive.sub IA.ideal(2) a i fh.multiplicative.commutes_with_composition imageI)
+  qed
+qed
+
+
+lemma im_of_max_ideal_is_max:
+  assumes "max_ideal A I addA multA zeroA oneA" 
+    and "ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "max_ideal B (f ` I) addB multB zeroB oneB"
+  sorry
+
+lemma preim_of_ideal_is_ideal:
+  assumes "ideal J B addb multB zeroB oneB" 
+    and "ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "ideal (f\<^sup>\<inverse> A J) A addA multA zeroA oneA"
+  sorry
+
+lemma preim_of_max_ideal_is_max:
+  assumes "max_ideal B J addB multB zeroB oneB" 
+    and "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "max_ideal A (f\<^sup>\<inverse> A J) addA multA zeroA oneA"
+  sorry
+
+lemma ring_iso_is_epi:
+  assumes "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  sorry
 
 lemma isomorphic_to_local_is_local:
   assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB" 
     and iso: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
   shows "local_ring A addA multA zeroA oneA"
-  proof intro_locales
+proof intro_locales
   show "Group_Theory.monoid A addA zeroA"
     by (meson abelian_group.axioms(2) assms(1) commutative_monoid_def ring_def)
   show "Group_Theory.group_axioms A addA zeroA"
@@ -2444,15 +2538,15 @@ lemma isomorphic_to_local_is_local:
     by (meson assms(1) ring_def)
   show "ring_axioms A addA multA"
     by (meson assms(1) ring_def)
-  show "comm_ring_axioms A multA"
+  have hom: "monoid_homomorphism f A multA oneA B multB oneB"
+    by (meson iso ring_homomorphism_def ring_isomorphism.axioms(1))
+  have "bij_betw f A B"
+    using iso map.graph
+    by (simp add: bijective.bijective ring_isomorphism_def bijective_map_def)
+  show "comm_ring_axioms A multA" 
   proof (clarsimp simp: comm_ring_def comm_ring_axioms_def)
     fix a b
     assume "a \<in> A" and "b \<in> A"
-    have hom: "monoid_homomorphism f A multA oneA B multB oneB"
-      by (meson iso ring_homomorphism_def ring_isomorphism.axioms(1))
-    have "bij_betw f A B"
-      using iso map.graph
-      by (simp add: bijective.bijective ring_isomorphism_def bijective_map_def)
     have "f a \<in> B"
       using \<open>a \<in> A\<close> \<open>bij_betw f A B\<close> bij_betwE by blast
     have "f b \<in> B"
@@ -2470,18 +2564,26 @@ lemma isomorphic_to_local_is_local:
   show "local_ring_axioms A addA multA zeroA oneA"
   proof unfold_locales
     fix I J
-    assume "I \<subseteq> A"
-        and "J \<subseteq> A"
-        and "max_ideal A I addA multA zeroA oneA"
-        and "max_ideal A J addA multA zeroA oneA"
-    show "(I::'a set) = J" sorry
+    assume I: "max_ideal A I addA multA zeroA oneA" and J: "max_ideal A J addA multA zeroA oneA" 
+    show "(I::'a set) = J"
+    proof-
+      have "max_ideal B (f ` I) addB multB zeroB oneB"
+        by (meson I im_of_max_ideal_is_max iso ring_iso_is_epi) 
+      moreover have "max_ideal B (f ` J) addB multB zeroB oneB"
+        by (meson J im_of_max_ideal_is_max iso ring_iso_is_epi) 
+      ultimately have "f ` I = f ` J"
+        by (meson local_ring.is_unique lring)
+      thus ?thesis 
+        using bij_betw_imp_inj_on [OF \<open>bij_betw f A B\<close>]
+        by (meson I J comm_ring.ideal_implies_subset inj_on_image_eq_iff max_ideal.axioms)
+    qed
   next
     show "\<exists>\<ww>. max_ideal A \<ww> addA multA zeroA oneA"
-      sorry
+      by (meson iso local_ring.has_max_ideal lring preim_of_max_ideal_is_max)
   qed
 qed
 
-context prime_ideal
+context pr_ideal
 begin
 
 (* ex. 0.40 *)
@@ -2490,7 +2592,7 @@ lemma local_ring_at_is_local:
 (zero_local_ring_at) (one_local_ring_at)"
   sorry
 
-end (* prime_ideal*)
+end (* pr_ideal*)
 
 (* def. 0.41 *)
 locale local_ring_morphism = 
@@ -2510,7 +2612,7 @@ locale cxt_key_map = comm_ring +
   fixes \<pp>:: "'a set" assumes is_prime: "\<pp> \<in> Spec"
 begin
 
-interpretation pi:prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+interpretation pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
   by (simp add: is_prime spectrum_imp_pr)
 
 interpretation pr:presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms
@@ -2821,46 +2923,6 @@ interpretation pr: presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spe
             \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
   by (simp add: comm_ring.sheaf_spec_is_presheaf local.comm_ring_axioms)
 
-interpretation pi: prime_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
-proof intro_locales
-  show "submonoid_axioms \<pp> R (+) \<zero>"
-  proof 
-    show "\<pp> \<subseteq> R"
-      sorry
-    show "a + b \<in> \<pp>"
-      if "a \<in> \<pp>" "b \<in> \<pp>" for a b
-      using that sorry
-    show "\<zero> \<in> \<pp>"
-      sorry
-  qed
-  then show "Group_Theory.monoid \<pp> (+) \<zero>"
-    unfolding submonoid_axioms_def Group_Theory.monoid_def
-    by (meson additive.associative additive.monoid_axioms monoid.left_unit monoid.right_unit subset_eq)
-  show "Group_Theory.group_axioms \<pp> (+) \<zero>"
-  proof unfold_locales
-    show "monoid.invertible \<pp> (+) \<zero> u"
-      if "u \<in> \<pp>" for u
-      using that sorry
-  qed
-  show "ideal_axioms \<pp> R (\<cdot>)"
-  proof 
-    fix a b
-    assume "a \<in> R" "b \<in> \<pp>" 
-    then show "a \<cdot> b \<in> \<pp>"
-      sorry
-    with \<open>submonoid_axioms \<pp> R (+) \<zero>\<close> show "b \<cdot> a \<in> \<pp>"
-      unfolding submonoid_axioms_def by (metis \<open>a \<in> R\<close> \<open>b \<in> \<pp>\<close>  commutative_mult in_mono)
-  qed
-  show "prime_ideal_axioms R \<pp> (\<cdot>)"
-  proof 
-    show "\<pp> \<noteq> R"
-      sorry
-    show "x \<in> \<pp> \<or> y \<in> \<pp>"
-      if "x \<in> R" "y \<in> R" "x \<cdot> y \<in> \<pp>" for x y
-      using that sorry
-  qed
-qed
-
 (* ex. 0.43 *)
 lemma spec_is_locally_ringed_space:
   shows "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
@@ -2880,19 +2942,29 @@ local_ring (pr.stalk_at x) (pr.add_stalk_at x) (pr.mult_stalk_at x) (pr.zero_sta
   next
     show "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
            is_zariski_open U \<Longrightarrow> 
-local_ring (pi.carrier_local_ring_at \<pp>) (pi.add_local_ring_at \<pp>) (pi.mult_local_ring_at \<pp>) (pi.zero_local_ring_at \<pp>) (pi.one_local_ring_at \<pp>)"
+local_ring 
+(pr_ideal.carrier_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+(pr_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+(pr_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
+(pr_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) 
+(pr_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
     proof-
-      fix \<pp> U assume "\<pp> \<in> U" "is_zariski_open U" then have "prime_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
+      fix \<pp> U assume "\<pp> \<in> U" "is_zariski_open U" then have "pr_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
         using spectrum_def zariski_open_is_subset by auto
-      thus "?thesis \<pp> U" by (simp add: pi.local_ring_at_is_local)
+      thus "?thesis \<pp> U" by (simp add: pr_ideal.local_ring_at_is_local)
     qed
   next
     show "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
            is_zariski_open U \<Longrightarrow>
            \<exists>f. ring_isomorphism f
 (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> U) (pr.one_stalk_at \<pp> U)
-(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at \<pp>) (pi.mult_local_ring_at \<pp>) (pi.zero_local_ring_at \<pp>) (pi.one_local_ring_at \<pp>)" 
-      using pi.carrier_neq by auto
+(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pr_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (pr_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
+    proof-
+      fix \<pp> U assume "\<pp> \<in> U" "is_zariski_open U" then have "pr_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
+        using spectrum_def zariski_open_is_subset by auto
+      thus "?thesis \<pp> U"
+        by (simp add: cxt_key_map.stalk_at_prime_is_iso_to_local_ring_at_prime \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> cxt_key_map_axioms.intro cxt_key_map_def local.comm_ring_axioms spectrum_def)
+    qed
   qed
 qed
 
