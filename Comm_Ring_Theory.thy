@@ -2431,15 +2431,15 @@ and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<on
 
 lemma im_of_ideal_is_ideal:
   assumes I: "ideal I A addA multA zeroA oneA" 
-    and f: "ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+    and f: "ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
   shows "ideal (f ` I) B addB multB zeroB oneB"
 proof intro_locales
   interpret IA: ideal I A addA multA zeroA oneA
     using I by blast
-  interpret fh: ring_homomorphism f A addA multA zeroA oneA B addB multB zeroB oneB
+  interpret fh: ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB
     using f by force
   show "Group_Theory.monoid B addB zeroB"
-    by (meson abelian_group_def f commutative_monoid_def ring_def ring_homomorphism_def)
+    using fh.target.additive.monoid_axioms by blast
   have fPi: "f \<in> A \<rightarrow>\<^sub>E B"
     by blast
   have fmonhom: "monoid_homomorphism_axioms f A addA zeroA addB zeroB"
@@ -2463,8 +2463,8 @@ proof intro_locales
     then show "addB b1 b2 \<in> f ` I"
       by (metis IA.additive.sub \<open>b1 = f i1\<close> \<open>b2 = f i2\<close> \<open>i1 \<in> I\<close> \<open>i2 \<in> I\<close> fh.additive.commutes_with_composition image_iff)
   qed
-  show "Group_Theory.monoid (f ` I) addB zeroB"
-    by (smt (verit, ccfv_threshold) Group_Theory.monoid_def \<open>Group_Theory.monoid B addB zeroB\<close> \<open>submonoid_axioms (f ` I) B addB zeroB\<close> submonoid_axioms_def subset_iff)
+  then show "Group_Theory.monoid (f ` I) addB zeroB"
+    by (smt (verit, ccfv_threshold) Group_Theory.monoid_def fh.target.additive.monoid_axioms submonoid.intro submonoid.sub submonoid_axioms_def)
   show "Group_Theory.group_axioms (f ` I) addB zeroB"
   proof
     fix b
@@ -2491,7 +2491,7 @@ proof intro_locales
     then obtain i where i: "fi = f i" "i \<in> I"
       by blast
     obtain a where a: "a \<in> A" "f a = b"
-      sorry
+      using \<open>b \<in> B\<close> fh.surjective by blast
     then show "multB b fi \<in> f ` I"
       by (metis IA.additive.submonoid_axioms IA.ideal(1) \<open>fi = f i\<close> \<open>i \<in> I\<close> fh.multiplicative.commutes_with_composition image_iff submonoid.sub)
     then show "multB fi b \<in> f ` I"
