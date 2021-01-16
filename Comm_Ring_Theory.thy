@@ -2495,7 +2495,6 @@ proof -
   qed
 qed
 
-text \<open>quite a few overlaps with the one above\<close>
 lemma im_of_max_ideal_is_max:
   assumes I: "max_ideal A I addA multA zeroA oneA" 
     and f: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
@@ -2505,6 +2504,9 @@ proof -
     using I by blast
   interpret fiso: ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB
     using f by force
+  interpret fIB: ideal "f ` I" B addB multB zeroB oneB
+    using maxI.ideal_axioms fiso.ring_homomorphism_axioms
+    by (meson fiso.ring_epimorphism_axioms im_of_ideal_is_ideal) 
   show ?thesis
   proof intro_locales
     show "comm_ring_axioms B multB"
@@ -2518,54 +2520,6 @@ proof -
       then show "multB b1 b2 = multB b2 b1"
         by (metis a1 a2 fiso.multiplicative.commutes_with_composition)
     qed
-    show sma: "submonoid_axioms (f ` I) B addB zeroB"
-    proof
-      show "f ` I \<subseteq> B"
-        by blast
-    next
-      fix b1 b2
-      assume "b1 \<in> f ` I" "b2 \<in> f ` I"
-      then show "addB b1 b2 \<in> f ` I"
-        unfolding image_iff
-        by (metis fiso.additive.commutes_with_composition maxI.additive.sub maxI.additive.sub_composition_closed)
-    next
-      show "zeroB \<in> f ` I"
-        using fiso.additive.commutes_with_unit by blast
-    qed
-    show fImon: "Group_Theory.monoid (f ` I) addB zeroB"
-    proof
-      fix a b
-      assume "a \<in> f ` I" "b \<in> f ` I"
-      then show "addB a b \<in> f ` I"
-        by (meson sma submonoid_axioms_def)
-    next
-      show "zeroB \<in> f ` I"
-        using fiso.additive.commutes_with_unit by blast
-    qed auto
-    show "Group_Theory.group_axioms (f ` I) addB zeroB"
-    proof
-      fix b
-      assume "b \<in> f ` I"
-      then obtain i where i: "b = f i" "i \<in> I"
-        by blast
-      then obtain j where "addA i j = zeroA" "j \<in> I"
-        by (meson maxI.additive.sub.invertible maxI.additive.sub.invertibleE)
-      then show "monoid.invertible (f ` I) addB zeroB b"
-        by (metis fImon i fiso.additive.commutes_with_composition fiso.additive.commutes_with_unit maxI.additive.commutative maxI.additive.sub monoid.invertibleI image_iff)
-    qed
-    show "ideal_axioms (f ` I) B multB"
-    proof
-      fix b fi
-      assume "b \<in> B" and "fi \<in> f ` I"
-      then obtain i where i: "fi = f i" "i \<in> I"
-        by blast
-      obtain a where a: "a \<in> A" "f a = b"
-        using \<open>b \<in> B\<close> fiso.surjective by blast
-      then show "multB b fi \<in> f ` I"
-        by (metis i fiso.multiplicative.commutes_with_composition image_eqI maxI.additive.sub maxI.ideal(1))
-      then show "multB fi b \<in> f ` I"
-        by (metis a i fiso.multiplicative.commutes_with_composition maxI.additive.sub maxI.commutative_mult)
-    qed
     show "max_ideal_axioms B (f ` I) addB multB zeroB oneB"
     proof
       obtain i where "i \<in> A" "i \<notin> I"
@@ -2578,7 +2532,7 @@ proof -
     next
       fix J 
       assume "ideal J B addB multB zeroB oneB" and "J \<noteq> B" and fim: "f ` I \<subseteq> J"
-      then interpret IJ: ideal J B addB multB zeroB oneB
+      then interpret JB: ideal J B addB multB zeroB oneB
         by blast
       have \<section>: "ideal (f \<^sup>\<inverse> A J) A addA multA zeroA oneA"
       proof intro_locales
@@ -2587,7 +2541,7 @@ proof -
           show "addA a b \<in> f \<^sup>\<inverse> A J" if "a \<in> f \<^sup>\<inverse> A J" and "b \<in> f \<^sup>\<inverse> A J" for a b
             using that
             apply clarsimp
-            using IJ.additive.sub_composition_closed fiso.additive.commutes_with_composition by presburger
+            using JB.additive.sub_composition_closed fiso.additive.commutes_with_composition by presburger
         qed blast+
         show "Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA"
           by (smt (verit, ccfv_threshold) Group_Theory.monoid.intro IntD2 sma maxI.additive.associative maxI.additive.left_unit maxI.additive.right_unit submonoid_axioms_def)
@@ -2597,24 +2551,24 @@ proof -
           assume "x \<in> f \<^sup>\<inverse> A J"
           then show "monoid.invertible (f \<^sup>\<inverse> A J) addA zeroA x"
             apply clarify
-            by (smt (verit, best) IJ.additive.sub.invertible IJ.additive.submonoid_inverse_closed IntI \<open>Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA\<close> fiso.additive.invertible_commutes_with_inverse maxI.additive.inverse_equality maxI.additive.invertible maxI.additive.invertibleE monoid.invertible_def vimageI)
+            by (smt (verit, best) JB.additive.sub.invertible JB.additive.submonoid_inverse_closed IntI \<open>Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA\<close> fiso.additive.invertible_commutes_with_inverse maxI.additive.inverse_equality maxI.additive.invertible maxI.additive.invertibleE monoid.invertible_def vimageI)
         qed
         show "ideal_axioms (f \<^sup>\<inverse> A J) A multA"
         proof
           fix a j
           assume \<section>: "a \<in> A" "j \<in> f \<^sup>\<inverse> A J"
           then show "multA a j \<in> f \<^sup>\<inverse> A J"
-            using IJ.ideal(1) fiso.map_closed fiso.multiplicative.commutes_with_composition
+            using JB.ideal(1) fiso.map_closed fiso.multiplicative.commutes_with_composition
             by simp
           then show "multA j a \<in> f \<^sup>\<inverse> A J"
             by (metis Int_iff \<section> maxI.commutative_mult)
         qed
       qed
       have "I = f \<^sup>\<inverse> A J"
-        using maxI.psubset_ring IJ.additive.sub \<open>J \<noteq> B\<close> fiso.surjective 
-        using fim maxI.is_max [OF \<section>] by blast
+        by (metis "\<section>" JB.additive.sub \<open>J \<noteq> B\<close> fim fiso.surjective image_subset_iff_subset_vimage
+            le_inf_iff maxI.is_max maxI.psubset_ring psubsetE subsetI subset_antisym)
       then show "f ` I = J"
-        using IJ.additive.sub fiso.surjective 
+        using JB.additive.sub fiso.surjective 
         by blast 
     qed
   qed
@@ -2637,7 +2591,7 @@ proof -
       fix a1 a2
       assume "a1 \<in> f \<^sup>\<inverse> A J" and "a2 \<in> f \<^sup>\<inverse> A J"
       then show "addA a1 a2 \<in> f \<^sup>\<inverse> A J"
-        apply (simp add: )
+        apply simp
         using JB.additive.sub_composition_closed fhom.additive.commutes_with_composition by presburger
     qed blast+
     then show grp_fAJ: "Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA"
@@ -2666,10 +2620,91 @@ proof -
 qed
 
 lemma preim_of_max_ideal_is_max:
-  assumes "max_ideal B J addB multB zeroB oneB" 
-    and "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  fixes f:: "'a \<Rightarrow> 'b"
+  assumes J: "max_ideal B J addB multB zeroB oneB" 
+    and f: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
   shows "max_ideal A (f\<^sup>\<inverse> A J) addA multA zeroA oneA"
-  sorry
+proof -
+  interpret maxJ: max_ideal B J addB multB zeroB oneB
+    using J by blast
+  interpret fiso: ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB
+    using f by force
+  interpret fAJ: ideal "f\<^sup>\<inverse> A J" A addA multA zeroA oneA
+    using maxJ.ideal_axioms fiso.ring_homomorphism_axioms by (blast intro: preim_of_ideal_is_ideal)
+  show ?thesis
+  proof intro_locales
+    show "comm_ring_axioms A multA"
+    proof
+      fix a b
+      assume "a \<in> A" and "b \<in> A"
+      then have "multB (f a) (f b) = multB (f b) (f a)"
+        using fiso.map_closed maxJ.commutative_mult by presburger
+      then show "multA a b = multA b a"
+        by (metis bij_betw_iff_bijections \<open>a \<in> A\<close> \<open>b \<in> A\<close> fiso.bijective fiso.multiplicative.commutes_with_composition fiso.source.multiplicative.composition_closed)
+    qed
+    show "max_ideal_axioms A (f \<^sup>\<inverse> A J) addA multA zeroA oneA"
+    proof
+      show "f \<^sup>\<inverse> A J \<noteq> A"
+        using fiso.surjective maxJ.additive.sub maxJ.neq_ring by blast
+      fix I
+      assume "ideal I A addA multA zeroA oneA"
+        and "I \<noteq> A" and "f \<^sup>\<inverse> A J \<subseteq> I"
+      then interpret IA: ideal I A addA multA zeroA oneA
+        by blast
+      have mon_fI: "Group_Theory.monoid (f ` I) addB zeroB"
+      proof
+        fix a b
+        assume "a \<in> f ` I" "b \<in> f ` I"
+        then show "addB a b \<in> f ` I"
+          unfolding image_iff
+          by (metis IA.additive.sub IA.additive.sub_composition_closed fiso.additive.commutes_with_composition)
+      next
+        show "zeroB \<in> f ` I"
+          using fiso.additive.commutes_with_unit by blast
+      qed auto
+      have ideal_fI: "ideal (f ` I) B addB multB zeroB oneB"
+      proof
+        show "f ` I \<subseteq> B"
+          by blast
+        show "zeroB \<in> f ` I"
+          using fiso.additive.commutes_with_unit by blast
+      next
+        fix a b
+        assume "a \<in> f ` I" and "b \<in> f ` I"
+        then show "addB a b \<in> f ` I"
+          unfolding image_iff
+          by (metis IA.additive.sub IA.additive.sub_composition_closed fiso.additive.commutes_with_composition)
+      next
+        fix b
+        assume "b \<in> f ` I"
+        then obtain i where i: "b = f i" "i \<in> I"
+          by blast
+        then obtain j where "addA i j = zeroA" "j \<in> I"
+          by (meson IA.additive.sub.invertible IA.additive.sub.invertibleE)
+        then have "addB b (f j) = zeroB"
+          by (metis IA.additive.sub i fiso.additive.commutes_with_composition fiso.additive.commutes_with_unit) 
+        then show "monoid.invertible (f ` I) addB zeroB b"
+          by (metis IA.additive.sub i \<open>j \<in> I\<close> fiso.map_closed imageI maxJ.additive.commutative mon_fI monoid.invertibleI)
+      next
+        fix a b
+        assume "a \<in> B" and "b \<in> f ` I"
+        with IA.ideal show "multB a b \<in> f ` I" "multB b a \<in> f ` I"
+          by (smt (verit, best) IA.additive.sub fiso.multiplicative.commutes_with_composition fiso.surjective image_iff)+
+      qed blast+
+      have "J = f ` I"
+      proof (rule maxJ.is_max [OF ideal_fI])
+        show "f ` I \<noteq> B"
+          by (metis IA.additive.sub \<open>I \<noteq> A\<close> fiso.injective fiso.surjective inj_on_image_eq_iff subsetI)
+        show "J \<subseteq> f ` I"
+          unfolding image_def 
+          apply clarify
+          by (smt (verit, ccfv_threshold) Int_iff \<open>f \<^sup>\<inverse> A J \<subseteq> I\<close> fiso.surjective imageE maxJ.additive.sub subset_eq vimageI)
+      qed
+      then show "f \<^sup>\<inverse> A J = I"
+        using \<open>f \<^sup>\<inverse> A J \<subseteq> I\<close> by blast
+    qed
+  qed
+qed
 
 lemma ring_iso_is_epi:
   assumes "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
@@ -2697,7 +2732,7 @@ proof intro_locales
     using iso map.graph
     by (simp add: bijective.bijective ring_isomorphism_def bijective_map_def)
   show "comm_ring_axioms A multA" 
-  proof (clarsimp simp: comm_ring_def comm_ring_axioms_def)
+  proof 
     fix a b
     assume "a \<in> A" and "b \<in> A"
     have "f a \<in> B"
