@@ -654,12 +654,15 @@ locale morphism_sheaves_of_rings = morphism_presheaves_of_rings
 locale iso_sheaves_of_rings = iso_presheaves_of_rings 
 
 (* ex. 0.21 *)
-locale cxt_ind_sheaf = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str + 
-ind_topology X is_open U
+locale cxt_ind_sheaf = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str
 for X and is_open and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") 
-and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") and U +
+and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") +
+fixes U:: "'a set"
   assumes is_open_subset: "is_open U"
 begin
+
+interpretation it: ind_topology X is_open U
+  by (simp add: ind_topology.intro ind_topology_axioms.intro is_open_subset open_imp_subset topological_space_axioms)
 
 definition ind_sheaf:: "'a set \<Rightarrow> 'b set"
   where "ind_sheaf V \<equiv> \<FF> (U \<inter> V)"
@@ -680,25 +683,25 @@ definition ind_one_str:: "'a set \<Rightarrow> 'b"
   where "ind_one_str V \<equiv> \<one>\<^bsub>(U\<inter>V)\<^esub>"
 
 lemma ind_is_open_imp_ring: 
-  "\<And>U. ind_is_open U
+  "\<And>U. it.ind_is_open U
    \<Longrightarrow> ring (ind_sheaf U) (ind_add_str U) (ind_mult_str U) (ind_zero_str U) (ind_one_str U)"
-    using ind_add_str_def ind_is_open_def ind_mult_str_def ind_one_str_def ind_sheaf_def ind_zero_str_def is_open_subset is_ring_from_is_homomorphism is_subset open_inter by force
+    using ind_add_str_def it.ind_is_open_def ind_mult_str_def ind_one_str_def ind_sheaf_def ind_zero_str_def is_open_subset is_ring_from_is_homomorphism it.is_subset open_inter by force
 
 lemma ind_sheaf_is_presheaf:
-  shows "presheaf_of_rings U (ind_is_open) ind_sheaf ind_ring_morphisms b
+  shows "presheaf_of_rings U (it.ind_is_open) ind_sheaf ind_ring_morphisms b
 ind_add_str ind_mult_str ind_zero_str ind_one_str"
 proof-
-  have "topological_space U ind_is_open" by (simp add: ind_space_is_top_space)
+  have "topological_space U it.ind_is_open" by (simp add: it.ind_space_is_top_space)
   moreover have "ring_homomorphism (ind_ring_morphisms W V) 
                      (ind_sheaf W) (ind_add_str W) (ind_mult_str W) (ind_zero_str W) (ind_one_str W) 
                      (ind_sheaf V) (ind_add_str V) (ind_mult_str V) (ind_zero_str V) (ind_one_str V)"
-    if "ind_is_open W" "ind_is_open V" "V \<subseteq> W" for W V
+    if "it.ind_is_open W" "it.ind_is_open V" "V \<subseteq> W" for W V
   proof (intro ring_homomorphism.intro ind_is_open_imp_ring)
     show "Set_Theory.map (ind_ring_morphisms W V) (ind_sheaf W) (ind_sheaf V)"
-      by (metis that ind_is_open_def ind_ring_morphisms_def ind_sheaf_def inf.left_idem is_open_subset is_ring_morphism open_inter ring_homomorphism_def)
+      by (metis that it.ind_is_open_def ind_ring_morphisms_def ind_sheaf_def inf.left_idem is_open_subset is_ring_morphism open_inter ring_homomorphism_def)
     from that
     obtain o: "is_open (U \<inter> V)" "is_open (U \<inter> W)" "U \<inter> V \<subseteq> U \<inter> W"
-      by (metis (no_types) ind_is_open_def inf.absorb_iff2 is_open_subset open_inter)  
+      by (metis (no_types) it.ind_is_open_def inf.absorb_iff2 is_open_subset open_inter)  
     then show "group_homomorphism (ind_ring_morphisms W V) (ind_sheaf W) (ind_add_str W) (ind_zero_str W) (ind_sheaf V) (ind_add_str V) (ind_zero_str V)"
       by (metis cxt_ind_sheaf.ind_add_str_def cxt_ind_sheaf_axioms ind_ring_morphisms_def ind_sheaf_def ind_zero_str_def is_ring_morphism ring_homomorphism.axioms(4))
     show "monoid_homomorphism (ind_ring_morphisms W V) (ind_sheaf W) (ind_mult_str W) (ind_one_str W) (ind_sheaf V) (ind_mult_str V) (ind_one_str V)"
@@ -706,54 +709,54 @@ proof-
   qed (use that in auto)
   moreover have "ind_sheaf {} = {b}"
     by (simp add: ind_sheaf_def)     
-  moreover have "\<And>U. ind_is_open U \<Longrightarrow> (\<And>x. x \<in> (ind_sheaf U) \<Longrightarrow> ind_ring_morphisms U U x = x)"
-    by (simp add: Int_absorb1 ind_is_open_def ind_ring_morphisms_def ind_sheaf_def is_open_from_ind_is_open is_open_subset)
-  moreover have "\<And>U V W. ind_is_open U \<Longrightarrow> ind_is_open V \<Longrightarrow> ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V 
+  moreover have "\<And>U. it.ind_is_open U \<Longrightarrow> (\<And>x. x \<in> (ind_sheaf U) \<Longrightarrow> ind_ring_morphisms U U x = x)"
+    by (simp add: Int_absorb1 it.ind_is_open_def ind_ring_morphisms_def ind_sheaf_def it.is_open_from_ind_is_open is_open_subset)
+  moreover have "\<And>U V W. it.ind_is_open U \<Longrightarrow> it.ind_is_open V \<Longrightarrow> it.ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V 
              \<Longrightarrow> (\<And>x. x \<in> (ind_sheaf U) \<Longrightarrow> ind_ring_morphisms U W x = (ind_ring_morphisms V W \<circ> ind_ring_morphisms U V) x)"
-    by (metis Int_absorb1 assoc_comp ind_is_open_def ind_ring_morphisms_def ind_sheaf_def is_open_from_ind_is_open is_open_subset)
+    by (metis Int_absorb1 assoc_comp it.ind_is_open_def ind_ring_morphisms_def ind_sheaf_def it.is_open_from_ind_is_open is_open_subset)
   ultimately show ?thesis 
     unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def by blast
 qed
 
 lemma ind_sheaf_is_sheaf:
-  shows "sheaf_of_rings U ind_is_open ind_sheaf ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str ind_one_str"
+  shows "sheaf_of_rings U it.ind_is_open ind_sheaf ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str ind_one_str"
 proof (intro sheaf_of_rings.intro sheaf_of_rings_axioms.intro)
-  show "presheaf_of_rings U ind_is_open ind_sheaf ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str ind_one_str"
+  show "presheaf_of_rings U it.ind_is_open ind_sheaf ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str ind_one_str"
     using ind_sheaf_is_presheaf by blast
 next
   fix V I W s
-  assume oc: "open_cover_of_open_subset U ind_is_open V I W"
+  assume oc: "open_cover_of_open_subset U it.ind_is_open V I W"
     and WV: "\<And>i. i \<in> I \<Longrightarrow> W i \<subseteq> V"
     and s: "s \<in> ind_sheaf V"
     and eq: "\<And>i. i \<in> I \<Longrightarrow> ind_ring_morphisms V (W i) s = ind_zero_str (W i)"
-  have "ind_is_open V"
+  have "it.ind_is_open V"
     using oc open_cover_of_open_subset.is_open_subset by blast
   then have "s \<in> \<FF> V"
-    by (metis cxt_ind_sheaf.ind_sheaf_def cxt_ind_sheaf_axioms ind_is_open_def inf.absorb2 s)
+    by (metis cxt_ind_sheaf.ind_sheaf_def cxt_ind_sheaf_axioms it.ind_is_open_def inf.absorb2 s)
   then have "s = \<zero>\<^bsub>V\<^esub>"
-    by (metis Int_absorb1 Int_subset_iff WV cxt_ind_sheaf.ind_zero_str_def cxt_ind_sheaf_axioms eq ind_is_open_def ind_ring_morphisms_def is_open_subset locality oc open_cover_from_ind_open_cover open_cover_of_open_subset.is_open_subset) 
+    by (metis Int_absorb1 Int_subset_iff WV cxt_ind_sheaf.ind_zero_str_def cxt_ind_sheaf_axioms eq it.ind_is_open_def ind_ring_morphisms_def is_open_subset locality oc it.open_cover_from_ind_open_cover open_cover_of_open_subset.is_open_subset) 
   then show "s = ind_zero_str V"
-    by (metis Int_absorb1 ind_is_open_def ind_zero_str_def oc open_cover_of_open_subset.is_open_subset)
+    by (metis Int_absorb1 it.ind_is_open_def ind_zero_str_def oc open_cover_of_open_subset.is_open_subset)
 next
   fix V I W s
-  assume oc: "open_cover_of_open_subset U ind_is_open V I W"
+  assume oc: "open_cover_of_open_subset U it.ind_is_open V I W"
     and WV: "\<forall>i. i \<in> I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> ind_sheaf (W i)"
     and eq: "\<And>i j. \<lbrakk>i \<in> I; j \<in> I\<rbrakk> \<Longrightarrow> ind_ring_morphisms (W i) (W i \<inter> W j) (s i) = ind_ring_morphisms (W j) (W i \<inter> W j) (s j)"
   have "is_open V" 
-    using is_open_from_ind_is_open is_open_subset oc open_cover_of_open_subset.is_open_subset by blast
+    using it.is_open_from_ind_is_open is_open_subset oc open_cover_of_open_subset.is_open_subset by blast
   moreover have "open_cover_of_open_subset X is_open V I W" 
-    using open_cover_from_ind_open_cover oc ind_topology.intro ind_topology_axioms_def is_open_subset is_subset topological_space_axioms by blast
+    using it.open_cover_from_ind_open_cover oc ind_topology.intro ind_topology_axioms_def is_open_subset it.is_subset topological_space_axioms by blast
   moreover have "\<rho> (W i) (W i \<inter> W j) (s i) = \<rho> (W j) (W i \<inter> W j) (s j)"
     if "i\<in>I" "j\<in>I" for i j
   proof -
     have "U \<inter> W i = W i" and "U \<inter> W j = W j"
-      by (metis Int_absorb1 WV ind_is_open_def oc open_cover_of_open_subset.is_open_subset 
+      by (metis Int_absorb1 WV it.ind_is_open_def oc open_cover_of_open_subset.is_open_subset 
             subset_trans that)+
     then show ?thesis 
       using eq[unfolded ind_ring_morphisms_def,OF that] by (metis inf_sup_aci(2)) 
   qed
   moreover have "\<forall>i. i\<in>I \<longrightarrow> W i \<subseteq> V \<and> s i \<in> \<FF> (W i)"
-    by (metis WV ind_is_open_def ind_sheaf_def inf.orderE inf_idem inf_aci(3) oc open_cover_of_open_subset.is_open_subset)
+    by (metis WV it.ind_is_open_def ind_sheaf_def inf.orderE inf_idem inf_aci(3) oc open_cover_of_open_subset.is_open_subset)
   ultimately 
   obtain t where "t \<in> (\<FF> V) \<and> (\<forall>i. i\<in>I \<longrightarrow> \<rho> V (W i) t = s i)" 
     using glueing by blast
