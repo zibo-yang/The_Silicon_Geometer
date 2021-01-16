@@ -2661,7 +2661,7 @@ proof -
       next
         show "zeroB \<in> f ` I"
           using fiso.additive.commutes_with_unit by blast
-      qed auto
+      qed blast+
       have ideal_fI: "ideal (f ` I) B addB multB zeroB oneB"
       proof
         show "f ` I \<subseteq> B"
