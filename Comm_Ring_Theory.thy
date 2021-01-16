@@ -1425,7 +1425,7 @@ lemma map_on_empty_is_regular:
   shows "is_regular s {}"
   by (simp add: is_regular_def)
 
-definition sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _")
+definition sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _" [90]90)
   where "\<O> U \<equiv> {s\<in>(\<Pi>\<^sub>E \<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)). is_regular s U}"
 
 lemma sec_has_right_codom:
@@ -2012,10 +2012,10 @@ proof unfold_locales
                 = add_sheaf_spec U (mult_sheaf_spec U b a) (mult_sheaf_spec U c a)"
     if "a \<in> \<O> U" and "b \<in> \<O> U" and "c \<in> \<O> U" for a b c
     by (simp add: add_\<O> mult_comm that(1) that(2) that(3))
-  show "monoid.invertible \<O> U (add_sheaf_spec U) (zero_sheaf_spec U) u"
+  show "monoid.invertible (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) u"
     if "u \<in> \<O> U" for u 
   proof (rule monoid.invertibleI)
-    show "Group_Theory.monoid \<O> U (add_sheaf_spec U) (zero_sheaf_spec U)"
+    show "Group_Theory.monoid (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U)"
       apply unfold_locales
       using add_\<O> \<open>zero_sheaf_spec U \<in> \<O> U\<close> add_assoc \<open>zero_sheaf_spec U \<in> \<O> U\<close> 
         add_comm add_zero  add_zero
@@ -2706,11 +2706,6 @@ proof -
   qed
 qed
 
-lemma ring_iso_is_epi:
-  assumes "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
-  shows "ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
-  sorry
-
 lemma isomorphic_to_local_is_local:
   assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB" 
     and iso: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
@@ -2756,9 +2751,9 @@ proof intro_locales
     show "(I::'a set) = J"
     proof-
       have "max_ideal B (f ` I) addB multB zeroB oneB"
-        by (meson I im_of_max_ideal_is_max iso ring_iso_is_epi) 
+        by (meson I im_of_max_ideal_is_max iso)
       moreover have "max_ideal B (f ` J) addB multB zeroB oneB"
-        by (meson J im_of_max_ideal_is_max iso ring_iso_is_epi) 
+        by (meson J im_of_max_ideal_is_max iso)
       ultimately have "f ` I = f ` J"
         by (meson local_ring.is_unique lring)
       thus ?thesis 
