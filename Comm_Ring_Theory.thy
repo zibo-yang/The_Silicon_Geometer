@@ -153,8 +153,9 @@ next
     using a gen_ideal_def by auto
   show "monoid.invertible \<langle>x\<rangle> (+) \<zero> a"
   proof (rule M.invertibleI)
-    show "-a \<in> \<langle>x\<rangle>"
-      by (metis (mono_tags, lifting) additive.invertible additive.monoid_axioms assms gen_ideal_def local.left_minus mem_Collect_eq monoid.invertible_inverse_closed r)
+    have "\<exists>r\<in>R. - a = r \<cdot> x"
+      by (metis assms ideal_R_R ideal_inverse local.left_minus r)
+    then show "-a \<in> \<langle>x\<rangle>" by (simp add: gen_ideal_def)
   qed (use a r assms in auto)
 qed (auto simp: zero_in_gen_ideal add_in_gen_ideal assms)
 
@@ -2067,8 +2068,7 @@ lemma sheaf_morphisms_sheaf_spec:
 
 
 lemma sheaf_spec_morphisms_are_maps:
-  assumes (*this assumption seems redundant: "is_zariski_open U" and*) 
-    "is_zariski_open V" and "V \<subseteq> U"
+  assumes "V \<subseteq> U"
   shows "Set_Theory.map (sheaf_spec_morphisms U V) (\<O> U) (\<O> V)"
 proof -
   have "sheaf_spec_morphisms U V \<in> extensional (\<O> U)"
@@ -2427,7 +2427,18 @@ lemma class_of_in_stalk_at:
 lemma stalk_is_ring:
   assumes "is_open V" and "x \<in> V"
   shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V)"
-  sorry
+  proof intro_locales
+    show "Group_Theory.monoid (stalk_at x) (add_stalk_at x) (zero_stalk_at x V)"
+    sorry
+  show "Group_Theory.group_axioms (stalk_at x) (add_stalk_at x) (zero_stalk_at x V)"
+    sorry
+  show "commutative_monoid_axioms (stalk_at x) (add_stalk_at x)"
+    sorry
+  show "Group_Theory.monoid (stalk_at x) (mult_stalk_at x) (one_stalk_at x V)"
+    sorry
+  show "ring_axioms (stalk_at x) (add_stalk_at x) (mult_stalk_at x)"
+    sorry
+qed
 
 lemma stalk_is_direct_lim:
   assumes "x \<in> S"
@@ -2950,30 +2961,38 @@ lemma class_from_belongs_stalk:
   obtains U s' where "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "s = pr.class_of \<pp> (U, s')"
   using assms pr.stalk_at_def sorry
 
-lemma shrinking_from_belong_stalk:
-  assumes "s \<in> pr.stalk_at \<pp>" and "t \<in> pr.stalk_at \<pp>"
-  obtains U s' t' where "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "s = pr.class_of \<pp> (U, s')"
-"t' \<in> \<O> U" "t = pr.class_of \<pp> (U, t')"
-proof- 
-  obtain U s' where HU:"is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "s = pr.class_of \<pp> (U, s')"
-    using assms(1) class_from_belongs_stalk by blast 
-  obtain V t' where HV:"is_zariski_open V" "\<pp> \<in> V" "t' \<in> \<O> V" "t = pr.class_of \<pp> (V, t')"
-    using assms(2) class_from_belongs_stalk by blast
-  have "is_zariski_open (U \<inter> V)" using topological_space.open_inter by (simp add: \<open>is_zariski_open U\<close> \<open>is_zariski_open V\<close>)
-  moreover have "U \<inter> V \<subseteq> Spec" using zariski_open_is_subset HU(1) by blast
-  moreover have "\<pp> \<in> U \<inter> V" by (simp add: \<open>\<pp> \<in> U\<close> \<open>\<pp> \<in> V\<close>)
-  moreover have "s = pr.class_of \<pp> (U \<inter> V, sheaf_spec_morphisms U (U \<inter> V) s')" sorry
-  moreover have "t = pr.class_of \<pp> (U \<inter> V, sheaf_spec_morphisms V (U \<inter> V) t')" sorry
-  moreover have "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)" using HU(4) sorry
-  moreover have "sheaf_spec_morphisms U (U \<inter> V) t' \<in> \<O> (U \<inter> V)" using HV(4) sorry
-  ultimately show ?thesis
-    by (smt HV(1,3) Int_commute comm_ring.sheaf_spec_morphisms_are_maps cxt_key_map_axioms cxt_key_map_def inf.coboundedI1 map.map_closed subset_refl that)
-qed
-
 lemma same_class_from_restrict:
   assumes "is_zariski_open U" "is_zariski_open V" "U \<subseteq> V" "s \<in> \<O> V"
   shows "pr.class_of \<pp> (V, s) = pr.class_of \<pp> (U, sheaf_spec_morphisms V U s)"
   using assms sorry
+
+lemma shrinking_from_belong_stalk:
+  assumes "s \<in> pr.stalk_at \<pp>" and "t \<in> pr.stalk_at \<pp>"
+  obtains U s' t' where "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "s = pr.class_of \<pp> (U, s')"
+    "t' \<in> \<O> U" "t = pr.class_of \<pp> (U, t')"
+proof - 
+  obtain U s' where HU:"is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "s = pr.class_of \<pp> (U, s')"
+    using assms(1) class_from_belongs_stalk by blast 
+  obtain V t' where HV:"is_zariski_open V" "\<pp> \<in> V" "t' \<in> \<O> V" "t = pr.class_of \<pp> (V, t')"
+    using assms(2) class_from_belongs_stalk by blast
+  show thesis
+  proof
+    show "is_zariski_open (U \<inter> V)" using topological_space.open_inter 
+      by (simp add: \<open>is_zariski_open U\<close> \<open>is_zariski_open V\<close>)
+    have "U \<inter> V \<subseteq> Spec" 
+      using zariski_open_is_subset HU(1) by blast
+    show "\<pp> \<in> U \<inter> V" 
+      by (simp add: \<open>\<pp> \<in> U\<close> \<open>\<pp> \<in> V\<close>)
+    show "s = pr.class_of \<pp> (U \<inter> V, sheaf_spec_morphisms U (U \<inter> V) s')"
+      by (simp add: HU \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
+    show "t = pr.class_of \<pp> (U \<inter> V, sheaf_spec_morphisms V (U \<inter> V) t')"
+      by (simp add: HV \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
+    show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)" 
+      by (metis HU(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI)
+    show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)" 
+      by (metis HV(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI)
+  qed
+qed
 
 lemma stalk_at_prime_is_iso_to_local_ring_at_prime_aux:
   assumes "is_zariski_open V" and "\<pp> \<in> V" and
