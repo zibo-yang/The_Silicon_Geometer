@@ -2505,12 +2505,20 @@ lemma
 
 end (* locale max_ideal *)
 
+subsubsection \<open>Maximal Left Ideals\<close>
+
+locale lideal = subgroup_of_additive_group_of_ring +
+  assumes lideal: "\<lbrakk> r \<in> R; a \<in> I \<rbrakk> \<Longrightarrow> r \<cdot> a \<in> I"
+
+locale max_lideal = lideal +
+assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. lideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
+
 subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
-locale local_ring = comm_ring +
-assumes is_unique: "\<And>I J. max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
-and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
+locale local_ring = ring +
+assumes is_unique: "\<And>I J. max_lideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
+and has_max_lideal: "\<exists>\<ww>. max_lideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
 
 lemma im_of_ideal_is_ideal:
   assumes I: "ideal I A addA multA zeroA oneA" 
@@ -2789,7 +2797,8 @@ qed
 lemma isomorphic_to_local_is_local:
   assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB" 
     and iso: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
-  shows "local_ring A addA multA zeroA oneA"
+  shows "local_ring A addA multA zeroA oneA" sorry
+(*
 proof intro_locales
   show "Group_Theory.monoid A addA zeroA"
     by (meson abelian_group.axioms(2) assms(1) commutative_monoid_def ring_def)
@@ -2845,6 +2854,7 @@ proof intro_locales
       by (meson iso local_ring.has_max_ideal lring preim_of_max_ideal_is_max)
   qed
 qed
+*)
 
 context pr_ideal
 begin
@@ -2864,8 +2874,8 @@ source: local_ring A "(+)" "(\<cdot>)" \<zero> \<one> + target: local_ring B "(+
 for f and 
 A and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") and 
 B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) and zero' ("\<zero>''") and unit' ("\<one>''")
-+ assumes preimage_of_max_ideal: 
-"\<lbrakk>\<ww>\<^sub>A \<subseteq> A; \<ww>\<^sub>B \<subseteq> B\<rbrakk> \<Longrightarrow> max_ideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> (f\<^sup>\<inverse> A \<ww>\<^sub>B) = \<ww>\<^sub>A"
++ assumes preimage_of_max_lideal: 
+"\<And>\<ww>\<^sub>A \<ww>\<^sub>B. max_lideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> (f\<^sup>\<inverse> A \<ww>\<^sub>B) = \<ww>\<^sub>A"
 
 
 subsubsection \<open>Locally Ringed Spaces\<close>
@@ -3009,10 +3019,12 @@ proof -
       by (simp add: HU \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
     show "t = pr.class_of \<pp> (U \<inter> V, sheaf_spec_morphisms V (U \<inter> V) t')"
       by (simp add: HV \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
-    show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)" 
-      by (metis HU(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI)
-    show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)" 
-      by (metis HV(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI)
+    show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)" sorry
+(* AB: same problem with my Isabelle version
+      by (metis HU(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI) *)
+    show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)" sorry
+(* AB: idem
+      by (metis HV(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI) *)
   qed
 qed
 
@@ -3055,10 +3067,12 @@ next
           using shrinking[of V \<pp> s' t'] by blast
         show ?thesis
         proof
-          show "sheaf_spec_morphisms V U s' \<in> \<O> U"
-            using HU(1,2) HV(3,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce
-          show "sheaf_spec_morphisms V U t' \<in> \<O> U"
-            using HU(1,2) HV(4,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce
+          show "sheaf_spec_morphisms V U s' \<in> \<O> U" sorry
+(* AB: idem
+            using HU(1,2) HV(3,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce *)
+          show "sheaf_spec_morphisms V U t' \<in> \<O> U" sorry
+(* AB: Idem
+            using HU(1,2) HV(4,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce *)
 
           show "s = pr.class_of \<pp> (U, sheaf_spec_morphisms V U s')"
             using same_class_from_restrict by (simp add: HU(1,2) HV(1,3,5,6))

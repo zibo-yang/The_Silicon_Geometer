@@ -35,6 +35,84 @@ affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf 
 context affine_scheme
 begin
 
+interpretation cis:cxt_ind_sheaf X is_open "\<O>\<^sub>X" \<rho> b add_str mult_str zero_str one_str X
+  by (simp add: cxt_ind_sheaf_axioms_def cxt_ind_sheaf_def sheaf_of_rings_axioms)
+
+interpretation it: ind_topology X is_open X by simp
+
+interpretation pr': presheaf_of_rings X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b 
+cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
+  using cis.ind_sheaf_is_presheaf by simp
+
+lemma eq_ind_is_open:
+  shows "\<And>U. is_open U = it.ind_is_open U" 
+  using ind_is_open_iff_open open_imp_subset by auto
+
+lemma eq_ind_sheaf:
+  shows "\<And>V. V \<subseteq> X \<Longrightarrow> \<O>\<^sub>X V = cis.ind_sheaf V" 
+  using cxt_ind_sheaf.ind_sheaf_def
+  by (metis cxt_ind_sheaf_axioms_def cxt_ind_sheaf_def inf_absorb2 open_space sheaf_of_rings_axioms)
+
+lemma eq_ind_ring_morphisms:
+  shows "\<And>V W. V \<subseteq> X \<Longrightarrow> W \<subseteq> X \<Longrightarrow> \<rho> V W = cis.ind_ring_morphisms V W"
+  by (simp add: Int_absorb1 cis.ind_ring_morphisms_def)
+
+lemma eq_ind_add_str:
+  shows "\<And>V. V \<subseteq> X \<Longrightarrow> add_str V = cis.ind_add_str V" 
+  using cis.ind_add_str_def by (simp add: inf.absorb_iff2)
+
+lemma eq_ind_mult_str:
+  shows "\<And>V. V \<subseteq> X \<Longrightarrow> mult_str V = cis.ind_mult_str V" 
+  using cis.ind_mult_str_def by (simp add: inf.absorb_iff2)
+
+lemma eq_ind_zero_str:
+  shows "\<And>V. V \<subseteq> X \<Longrightarrow> zero_str V = cis.ind_zero_str V" 
+  using cis.ind_zero_str_def by (simp add: inf.absorb_iff2)
+
+lemma eq_ind_one_str:
+  shows "\<And>V. V \<subseteq> X \<Longrightarrow> one_str V = cis.ind_one_str V" 
+  using cis.ind_one_str_def by (simp add: inf.absorb_iff2)
+
+lemma eq_neighborhoods:
+  shows "\<And>x U. (U \<in> neighborhoods x) = (U \<in> pr'.neighborhoods x)" 
+  using eq_ind_is_open by (simp add: neighborhoods_def pr'.neighborhoods_def)
+
+lemma eq_stalk:
+  assumes "x \<in> X"
+  shows "stalk_at x = pr'.stalk_at x"
+  sorry
+
+lemma eq_add_stalk:
+  assumes "x \<in> X"
+  shows "add_stalk_at x = pr'.add_stalk_at x"
+  sorry
+
+lemma eq_mult_stalk:
+  assumes "x \<in> X"
+  shows "mult_stalk_at x = pr'.mult_stalk_at x"
+  sorry
+
+lemma eq_zero_stalk:
+  assumes "it.ind_is_open V" and "x \<in> V"
+  shows "zero_stalk_at x V = pr'.zero_stalk_at x V"
+  sorry
+
+lemma eq_one_stalk:
+  assumes "it.ind_is_open V" and "x \<in> V"
+  shows "one_stalk_at x V = pr'.one_stalk_at x V"
+  sorry
+
+lemma affine_scheme_lrs_axioms:
+  shows "locally_ringed_space_axioms it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms
+     cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str"
+  unfolding ring_def using pr'.stalk_is_ring eq_stalk eq_add_stalk eq_mult_stalk eq_zero_stalk eq_one_stalk
+  by (smt in_mono is_local_ring it.is_open_from_ind_is_open locally_ringed_space_axioms.intro open_space pr'.open_imp_subset)
+
+lemma affine_scheme_as_axioms:
+  shows "affine_scheme_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b cis.ind_add_str
+     cis.ind_mult_str cis.ind_zero_str cis.ind_one_str R (+) (\<cdot>) \<zero> \<one>"
+  sorry
+
 lemma affine_scheme_is_scheme:
   shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
 proof (intro scheme.intro scheme_axioms.intro)
@@ -51,12 +129,20 @@ next
               (\<cdot>) \<zero> \<one>"
   proof-
     fix x assume "x \<in> X"
-    then have "affine_scheme X (ind_topology.ind_is_open X is_open X)
-              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X X) (cxt_ind_sheaf.ind_ring_morphisms \<rho> X) b
-              (cxt_ind_sheaf.ind_add_str add_str X) (cxt_ind_sheaf.ind_mult_str mult_str X)
-              (cxt_ind_sheaf.ind_zero_str zero_str X) (cxt_ind_sheaf.ind_one_str one_str X) R (+)
-              (\<cdot>) \<zero> \<one>"
-      sorry
+    have "affine_scheme X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b cis.ind_add_str cis.ind_mult_str
+              (cis.ind_zero_str) (cis.ind_one_str) R (+) (\<cdot>) \<zero> \<one>"
+    proof (intro_locales)
+      show "sheaf_of_rings_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms cis.ind_zero_str"
+        by (meson cis.ind_sheaf_is_sheaf sheaf_of_rings_def)
+    next
+      show "locally_ringed_space_axioms it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms
+     cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str"
+        using affine_scheme_lrs_axioms by simp
+    next
+      show "affine_scheme_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b cis.ind_add_str
+     cis.ind_mult_str cis.ind_zero_str cis.ind_one_str R (+) (\<cdot>) \<zero> \<one>"
+        using affine_scheme_as_axioms by simp
+    qed
     thus "\<exists>U. x \<in> U \<and> is_open U \<and>
              affine_scheme U (ind_topology.ind_is_open X is_open U)
               (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
@@ -67,7 +153,7 @@ next
   qed
 qed
 
-end (* affine_scheme*)
+end (* affine_scheme *)
 
 lemma (in comm_ring) spec_is_comp_affine_scheme:
   shows "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
@@ -79,7 +165,7 @@ next
   show "iso_locally_ringed_spaces Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec Spec is_zariski_open sheaf_spec
      sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-     (identity Spec) (\<lambda>U. identity \<O> U)"
+     (identity Spec) (\<lambda>U. identity (\<O> U))"
   proof-
     have "homeomorphism Spec is_zariski_open Spec is_zariski_open (identity Spec)" sorry
     moreover have "iso_sheaves_of_rings
