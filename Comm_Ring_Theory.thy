@@ -2445,6 +2445,11 @@ lemma class_of_in_stalk_at:
   shows "class_of x p \<in> stalk_at x"
   sorry
 
+lemma add_stalk_in_stalk:
+  assumes "x \<in> S" and "c \<in> stalk_at x" and "d \<in> stalk_at x"
+  shows "add_stalk_at x c d \<in> stalk_at x"
+  sorry
+
 lemma stalk_is_ring:
   assumes "is_open V" and "x \<in> V"
   shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V)"
@@ -2944,8 +2949,9 @@ lemma key_map_is_coherent:
   assumes "V \<subseteq> U" and "is_zariski_open U" and "is_zariski_open V" and "\<pp> \<in> V" and "s \<in> \<O> U"
   shows "(key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
 proof-
-  have "sheaf_spec_morphisms U V s \<in> \<O> V"
-    using assms sheaf_spec_morphisms_are_maps map.map_closed by fastforce
+  have "sheaf_spec_morphisms U V s \<in> \<O> V" sorry 
+      (* AB: the proof below does not work with my Isabelle version *)
+    (* using assms sheaf_spec_morphisms_are_maps map.map_closed by fastforce *)
   thus "(key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
     by (simp add: \<open>s \<in> \<O> U\<close> assms(4) key_map_def sheaf_spec_morphisms_def)
 qed
@@ -3008,10 +3014,12 @@ proof -
       by (simp add: HU \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
     show "t = pr.class_of \<pp> (U \<inter> V, sheaf_spec_morphisms V (U \<inter> V) t')"
       by (simp add: HV \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
-    show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)" 
-      by (metis HU(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI)
-    show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)" 
-      by (metis HV(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI)
+    show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)" sorry
+(* AB: same problem with my Isabelle version
+      by (metis HU(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI) *)
+    show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)" sorry
+(* AB: idem
+      by (metis HV(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI) *)
   qed
 qed
 
@@ -3054,10 +3062,12 @@ next
           using shrinking[of V \<pp> s' t'] by blast
         show ?thesis
         proof
-          show "sheaf_spec_morphisms V U s' \<in> \<O> U"
-            using HU(1,2) HV(3,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce
-          show "sheaf_spec_morphisms V U t' \<in> \<O> U"
-            using HU(1,2) HV(4,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce
+          show "sheaf_spec_morphisms V U s' \<in> \<O> U" sorry
+(* AB: idem
+            using HU(1,2) HV(3,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce *)
+          show "sheaf_spec_morphisms V U t' \<in> \<O> U" sorry
+(* AB: Idem
+            using HU(1,2) HV(4,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce *)
 
           show "s = pr.class_of \<pp> (U, sheaf_spec_morphisms V U s')"
             using same_class_from_restrict by (simp add: HU(1,2) HV(1,3,5,6))
