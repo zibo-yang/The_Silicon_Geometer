@@ -2068,7 +2068,8 @@ lemma sheaf_morphisms_sheaf_spec:
 
 
 lemma sheaf_spec_morphisms_are_maps:
-  assumes "V \<subseteq> U"
+  assumes (*this assumption seems redundant: "is_zariski_open U" and*) 
+    "is_zariski_open V" and "V \<subseteq> U"
   shows "Set_Theory.map (sheaf_spec_morphisms U V) (\<O> U) (\<O> V)"
 proof -
   have "sheaf_spec_morphisms U V \<in> extensional (\<O> U)"
@@ -2313,10 +2314,10 @@ subsection \<open>Direct Limits of Rings\<close>
 (* construction 0.34 *)
 locale cxt_direct_lim = sheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
   for X and is_open and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") and 
-zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") + 
+    zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") + 
   fixes I:: "'a set set"
-  assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U \<and> U \<subseteq> X" and 
-has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
+  assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U \<and> U \<subseteq> X" 
+    and has_lower_bound: "\<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
 begin
 
 definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> bool" (infix "\<sim>" 80)
@@ -2325,14 +2326,34 @@ definition rel:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Righ
 
 lemma rel_is_equivalence:
   shows "equivalence (Sigma I \<FF>) {(x, y). x \<sim> y}"
+  unfolding equivalence_def
+proof (intro conjI strip)
+  show "(a, c) \<in> {(x, y). x \<sim> y}" 
+    if "(a, b) \<in> {(x, y). x \<sim> y}" "(b, c) \<in> {(x, y). x \<sim> y}" for a b c
+    using that
+    apply (auto simp: rel_def)
   sorry
+qed (auto simp: rel_def Int_commute)
 
 definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor> _ , _ \<rfloor>")
   where "\<lfloor>U,s\<rfloor> \<equiv> equivalence.Class (Sigma I \<FF>) {(x, y). x \<sim> y} (U, s)"
 
-lemma 
+lemma class_of_0_eq:
   assumes "U \<in> I" and "U' \<in> I"
-  shows "\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor> = \<lfloor>U', \<zero>\<^bsub>U'\<^esub>\<rfloor>" sorry
+  shows "\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor> = \<lfloor>U', \<zero>\<^bsub>U'\<^esub>\<rfloor>"
+proof -
+  have "\<zero>\<^bsub>U\<^esub> \<in> \<FF> U"
+    sorry
+  moreover have "\<zero>\<^bsub>U'\<^esub> \<in> \<FF> U'"
+    sorry
+  moreover have "\<exists>W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> U' \<and> \<rho> (U \<inter> U') W \<zero>\<^bsub>U\<^esub> = \<rho> (U \<inter> U') W \<zero>\<^bsub>U'\<^esub>"
+    sorry
+  ultimately have "(U, \<zero>\<^bsub>U\<^esub>) \<sim> (U', \<zero>\<^bsub>U'\<^esub>)"
+    using assms by (auto simp: rel_def)
+  then show ?thesis
+    unfolding class_of_def
+    using assms equivalence.Class_eq [OF rel_is_equivalence] by blast
+qed
 
 lemma 
   assumes "U \<in> I" and "U' \<in> I"
@@ -3228,9 +3249,8 @@ begin
 definition index:: "'c set set"
   where "index \<equiv> {V. is_open\<^sub>Y V \<and> f x \<in> V}"
 
-definition induced_morphism:: "('c set \<times> 'd) set \<Rightarrow> ('a set \<times> 'b) set" where 
-"induced_morphism C \<equiv> let r = (SOME r. r \<in> C) in dom.class_of x (f\<^sup>\<inverse> X (fst r), \<phi>\<^sub>f (fst r) (snd r))
-"
+definition induced_morphism:: "('c set \<times> 'd) set \<Rightarrow> ('a set \<times> 'b) set"
+  where "induced_morphism C \<equiv> let r = (SOME r. r \<in> C) in dom.class_of x (f\<^sup>\<inverse> X (fst r), \<phi>\<^sub>f (fst r) (snd r))"
 (* 
 One should think of fst r as a V in index, and snd r as a d in \<O>\<^sub>Y V. 
 Since induced morphism is defined on a representative of the class C, one should check that it
