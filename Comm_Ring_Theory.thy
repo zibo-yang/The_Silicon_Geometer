@@ -2445,16 +2445,6 @@ lemma class_of_in_stalk_at:
   shows "class_of x p \<in> stalk_at x"
   sorry
 
-lemma add_stalk_in_stalk:
-  assumes "x \<in> S" and "c \<in> stalk_at x" and "d \<in> stalk_at x"
-  shows "add_stalk_at x c d \<in> stalk_at x"
-  sorry
-
-lemma zero_stalk_in_stalk:
-  assumes "is_open V" and "x \<in> V"
-  shows "zero_stalk_at x V \<in> stalk_at x"
-  sorry
-
 lemma stalk_is_ring:
   assumes "is_open V" and "x \<in> V"
   shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V)"
@@ -2515,12 +2505,20 @@ lemma
 
 end (* locale max_ideal *)
 
+subsubsection \<open>Maximal Left Ideals\<close>
+
+locale lideal = subgroup_of_additive_group_of_ring +
+  assumes lideal: "\<lbrakk> r \<in> R; a \<in> I \<rbrakk> \<Longrightarrow> r \<cdot> a \<in> I"
+
+locale max_lideal = lideal +
+assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. lideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
+
 subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
-locale local_ring = comm_ring +
-assumes is_unique: "\<And>I J. max_ideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
-and has_max_ideal: "\<exists>\<ww>. max_ideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
+locale local_ring = ring +
+assumes is_unique: "\<And>I J. max_lideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
+and has_max_lideal: "\<exists>\<ww>. max_lideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
 
 lemma im_of_ideal_is_ideal:
   assumes I: "ideal I A addA multA zeroA oneA" 
@@ -2799,7 +2797,8 @@ qed
 lemma isomorphic_to_local_is_local:
   assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB" 
     and iso: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
-  shows "local_ring A addA multA zeroA oneA"
+  shows "local_ring A addA multA zeroA oneA" sorry
+(*
 proof intro_locales
   show "Group_Theory.monoid A addA zeroA"
     by (meson abelian_group.axioms(2) assms(1) commutative_monoid_def ring_def)
@@ -2855,6 +2854,7 @@ proof intro_locales
       by (meson iso local_ring.has_max_ideal lring preim_of_max_ideal_is_max)
   qed
 qed
+*)
 
 context pr_ideal
 begin
@@ -2874,8 +2874,8 @@ source: local_ring A "(+)" "(\<cdot>)" \<zero> \<one> + target: local_ring B "(+
 for f and 
 A and addition (infixl "+" 65) and multiplication (infixl "\<cdot>" 70) and zero ("\<zero>") and unit ("\<one>") and 
 B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) and zero' ("\<zero>''") and unit' ("\<one>''")
-+ assumes preimage_of_max_ideal: 
-"\<lbrakk>\<ww>\<^sub>A \<subseteq> A; \<ww>\<^sub>B \<subseteq> B\<rbrakk> \<Longrightarrow> max_ideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_ideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> (f\<^sup>\<inverse> A \<ww>\<^sub>B) = \<ww>\<^sub>A"
++ assumes preimage_of_max_lideal: 
+"\<And>\<ww>\<^sub>A \<ww>\<^sub>B. max_lideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> (f\<^sup>\<inverse> A \<ww>\<^sub>B) = \<ww>\<^sub>A"
 
 
 subsubsection \<open>Locally Ringed Spaces\<close>
