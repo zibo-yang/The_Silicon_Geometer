@@ -1419,6 +1419,17 @@ definition is_locally_frac:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Righ
   where "is_locally_frac s V \<equiv> (\<exists>r f. r \<in> R \<and> f \<in> R \<and> (\<forall>\<qq> \<in> V. f \<notin> \<qq> \<and> 
             s \<qq> = cxt_quotient_ring.frac (R \<setminus> \<qq>) R (+) (\<cdot>) \<zero> r f))"
 
+lemma is_locally_frac_subset:
+  assumes "is_locally_frac s U" "V \<subseteq> U"
+  shows "is_locally_frac s V"
+  using assms unfolding is_locally_frac_def
+  by (meson subsetD)
+
+lemma is_locally_frac_cong:
+  assumes "\<And>x. x\<in>U \<Longrightarrow> f x=g x"
+  shows "is_locally_frac f U = is_locally_frac g U"
+  unfolding is_locally_frac_def using assms by simp
+
 definition is_regular:: "('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> 'a set set \<Rightarrow> bool" 
   where "is_regular s U \<equiv> 
 \<forall>\<pp>. \<pp> \<in> U \<longrightarrow> (\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> (is_locally_frac s V))"
@@ -2056,9 +2067,43 @@ lemma sheaf_morphisms_sheaf_spec:
 
 
 lemma sheaf_spec_morphisms_are_maps:
-  assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
+  assumes (*this assumption seems redundant: "is_zariski_open U" and*) 
+    "is_zariski_open V" and "V \<subseteq> U"
   shows "Set_Theory.map (sheaf_spec_morphisms U V) (\<O> U) (\<O> V)"
-  sorry
+proof -
+  have "sheaf_spec_morphisms U V \<in> extensional (\<O> U)"
+    unfolding sheaf_spec_morphisms_def by auto
+  moreover have "sheaf_spec_morphisms U V \<in> (\<O> U) \<rightarrow> (\<O> V)"
+    unfolding sheaf_spec_morphisms_def
+  proof 
+    fix s assume "s \<in> \<O> U" 
+    then have "s \<in> (\<Pi>\<^sub>E \<pp>\<in>U. R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+        and p:"\<forall>\<pp>. \<pp> \<in> U \<longrightarrow> (\<exists>V. is_zariski_open V \<and> V \<subseteq> U \<and> \<pp> \<in> V \<and> is_locally_frac s V)"
+      unfolding sheaf_spec_def is_regular_def by auto
+    have "restrict s V \<in> (\<Pi>\<^sub>E \<pp>\<in>V. R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
+      using \<open>s \<in> (\<Pi>\<^sub>E \<pp>\<in>U. R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)\<close> using \<open>V \<subseteq> U\<close> by auto
+    moreover have "(\<exists>Va. is_zariski_open Va \<and> Va \<subseteq> V \<and> \<pp> \<in> Va \<and> is_locally_frac (restrict s V) Va)" 
+      if "\<pp> \<in> V" for \<pp>
+    proof -
+      obtain U1 where "is_zariski_open U1" "U1 \<subseteq> U" "\<pp> \<in> U1" "is_locally_frac s U1"
+        using p[rule_format, of \<pp>] that \<open>V \<subseteq> U\<close> \<open>\<pp> \<in> V\<close> by auto
+      define V1 where "V1 = U1 \<inter> V"
+      have "is_zariski_open V1"
+        using \<open>is_zariski_open V\<close> \<open>is_zariski_open U1\<close> by (simp add: V1_def)
+      moreover have "is_locally_frac s V1"
+        using is_locally_frac_subset[OF \<open>is_locally_frac s U1\<close>] unfolding V1_def by simp
+      then have "is_locally_frac (restrict s V) V1"
+        unfolding restrict_def V1_def using is_locally_frac_cong by (smt in_mono inf_le2) 
+      moreover have "V1 \<subseteq> V" "\<pp> \<in> V1"
+        unfolding V1_def using \<open>V \<subseteq> U\<close> \<open>\<pp> \<in> U1\<close> that by auto
+      ultimately show ?thesis by auto
+    qed
+    ultimately show "restrict s V \<in> \<O> V"
+      unfolding sheaf_spec_def is_regular_def by auto
+  qed
+  ultimately show ?thesis
+    by (simp add: extensional_funcset_def map.intro)
+qed
 
 lemma sheaf_spec_morphisms_are_ring_morphisms:
   assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
