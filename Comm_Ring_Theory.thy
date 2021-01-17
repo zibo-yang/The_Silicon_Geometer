@@ -2945,7 +2945,8 @@ lemma key_map_is_coherent:
   shows "(key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
 proof-
   have "sheaf_spec_morphisms U V s \<in> \<O> V"
-    using assms sheaf_spec_morphisms_are_maps map.map_closed by fastforce
+    using assms sheaf_spec_morphisms_are_maps map.map_closed
+    by (metis (mono_tags, hide_lams))
   thus "(key_map V \<circ> sheaf_spec_morphisms U V) s = key_map U s"
     by (simp add: \<open>s \<in> \<O> U\<close> assms(4) key_map_def sheaf_spec_morphisms_def)
 qed
