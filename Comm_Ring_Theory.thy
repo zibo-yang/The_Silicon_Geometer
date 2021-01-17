@@ -2450,6 +2450,11 @@ lemma add_stalk_in_stalk:
   shows "add_stalk_at x c d \<in> stalk_at x"
   sorry
 
+lemma zero_stalk_in_stalk:
+  assumes "is_open V" and "x \<in> V"
+  shows "zero_stalk_at x V \<in> stalk_at x"
+  sorry
+
 lemma stalk_is_ring:
   assumes "is_open V" and "x \<in> V"
   shows "ring (stalk_at x) (add_stalk_at x) (mult_stalk_at x) (zero_stalk_at x V) (one_stalk_at x V)"
