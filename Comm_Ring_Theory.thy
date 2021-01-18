@@ -2107,12 +2107,80 @@ proof -
 qed
 
 lemma sheaf_spec_morphisms_are_ring_morphisms:
-  assumes "is_zariski_open U" and "is_zariski_open V" and "V \<subseteq> U"
+  assumes U: "is_zariski_open U" and V: "is_zariski_open V" and "V \<subseteq> U"
   shows "ring_homomorphism (sheaf_spec_morphisms U V)
                            (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)
                            (\<O> V) (add_sheaf_spec V) (mult_sheaf_spec V) (zero_sheaf_spec V) (one_sheaf_spec V)"
-  sorry
+proof intro_locales
+  show "Set_Theory.map (sheaf_spec_morphisms U V) (\<O> U) (\<O> V)"
+    by (simp add: assms sheaf_spec_morphisms_are_maps)
+  show "Group_Theory.monoid (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U)"
+    using sheaf_spec_on_open_is_comm_ring [OF U]
+    by (auto simp: comm_ring_def ring_def abelian_group_def commutative_monoid_def)
+  show "Group_Theory.group_axioms (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U)"
+    using sheaf_spec_on_open_is_comm_ring [OF U]
+    by (auto simp: comm_ring_def ring_def abelian_group_def commutative_monoid_def group_def)
+  show "commutative_monoid_axioms (\<O> U) (add_sheaf_spec U)"
+    using sheaf_spec_on_open_is_comm_ring [OF U]
+    by (auto simp: comm_ring_def ring_def abelian_group_def commutative_monoid_def group_def)
+  show "Group_Theory.monoid (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U)"
+    by (meson U comm_ring_def ring_def sheaf_spec_on_open_is_comm_ring)
+  show "ring_axioms (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U)"
+    by (meson U comm_ring.axioms(1) ring_def sheaf_spec_on_open_is_comm_ring)
+  show "Group_Theory.monoid (\<O> V) (add_sheaf_spec V) (zero_sheaf_spec V)"
+    using sheaf_spec_on_open_is_comm_ring [OF V]
+    by (auto simp: comm_ring_def ring_def abelian_group_def commutative_monoid_def)
+  show "Group_Theory.group_axioms (\<O> V) (add_sheaf_spec V) (zero_sheaf_spec V)"
+    using sheaf_spec_on_open_is_comm_ring [OF V]
+    by (auto simp: comm_ring_def ring_def abelian_group_def commutative_monoid_def group_def)
+  show "commutative_monoid_axioms (\<O> V) (add_sheaf_spec V)"
+    using sheaf_spec_on_open_is_comm_ring [OF V]
+    by (auto simp: comm_ring_def ring_def abelian_group_def commutative_monoid_def group_def)
+  show "Group_Theory.monoid (\<O> V) (mult_sheaf_spec V) (one_sheaf_spec V)"
+    by (meson V comm_ring.axioms(1) ring_def sheaf_spec_on_open_is_comm_ring)
+  show "ring_axioms (\<O> V) (add_sheaf_spec V) (mult_sheaf_spec V)"
+    by (meson V comm_ring_def ring_def sheaf_spec_on_open_is_comm_ring)
+  show "monoid_homomorphism_axioms (sheaf_spec_morphisms U V) (\<O> U)
+              (add_sheaf_spec U) (zero_sheaf_spec U) (add_sheaf_spec V) (zero_sheaf_spec V)"
+  proof
+    fix x y
+    assume xy: "x \<in> \<O> U" "y \<in> \<O> U"
+    have "sheaf_spec_morphisms U V (add_sheaf_spec U x y) = restrict (add_sheaf_spec U x y) V"
+      by (simp add: U add_sheaf_spec_in_sheaf_spec comm_ring.zariski_open_is_subset local.comm_ring_axioms sheaf_spec_morphisms_def xy)
+    also have "... = add_sheaf_spec V (restrict x V) (restrict y V)"
+      using add_sheaf_spec_def \<open>V \<subseteq> U\<close> by force
+    also have "... = add_sheaf_spec V (sheaf_spec_morphisms U V x) (sheaf_spec_morphisms U V y)"
+      by (simp add: sheaf_spec_morphisms_def xy)
+    finally show "sheaf_spec_morphisms U V (add_sheaf_spec U x y) = add_sheaf_spec V (sheaf_spec_morphisms U V x) (sheaf_spec_morphisms U V y)" .
+  next
+    have "sheaf_spec_morphisms U V (zero_sheaf_spec U) = restrict (zero_sheaf_spec U) V"
+      by (simp add: U comm_ring.sheaf_spec_morphisms_def local.comm_ring_axioms zero_sheaf_spec_in_sheaf_spec)
+    also have "... = zero_sheaf_spec V"
+      by (metis FuncSet.restrict_restrict assms(3) inf.absorb_iff2 zero_sheaf_spec_def)
+    finally show "sheaf_spec_morphisms U V (zero_sheaf_spec U) = zero_sheaf_spec V" .
+  qed
 
+  show "monoid_homomorphism_axioms (sheaf_spec_morphisms U V) (\<O> U)
+              (mult_sheaf_spec U) (one_sheaf_spec U) (mult_sheaf_spec V) (one_sheaf_spec V)"
+  proof
+    fix x y
+    assume xy: "x \<in> \<O> U" "y \<in> \<O> U"
+        have "sheaf_spec_morphisms U V (mult_sheaf_spec U x y) = restrict (mult_sheaf_spec U x y) V"
+      by (simp add: U mult_sheaf_spec_in_sheaf_spec comm_ring.zariski_open_is_subset local.comm_ring_axioms sheaf_spec_morphisms_def xy)
+    also have "... = mult_sheaf_spec V (restrict x V) (restrict y V)"
+      using mult_sheaf_spec_def \<open>V \<subseteq> U\<close> by force
+    also have "... = mult_sheaf_spec V (sheaf_spec_morphisms U V x) (sheaf_spec_morphisms U V y)"
+      by (simp add: sheaf_spec_morphisms_def xy)
+    finally show "sheaf_spec_morphisms U V (mult_sheaf_spec U x y) = mult_sheaf_spec V (sheaf_spec_morphisms U V x) (sheaf_spec_morphisms U V y)" .
+  next
+    have "sheaf_spec_morphisms U V (one_sheaf_spec U) = restrict (one_sheaf_spec U) V"
+      by (simp add: U comm_ring.sheaf_spec_morphisms_def local.comm_ring_axioms one_sheaf_spec_in_sheaf_spec)
+    also have "... = one_sheaf_spec V"
+      by (metis FuncSet.restrict_restrict assms(3) inf.absorb_iff2 one_sheaf_spec_def)
+    finally show "sheaf_spec_morphisms U V (one_sheaf_spec U) = one_sheaf_spec V" .
+  qed
+qed
+ 
 lemma sheaf_spec_is_presheaf:
   shows "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
