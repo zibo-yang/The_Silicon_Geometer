@@ -3288,13 +3288,12 @@ next
   show "\<And>x U. x \<in> U \<Longrightarrow>
            is_zariski_open U \<Longrightarrow>
 local_ring (pr.stalk_at x) (pr.add_stalk_at x) (pr.mult_stalk_at x) (pr.zero_stalk_at x U) (pr.one_stalk_at x U)"
-  proof (rule isomorphic_to_local_is_local)
-    show "\<And>x U. x \<in> U \<Longrightarrow>
+  proof-
+    have "\<And>x U. x \<in> U \<Longrightarrow>
            is_zariski_open U \<Longrightarrow>
            ring (pr.stalk_at x) (pr.add_stalk_at x) (pr.mult_stalk_at x) (pr.zero_stalk_at x U) (pr.one_stalk_at x U)"
       using pr.stalk_is_ring sheaf_spec_is_presheaf by fastforce
-  next
-    show "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
+    also have "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
            is_zariski_open U \<Longrightarrow> 
 local_ring 
 (pr_ideal.carrier_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) 
@@ -3307,8 +3306,7 @@ local_ring
         using spectrum_def zariski_open_is_subset by auto
       thus "?thesis \<pp> U" by (simp add: pr_ideal.local_ring_at_is_local)
     qed
-  next
-    show "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
+    moreover have "\<And>\<pp> U. \<pp> \<in> U \<Longrightarrow>
            is_zariski_open U \<Longrightarrow>
            \<exists>f. ring_isomorphism f
 (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> U) (pr.one_stalk_at \<pp> U)
@@ -3319,6 +3317,9 @@ local_ring
       thus "?thesis \<pp> U"
         by (simp add: cxt_key_map.stalk_at_prime_is_iso_to_local_ring_at_prime \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> cxt_key_map_axioms.intro cxt_key_map_def local.comm_ring_axioms spectrum_def)
     qed
+    fix \<pp> U assume "\<pp> \<in> U" "is_zariski_open U"
+    ultimately show "local_ring (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> U) (pr.one_stalk_at \<pp> U)"
+      using isomorphic_to_local_is_local \<open>\<And>\<pp> U. \<lbrakk>\<pp> \<in> U; is_zariski_open U\<rbrakk> \<Longrightarrow> \<exists>f. ring_isomorphism f (pr.stalk_at \<pp>) (pr.add_stalk_at \<pp>) (pr.mult_stalk_at \<pp>) (pr.zero_stalk_at \<pp> U) (pr.one_stalk_at \<pp> U) R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub> (pr_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (pr_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)\<close> by fastforce
   qed
 qed
 
