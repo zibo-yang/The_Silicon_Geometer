@@ -3356,7 +3356,8 @@ notation ind_morphism_bwt_stalks.induced_morphism ("\<phi>\<^bsub>_ _ _ _ _ _ _\
 
 locale morphism_locally_ringed_spaces = 
 morphism_ringed_spaces +
-assumes is_local_morphism: "\<And>x. x \<in> X \<Longrightarrow> local_ring_morphism \<phi>\<^bsub>X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X f \<phi>\<^sub>f x\<^esub> 
+assumes is_local_morphism: "\<And>x V. x \<in> X \<Longrightarrow> is_open\<^sub>Y V \<Longrightarrow> f x \<in> V \<Longrightarrow> 
+local_ring_morphism \<phi>\<^bsub>X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X f \<phi>\<^sub>f x\<^esub> 
 (codom.stalk_at (f x)) (codom.add_stalk_at (f x)) (codom.mult_stalk_at (f x)) (codom.zero_stalk_at (f x) V) (codom.one_stalk_at (f x) V)
 (dom.stalk_at x) (dom.add_stalk_at x) (dom.mult_stalk_at x) (dom.zero_stalk_at x (f\<^sup>\<inverse> X V)) (dom.one_stalk_at x (f\<^sup>\<inverse> X V))
 "
