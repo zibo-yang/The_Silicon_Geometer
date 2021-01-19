@@ -35,8 +35,8 @@ affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf 
 context comp_affine_scheme
 begin
 
-interpretation pr: presheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-  by (simp add: dom.presheaf_of_rings_axioms)
+(* interpretation pr: presheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
+  by (simp add: dom.presheaf_of_rings_axioms) *)
 
 interpretation cis:cxt_ind_sheaf X is_open "\<O>\<^sub>X" \<rho> b add_str mult_str zero_str one_str X
   by (simp add: cxt_ind_sheaf_axioms_def cxt_ind_sheaf_def dom.sheaf_of_rings_axioms)
@@ -53,6 +53,13 @@ interpretation sh: sheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_s
 interpretation sh': sheaf_of_rings X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b 
 cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
   using cis.ind_sheaf_is_sheaf by blast
+
+interpretation rsspec: ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b 
+add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+  using spec_is_ringed_space by simp
+
+interpretation rs: ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
+  using dom.ringed_space_axioms by simp
 
 interpretation rs': ringed_space X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b 
 cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
@@ -100,27 +107,27 @@ lemma eq_neighborhoods:
 
 lemma eq_stalk:
   assumes "x \<in> X"
-  shows "stalk_at x = pr'.stalk_at x"
+  shows "presheaf_of_rings.stalk_at is_open \<O>\<^sub>X \<rho> x = pr'.stalk_at x"
   sorry
 
 lemma eq_add_stalk:
   assumes "x \<in> X"
-  shows "add_stalk_at x = pr'.add_stalk_at x"
+  shows "presheaf_of_rings.add_stalk_at is_open \<O>\<^sub>X \<rho> add_str x = pr'.add_stalk_at x"
   sorry
 
 lemma eq_mult_stalk:
   assumes "x \<in> X"
-  shows "mult_stalk_at x = pr'.mult_stalk_at x"
+  shows "presheaf_of_rings.mult_stalk_at is_open \<O>\<^sub>X \<rho> mult_str x = pr'.mult_stalk_at x"
   sorry
 
 lemma eq_zero_stalk:
   assumes "it.ind_is_open V" and "x \<in> V"
-  shows "zero_stalk_at x V = pr'.zero_stalk_at x V"
+  shows "presheaf_of_rings.zero_stalk_at is_open \<O>\<^sub>X \<rho> zero_str x V = pr'.zero_stalk_at x V"
   sorry
 
 lemma eq_one_stalk:
   assumes "it.ind_is_open V" and "x \<in> V"
-  shows "one_stalk_at x V = pr'.one_stalk_at x V"
+  shows "presheaf_of_rings.one_stalk_at is_open \<O>\<^sub>X \<rho> one_str x V = pr'.one_stalk_at x V"
   sorry
 
 lemma eq_direct_im_sheaf:
@@ -152,10 +159,15 @@ lemma eq_im_sheaf:
 dims.direct_im_sheaf U = dims'.direct_im_sheaf U"
   sorry
 
+lemma eq_ind_morphism_btw_stalks:
+  assumes "x \<in> X" (* may need other assumptions as well *)
+  shows "\<phi>\<^bsub>X is_open \<O>\<^sub>X \<rho> f \<phi>\<^sub>f x\<^esub> = \<phi>\<^bsub>X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms f \<phi>\<^sub>f x\<^esub>"
+  sorry
+
 lemma affine_scheme_lrs_axioms:
   shows "locally_ringed_space_axioms it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms
      cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str"
-  by (smt comp_affine_scheme.eq_zero_stalk comp_affine_scheme_axioms dom.open_space eq_mult_stalk eq_stalk in_mono is_local_ring it.is_open_from_ind_is_open locally_ringed_space_axioms_def pr'.open_imp_subset)
+  by (smt comp_affine_scheme.eq_add_stalk comp_affine_scheme.eq_mult_stalk comp_affine_scheme.eq_stalk comp_affine_scheme_axioms dom.open_space eq_one_stalk eq_zero_stalk in_mono is_local_ring it.is_open_from_ind_is_open locally_ringed_space_axioms_def pr'.open_imp_subset)
 
 interpretation lrs': locally_ringed_space X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b 
 cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
@@ -170,7 +182,7 @@ proof-
         sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec
         one_sheaf_spec f \<phi>\<^sub>f"
   proof(intro_locales)
-    show "morphism_ringed_spaces_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b
+    show G1:"morphism_ringed_spaces_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b
      cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str Spec is_zariski_open
      sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec
      one_sheaf_spec f \<phi>\<^sub>f"
@@ -206,11 +218,37 @@ proof-
       qed
     qed
   qed
-next
   show "morphism_locally_ringed_spaces_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms
      cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str is_zariski_open sheaf_spec
      sheaf_spec_morphisms add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
-    sorry
+  proof-
+     interpret mrs: morphism_ringed_spaces X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b
+     cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str Spec is_zariski_open sheaf_spec
+     sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f
+      using G1 by (simp add: morphism_ringed_spaces_def rs'.ringed_space_axioms spec_is_ringed_space)
+    show "morphism_locally_ringed_spaces_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms
+     cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str is_zariski_open sheaf_spec
+     sheaf_spec_morphisms add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+    proof(intro morphism_locally_ringed_spaces_axioms.intro)
+      fix x V assume "x \<in> X" "is_zariski_open V" "f x \<in> V"
+      interpret lrg: local_ring "codom.stalk_at (f x)" "codom.add_stalk_at (f x)" "codom.mult_stalk_at (f x)" "codom.zero_stalk_at (f x) V" "codom.one_stalk_at (f x) V"
+        using \<open>f x \<in> V\<close> \<open>is_zariski_open V\<close> spec_is_locally_ringed_space
+        by (simp add: locally_ringed_space_axioms_def locally_ringed_space_def)
+      interpret lrgcodom: local_ring "dom.stalk_at x" "dom.add_stalk_at x" "dom.mult_stalk_at x" "dom.zero_stalk_at x (f\<^sup>\<inverse> X V)" "dom.one_stalk_at x (f\<^sup>\<inverse> X V)"
+        by (meson \<open>f x \<in> V\<close> \<open>is_zariski_open V\<close> \<open>x \<in> X\<close> is_local_morphism local_ring_morphism_def)
+      have "local_ring_morphism \<phi>\<^bsub>X is_open \<O>\<^sub>X \<rho> f \<phi>\<^sub>f x\<^esub>
+            (codom.stalk_at (f x)) (codom.add_stalk_at (f x)) (codom.mult_stalk_at (f x)) (codom.zero_stalk_at (f x) V) (codom.one_stalk_at (f x) V) 
+(presheaf_of_rings.stalk_at is_open \<O>\<^sub>X \<rho> x) (presheaf_of_rings.add_stalk_at is_open \<O>\<^sub>X \<rho> add_str x) 
+(presheaf_of_rings.mult_stalk_at is_open \<O>\<^sub>X \<rho> mult_str x) (presheaf_of_rings.zero_stalk_at is_open \<O>\<^sub>X \<rho> zero_str x (f \<^sup>\<inverse> X V))
+(presheaf_of_rings.one_stalk_at is_open \<O>\<^sub>X \<rho> one_str x (f \<^sup>\<inverse> X V))"
+        by (simp add: \<open>f x \<in> V\<close> \<open>is_zariski_open V\<close> \<open>x \<in> X\<close> is_local_morphism)
+      thus "local_ring_morphism \<phi>\<^bsub>X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms f \<phi>\<^sub>f x\<^esub>
+            (codom.stalk_at (f x)) (codom.add_stalk_at (f x)) (codom.mult_stalk_at (f x))
+            (codom.zero_stalk_at (f x) V) (codom.one_stalk_at (f x) V) (pr'.stalk_at x)
+            (pr'.add_stalk_at x) (pr'.mult_stalk_at x) (pr'.zero_stalk_at x (f \<^sup>\<inverse> X V))
+            (pr'.one_stalk_at x (f \<^sup>\<inverse> X V))" using eq_ind_morphism_btw_stalks \<open>f x \<in> V\<close> \<open>is_zariski_open V\<close> \<open>x \<in> X\<close> sorry
+    qed
+  qed
 next
   show "iso_locally_ringed_spaces_axioms X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b
      cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str Spec is_zariski_open
