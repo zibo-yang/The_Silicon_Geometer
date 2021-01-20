@@ -20,7 +20,13 @@ begin
 definition is_closed :: "'a set \<Rightarrow> bool"
   where "is_closed U \<equiv> U \<subseteq> S \<and> is_open (S - U)"
 
+definition neighborhoods:: "'a \<Rightarrow> ('a set) set"
+  where "neighborhoods x \<equiv> {U. is_open U \<and> x \<in> U}"
+
+text \<open>Note that by a neighborhood we mean what some authors call an open neighborhood.\<close>
+
 end (* topological_space *)
+
 
 subsection \<open>Topological Basis\<close>
 
@@ -43,6 +49,7 @@ lemma generated_topology_is_topology:
   fixes S:: "'a set" and B:: "'a set set"
   shows "topological_space S (generated_topology S B)"
   by (simp add: Int UN UNIV generated_topology_subset topological_space_def)
+
 
 subsection \<open>Covers\<close>
 
@@ -89,6 +96,7 @@ end (* open_cover_of_subset *)
 locale open_cover_of_open_subset = open_cover_of_subset X is_open U I C 
   for X and is_open and U and I and C +
   assumes is_open_subset: "is_open U"
+
 
 subsection \<open>Induced Topology\<close>
 
@@ -171,24 +179,24 @@ lemma (in topological_space) ind_is_open_iff_open:
 
 subsection \<open>Continuous Maps\<close>
 
-locale continuous_map = source: topological_space X is_open + target: topological_space X' is_open' 
-+ map f X X'
-  for X and is_open and X' and is_open' and f +
-  assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open (f\<^sup>\<inverse> X U)"
+locale continuous_map = source: topological_space S is_open + target: topological_space S' is_open' 
++ map f S S'
+  for S and is_open and S' and is_open' and f +
+  assumes is_continuous: "\<And>U. is_open' U \<Longrightarrow> is_open (f\<^sup>\<inverse> S U)"
 begin
 
 lemma open_cover_of_open_subset_from_target_to_source:
-  assumes "open_cover_of_open_subset X' is_open' U I C"
-  shows "open_cover_of_open_subset X is_open (f\<^sup>\<inverse> X U) I (\<lambda>i. f\<^sup>\<inverse> X (C i))"
+  assumes "open_cover_of_open_subset S' is_open' U I C"
+  shows "open_cover_of_open_subset S is_open (f\<^sup>\<inverse> S U) I (\<lambda>i. f\<^sup>\<inverse> S (C i))"
 proof
-  show "f \<^sup>\<inverse> X U \<subseteq> X" by simp
-  show "f \<^sup>\<inverse> X (C i) \<subseteq> X" if "i \<in> I" for i
+  show "f \<^sup>\<inverse> S U \<subseteq> S" by simp
+  show "f \<^sup>\<inverse> S (C i) \<subseteq> S" if "i \<in> I" for i
     using that by simp
-  show "is_open (f \<^sup>\<inverse> X U)"
+  show "is_open (f \<^sup>\<inverse> S U)"
     by (meson assms is_continuous open_cover_of_open_subset.is_open_subset) 
-  show "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> X (C i))"
+  show "\<And>i. i \<in> I \<Longrightarrow> is_open (f \<^sup>\<inverse> S (C i))"
     by (meson assms is_continuous open_cover_of_open_subset_def open_cover_of_subset.are_open_subspaces)
-  show "f \<^sup>\<inverse> X U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> X (C i))"
+  show "f \<^sup>\<inverse> S U \<subseteq> (\<Union>i\<in>I. f \<^sup>\<inverse> S (C i))"
     using assms unfolding open_cover_of_open_subset_def cover_of_subset_def open_cover_of_subset_def
     by blast
 qed
@@ -201,7 +209,7 @@ subsection \<open>Homeomorphisms\<close>
 text \<open>The topological isomorphisms between topological spaces are called homeomorphisms.\<close>
 
 locale homeomorphism = 
-  continuous_map + bijective_map f X X' + 
-  continuous_map X' is_open' X is_open "inverse_map f X X'"
+  continuous_map + bijective_map f S S' + 
+  continuous_map S' is_open' S is_open "inverse_map f S S'"
 
 end
