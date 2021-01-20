@@ -561,11 +561,11 @@ end (* presheaf_of_rings *)
 
 locale morphism_presheaves_of_rings = 
 source: presheaf_of_rings X is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
-  + target: presheaf_of_rings X is_open \<FF>' \<rho>' c add_str' mult_str' zero_str' one_str'
+  + target: presheaf_of_rings X is_open \<FF>' \<rho>' b' add_str' mult_str' zero_str' one_str'
   for X and is_open 
     and \<FF> and \<rho> and b and add_str ("+\<^bsub>_\<^esub>") and mult_str ("\<cdot>\<^bsub>_\<^esub>") 
     and zero_str ("\<zero>\<^bsub>_\<^esub>") and one_str ("\<one>\<^bsub>_\<^esub>") 
-    and \<FF>' and \<rho>' and c and add_str' ("+''\<^bsub>_\<^esub>") and mult_str' ("\<cdot>''\<^bsub>_\<^esub>") 
+    and \<FF>' and \<rho>' and b' and add_str' ("+''\<^bsub>_\<^esub>") and mult_str' ("\<cdot>''\<^bsub>_\<^esub>") 
     and zero_str' ("\<zero>''\<^bsub>_\<^esub>") and one_str' ("\<one>''\<^bsub>_\<^esub>") + 
   fixes fam_morphisms:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
   assumes is_ring_morphism: "\<And>U. is_open U \<Longrightarrow> ring_homomorphism (fam_morphisms U) 
