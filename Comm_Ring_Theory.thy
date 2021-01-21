@@ -2378,9 +2378,26 @@ lemma rel_is_equivalence:
 proof (intro conjI strip)
   show "(a, c) \<in> {(x, y). x \<sim> y}" 
     if "(a, b) \<in> {(x, y). x \<sim> y}" "(b, c) \<in> {(x, y). x \<sim> y}" for a b c
-    using that
-    apply (auto simp: rel_def)(*NO IDEA WHAT TO DO HERE -- LCP*)
-  sorry
+  proof -
+    obtain W1 where W1:"fst a \<in> I" "fst b \<in> I" "snd a \<in> \<FF> (fst a)" "snd b \<in> \<FF> (fst b)" 
+                    "W1 \<in> I" "W1 \<subseteq> fst a" "W1 \<subseteq> fst b" 
+                    "\<rho> (fst a \<inter> fst b) W1 (snd a) = \<rho> (fst a \<inter> fst b) W1 (snd b)"
+      using \<open>(a, b) \<in> {(x, y). x \<sim> y}\<close> unfolding rel_def by auto
+    obtain W2 where W2:"fst b \<in> I" "fst c \<in> I" "snd b \<in> \<FF> (fst b)" "snd c \<in> \<FF> (fst c)" 
+                    "W2 \<in> I" "W2 \<subseteq> fst b" "W2 \<subseteq> fst c" 
+                    "\<rho> (fst b \<inter> fst c) W2 (snd b) = \<rho> (fst b \<inter> fst c) W2 (snd c)"
+      using \<open>(b, c) \<in> {(x, y). x \<sim> y}\<close> unfolding rel_def by auto
+    obtain W3 where W3:"W3 \<in>I" "W3 \<subseteq> W1 \<inter> W2"
+      using has_lower_bound[OF \<open>W1\<in>I\<close> \<open>W2\<in>I\<close>] by auto
+
+    from \<open>W3 \<subseteq> W1 \<inter> W2\<close> 
+    have "W3 \<subseteq> fst a \<inter> fst c" using W1(6) W2(7) by blast
+    moreover have "\<rho> (fst a \<inter> fst c) W3 (snd a) = \<rho> (fst a \<inter> fst c) W3 (snd c)"
+      using W1 W2 sorry
+    moreover note \<open>W3 \<in>I\<close> W1 W2
+    ultimately show ?thesis 
+      unfolding rel_def by auto
+  qed
 qed (auto simp: rel_def Int_commute)
 
 definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor> _ , _ \<rfloor>")
