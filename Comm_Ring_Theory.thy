@@ -2560,9 +2560,9 @@ qed
 lemma universal_property_for_stalk:
   fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
   assumes "is_open V" and "x \<in> V" and "ring A add mult zero one" and 
-"\<And>U. U\<in>(neighborhoods x) \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
-and "\<And>U V. U\<in>(neighborhoods x) \<Longrightarrow> V\<in>(neighborhoods x) \<Longrightarrow> V\<subseteq>U \<Longrightarrow> (\<And>s. s\<in>(\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) s = \<psi> U s)"
-shows "\<forall>V\<in>(neighborhoods x). \<exists>!u. ring_homomorphism u  
+    "\<And>U. U\<in>(neighborhoods x) \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
+    and "\<And>U V. U\<in>(neighborhoods x) \<Longrightarrow> V\<in>(neighborhoods x) \<Longrightarrow> V\<subseteq>U \<Longrightarrow> (\<And>s. s\<in>(\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) s = \<psi> U s)"
+  shows "\<forall>V\<in>(neighborhoods x). \<exists>!u. ring_homomorphism u  
 carrier_stalk add_stalk mult_stalk (zero_stalk V) (one_stalk V) A add mult zero one 
 \<and> (\<forall>U\<in>(neighborhoods x). \<forall>s\<in>(\<FF> U). (u \<circ> canonical_fun U) s = \<psi> U s)"
   using direct_lim.universal_property sorry
@@ -3220,18 +3220,29 @@ next
       qed
       then obtain h where Hh:"h \<in> R" "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" 
         using pi.eq_from_eq_frac by (metis Diff_iff \<open>a \<in> R\<close> \<open>b \<in> R\<close> \<open>f \<in> R\<close> \<open>f \<notin> \<pp>\<close> \<open>g \<in> R\<close> \<open>g \<notin> \<pp>\<close>)
-      then have "\<And>\<qq>. \<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h) \<Longrightarrow> s' \<qq> = t' \<qq>" 
-      proof-
-        fix \<qq> assume Hq: "\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)"
-        then have Fq: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
-          using belongs_standard_open_iff
-          apply (meson FU(11) IntD1 IntD2 standard_open_is_subset subsetD)
-           apply (metis Diff_iff IntD1 IntD2 \<open>\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)\<close> \<open>g \<in> R\<close> belongs_standard_open_iff standard_open_def)
-          by (meson Hh(1) Hq IntD2 belongs_standard_open_iff standard_open_is_subset subsetD)
-        then have "quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f = quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g" 
-          using Fq(1-3) FU(9-13) sorry
+      have "s' \<qq> = t' \<qq>" if "\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)" for \<qq>
+      proof -
+        have "\<qq> \<in> Spec"
+          using standard_open_def that by auto
+        then        interpret q: quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
+          using spectrum_imp_cxt_quotient_ring by force
+        interpret eq: equivalence "R \<times> (R\<setminus>\<qq>)" "{(x, y). (x, y) \<in> (R \<times> (R\<setminus>\<qq>)) \<times> R \<times> (R\<setminus>\<qq>) \<and> q.rel x y}"
+          sorry
+        have Fq: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
+          using belongs_standard_open_iff that
+            apply (meson FU(11) IntD1 IntD2 standard_open_is_subset subsetD)
+           apply (metis Diff_iff IntD1 IntD2 that \<open>g \<in> R\<close> belongs_standard_open_iff standard_open_def)
+          by (meson Hh(1) that IntD2 belongs_standard_open_iff standard_open_is_subset subsetD)
+        then have "q.frac a f = q.frac b g" 
+          using Fq(1-3) FU(9-13)
+          unfolding q.frac_def
+          apply- (*A MESS*)
+          apply (rule eq.Class_eq)
+          apply safe
+          apply (metis Diff_iff Hh(1) Hh(3) prod.sel q.rel_def)
+          done
         thus "s' \<qq> = t' \<qq>"
-          by (simp add: \<open>s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)\<close> \<open>t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)\<close>)
+          by (simp add: FU(7) FU(8))
       qed
       thus "s = t"
       proof-
