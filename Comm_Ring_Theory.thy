@@ -2174,7 +2174,7 @@ qed
  
 lemma sheaf_spec_is_presheaf:
   shows "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
-(\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
+add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
 proof-
   have "topological_space Spec is_zariski_open" by (simp add: zariski_is_topological_space)
   moreover have "sheaf_spec {} = {\<O>b}"
@@ -2202,7 +2202,7 @@ qed
 (* ex. 0.30 *)
 lemma sheaf_spec_is_sheaf:
   shows "sheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
-(\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
+add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
 proof (intro sheaf_of_rings.intro sheaf_of_rings_axioms.intro)
   show "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
@@ -2336,7 +2336,7 @@ begin
 
 lemma spec_is_ringed_space:
   shows "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
-(\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
+add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
 proof (intro ringed_space.intro)
   show "sheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
@@ -3356,7 +3356,7 @@ interpretation pr: presheaf_of_rings "Spec" is_zariski_open sheaf_spec sheaf_spe
 (* ex. 0.43 *)
 lemma spec_is_locally_ringed_space:
   shows "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
-(\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
+add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
 proof (intro locally_ringed_space.intro locally_ringed_space_axioms.intro)
   show "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
     using spec_is_ringed_space by simp
