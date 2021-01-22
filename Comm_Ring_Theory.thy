@@ -966,7 +966,7 @@ lemma frac_cancel:
 
 lemma frac_eq_obtains:
   assumes "(r,s) \<in> R \<times> S" and x_def:"x=(SOME x. x\<in>(frac r s))"
-  obtains s1 where "s1\<in>S" "s1 \<cdot> s \<cdot> fst x = s1 \<cdot> snd x \<cdot> r" and "x\<in>R \<times> S"
+  obtains s1 where "s1\<in>S" "s1 \<cdot> s \<cdot> fst x = s1 \<cdot> snd x \<cdot> r" and "x \<in> R \<times> S"
 proof -
   have "x\<in>(r/s)"
     unfolding x_def
@@ -984,7 +984,7 @@ proof -
 qed
 
 definition valid_frac::"('a \<times> 'a) set \<Rightarrow> bool" where
-  "valid_frac X = (\<exists>(r, s)\<in>R \<times> S. r / s = X)"
+  "valid_frac X \<equiv> \<exists>r\<in>R. \<exists>s\<in>S. r / s = X"
 
 lemma frac_non_empty[simp]:"(a,b) \<in> R \<times> S \<Longrightarrow> valid_frac (frac a b)"
   unfolding frac_def valid_frac_def by blast
@@ -1046,9 +1046,9 @@ proof -
     have "x\<in>X" "y\<in>Y" 
       using assms unfolding x_def y_def valid_frac_def some_in_eq local.frac_def
       by blast+
-    then have "x\<in> R \<times> S" "y\<in> R \<times> S"
-      using assms valid_frac_def 
-      by (smt case_prodE local.frac_def rel.Class_closed2 subsetD)+
+    then obtain "x \<in> R \<times> S" "y \<in> R \<times> S"
+      using assms 
+      by (simp add: valid_frac_def x_def y_def) (metis frac_eq_obtains mem_Sigma_iff)
     moreover have "add_rel X Y = (fst x \<cdot> snd y + fst y \<cdot> snd x) / (snd x \<cdot> snd y)"
       unfolding add_rel_def add_rel_aux_def x_def y_def Let_def by auto
     ultimately show ?thesis using that by auto
@@ -1091,7 +1091,8 @@ proof -
       using assms unfolding x_def valid_frac_def some_in_eq local.frac_def
       by blast
     then have "x\<in> R \<times> S" 
-      using assms valid_frac_def by (smt case_prodE local.frac_def rel.Class_closed2 subsetD)+
+      using assms valid_frac_def
+      by (metis frac_eq_obtains mem_Sigma_iff x_def)
     moreover have "uminus_rel X = (comm.additive.inverse (fst x) ) / (snd x)"
       unfolding uminus_rel_def x_def Let_def by auto
     ultimately show ?thesis using that by auto
@@ -1149,9 +1150,9 @@ proof -
     have "x\<in>X" "y\<in>Y" 
       using assms unfolding x_def y_def valid_frac_def some_in_eq local.frac_def
       by blast+
-    then have "x\<in> R \<times> S" "y\<in> R \<times> S"
-      using assms valid_frac_def 
-      by (smt case_prodE local.frac_def rel.Class_closed2 subsetD)+
+    then obtain "x \<in> R \<times> S" "y \<in> R \<times> S"
+      using assms 
+      by (simp add: valid_frac_def x_def y_def) (metis frac_eq_obtains mem_Sigma_iff)
     moreover have "mult_rel X Y = (fst x \<cdot> fst y) / (snd x \<cdot> snd y)"
       unfolding mult_rel_def mult_rel_aux_def x_def y_def Let_def by auto
     ultimately show ?thesis using that by auto
@@ -1179,12 +1180,9 @@ lemma valid_frac_one[simp]:
 definition carrier_quotient_ring:: "('a \<times> 'a) set set"
   where "carrier_quotient_ring \<equiv> rel.Partition"
 
-lemma carrier_quotient_ring_iff[iff,simp]:"X \<in> carrier_quotient_ring \<longleftrightarrow> valid_frac X "
+lemma carrier_quotient_ring_iff[iff]: "X \<in> carrier_quotient_ring \<longleftrightarrow> valid_frac X "
   unfolding valid_frac_def carrier_quotient_ring_def
-  apply safe
-  subgoal using local.frac_def by fastforce
-  subgoal using local.frac_def rel.natural.map_closed by auto
-  done
+  using local.frac_def rel.natural.map_closed rel.representant_exists by fastforce
 
 lemma frac_from_carrier:
   assumes "X \<in> carrier_quotient_ring"
@@ -2413,6 +2411,18 @@ proof -
     unfolding ring_def abelian_group_def Group_Theory.group_def by (meson monoid.unit_closed)
 qed
 
+(*IS THIS GOOD FOR ANYTHING? --CP*)
+lemma class_of_add_in:
+  assumes "U \<in> I" "x \<in> \<FF> U" "y \<in> \<FF> U"
+  shows "(+\<^bsub>U\<^esub>) x  y \<in> \<FF> U"
+proof -
+  have "ring (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub>" 
+    using assms subset_of_opens is_ring_from_is_homomorphism by blast
+  then show ?thesis
+    unfolding ring_def abelian_group_def Group_Theory.group_def
+    by (meson assms(2) assms(3) monoid.composition_closed)
+qed
+
 lemma class_of_0_eq:
   assumes "U \<in> I" "U' \<in> I"
   shows "\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor> = \<lfloor>U', \<zero>\<^bsub>U'\<^esub>\<rfloor>"
@@ -2483,17 +2493,18 @@ lemma exercise_0_35:
   assumes "U \<in> I"
   shows "ring carrier_direct_lim add_rel mult_rel \<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor> \<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>"
 proof intro_locales
+  interpret eq: equivalence "Sigma I \<FF>" "{(x, y). x \<sim> y}"
+    using rel_is_equivalence by blast
   show "Group_Theory.monoid carrier_direct_lim add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>"
-    unfolding carrier_direct_lim_def
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "Group_Theory.group_axioms carrier_direct_lim add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "commutative_monoid_axioms carrier_direct_lim add_rel"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "Group_Theory.monoid carrier_direct_lim mult_rel \<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor>"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "ring_axioms carrier_direct_lim add_rel mult_rel"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
 qed
 
 (* The canonical function from \<FF> U into lim \<FF> for U \<in> I: *)
@@ -2563,15 +2574,15 @@ proof intro_locales
   interpret equivalence "Sigma I \<FF>" "{(x, y). x \<sim> y}"
     using rel_is_equivalence by blast
   show "Group_Theory.monoid carrier_stalk add_stalk (zero_stalk V)"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "Group_Theory.group_axioms carrier_stalk add_stalk (zero_stalk V)"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "commutative_monoid_axioms carrier_stalk add_stalk"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "Group_Theory.monoid carrier_stalk mult_stalk (one_stalk V)"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   show "ring_axioms carrier_stalk add_stalk mult_stalk"
-    sorry
+    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
 qed
 
 lemma universal_property_for_stalk:
@@ -3124,12 +3135,25 @@ lemma class_from_belongs_stalk:
   obtains U s' where "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "s = st.class_of U s'"
   using assms 
   unfolding st.carrier_stalk_def
-  sorry
+  sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
 
-lemma same_class_from_restrict:
-  assumes "is_zariski_open U" "is_zariski_open V" "U \<subseteq> V" "s \<in> \<O> V"
+lemma same_class_from_restrict: (*I ADDED THE ASSUMPTION \<pp> \<in> V -- LCP*)
+  assumes "is_zariski_open U" "is_zariski_open V" "U \<subseteq> V" "s \<in> \<O> V" "\<pp> \<in> V"
   shows "st.class_of V s = st.class_of U (sheaf_spec_morphisms V U s)"
-  using assms sorry
+proof -
+  interpret eq: equivalence "Sigma {U. is_zariski_open U \<and> \<pp> \<in> U} sheaf_spec" "{(x, y). st.rel x y}"
+    using st.rel_is_equivalence by blast
+  show ?thesis
+    unfolding st.class_of_def 
+  proof (rule eq.Class_eq)
+     have "sheaf_spec_morphisms V U s \<in> \<O> U"
+      using assms map.map_closed pr.is_map_from_is_homomorphism by fastforce
+    moreover have "\<exists>W. is_zariski_open W \<and> \<pp> \<in> W \<and> W \<subseteq> V \<and> W \<subseteq> U \<and> sheaf_spec_morphisms V W s = sheaf_spec_morphisms U W (sheaf_spec_morphisms V U s)"
+      sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
+    ultimately show "((V, s), U, sheaf_spec_morphisms V U s) \<in> {(x, y). st.rel x y}"
+      using assms by (auto simp: st.rel_def)
+  qed
+qed
 
 lemma shrinking_from_belong_stalk:
   assumes "s \<in> st.carrier_stalk" and "t \<in> st.carrier_stalk"
@@ -3163,11 +3187,11 @@ qed
 
 lemma stalk_at_prime_is_iso_to_local_ring_at_prime_aux:
   assumes "is_zariski_open V" and "\<pp> \<in> V" and
-"ring_homomorphism \<phi>
+    "ring_homomorphism \<phi>
 st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
-and "\<forall>U\<in>(top.neighborhoods \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> st.canonical_fun U) s = key_map U s"
-shows "ring_isomorphism \<phi>
+    and "\<forall>U\<in>(top.neighborhoods \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> st.canonical_fun U) s = key_map U s"
+  shows "ring_isomorphism \<phi>
 st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
 proof (intro ring_isomorphism.intro bijective_map.intro bijective.intro) 
@@ -3185,10 +3209,10 @@ next
     proof
       fix s t assume "s \<in> st.carrier_stalk" "t \<in> st.carrier_stalk" "\<phi> s = \<phi> t"
       obtain U s' t' a f b g where FU: "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "t' \<in> \<O> U"
-"s = st.class_of U s'" "t = st.class_of U t'" 
-"s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)" 
-"t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)" 
-"a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>"
+        "s = st.class_of U s'" "t = st.class_of U t'" 
+        "s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)" 
+        "t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)" 
+        "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>"
       proof-
         obtain V s' t' where HV: "s = st.class_of V s'" "t = st.class_of V t'" 
                             "s' \<in> \<O> V" "t' \<in> \<O> V" "is_zariski_open V" "\<pp> \<in> V"
@@ -3243,34 +3267,51 @@ next
           using standard_open_def that by auto
         then        interpret q: quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
           using spectrum_imp_cxt_quotient_ring by force
-        interpret eq: equivalence "R \<times> (R\<setminus>\<qq>)" "{(x, y). (x, y) \<in> (R \<times> (R\<setminus>\<qq>)) \<times> R \<times> (R\<setminus>\<qq>) \<and> q.rel x y}"
-          sorry
+        define RR where "RR \<equiv> {(x, y). (x, y) \<in> (R \<times> (R\<setminus>\<qq>)) \<times> R \<times> (R\<setminus>\<qq>) \<and> q.rel x y}"
+        have RR_iff: "(x,y) \<in> RR \<longleftrightarrow> 
+              (x \<in> R \<times> (R\<setminus>\<qq>) \<and> y \<in> R \<times> (R\<setminus>\<qq>) \<and> (\<exists>s1. s1 \<in> R \<and> s1 \<notin> \<qq> \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>))" for x y
+          by (simp add: RR_def q.rel_def del: local.q.sub)
+        interpret eq: equivalence "R \<times> (R\<setminus>\<qq>)" "RR"
+        proof
+          show "RR \<subseteq> (R \<times> (R\<setminus>\<qq>)) \<times> R \<times> (R\<setminus>\<qq>)"
+            by (auto simp: RR_def)
+          show "(a, a) \<in> RR" if "a \<in> R \<times> (R\<setminus>\<qq>)" for a 
+            using that 
+            apply (simp add: RR_iff del: local.q.sub)
+            by (metis Diff_iff SigmaE prod.sel(1) prod.sel(2) q.frac_eq_Ex)
+          show "(b, a) \<in> RR" if "(a, b) \<in> RR" for a b
+            using that 
+            apply (clarsimp simp add: RR_iff simp del: local.q.sub)
+            by (metis additive.group_axioms fst_conv group.cancel_imp_equal inverse_distributive(1) multiplicative.composition_closed snd_conv)
+          show "(a, c) \<in> RR" if "(a, b) \<in> RR" and "(b, c) \<in> RR" for a b c
+            using that
+            apply (clarsimp simp add: RR_iff simp del: local.q.sub)
+            sorry
+        qed
         have Fq: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
           using belongs_standard_open_iff that
             apply (meson FU(11) IntD1 IntD2 standard_open_is_subset subsetD)
            apply (metis Diff_iff IntD1 IntD2 that \<open>g \<in> R\<close> belongs_standard_open_iff standard_open_def)
           by (meson Hh(1) that IntD2 belongs_standard_open_iff standard_open_is_subset subsetD)
-        then have "q.frac a f = q.frac b g" 
-          using Fq(1-3) FU(9-13)
-          unfolding q.frac_def
-          apply- (*A MESS*)
+        moreover  have "eq.Class (a, f) = eq.Class (b, g)"
           apply (rule eq.Class_eq)
-          apply safe
-          apply (metis Diff_iff Hh(1) Hh(3) prod.sel q.rel_def)
-          done
+          using Fq(1-3) FU(9-13) Hh(1) Hh(3)
+          by (force simp add: RR_iff simp del: local.q.sub)
+        ultimately have "q.frac a f = q.frac b g"
+          using RR_def q.frac_def by metis 
         thus "s' \<qq> = t' \<qq>"
           by (simp add: FU(7) FU(8))
       qed
       thus "s = t"
       proof-
-        have "is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))" 
+        have izo: "is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))" 
           using local.standard_open_is_zariski_open by (simp add: FU(1,11,12) Hh(1) standard_open_is_zariski_open)
         have "s = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s')"
-          by (simp add: FU(1,3,5) \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> inf.coboundedI1 same_class_from_restrict)
+          by (simp add: FU(1,2,3,5) izo same_class_from_restrict subset_eq)
         also have "\<dots> = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')" 
-          using fact same_class_from_restrict sorry
+          using fact same_class_from_restrict sorry (*NO IDEA WHAT TO DO HERE -- LCP*)
         also have "\<dots> = t"
-          by (metis (mono_tags, lifting) FU(1,4,6) Int_assoc Int_lower1 \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> same_class_from_restrict)
+          by (metis (mono_tags, lifting) FU(1,2,4,6) Int_assoc Int_lower1 \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> same_class_from_restrict)
         finally show ?thesis .
       qed
     qed 
