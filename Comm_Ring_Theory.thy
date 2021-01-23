@@ -3059,37 +3059,42 @@ proof (intro ring_homomorphism.intro)
   show "Set_Theory.map (key_map U) (\<O> U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" using key_map_is_map assms(1) by simp 
 next 
   show "ring (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U)"
-    using assms(2) pr.is_ring_from_is_homomorphism by blast
+    using \<open>is_zariski_open U\<close> pr.is_ring_from_is_homomorphism by blast
 next 
   show "ring (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
     by (simp add: pi.ring_axioms)
 next 
   show "group_homomorphism (key_map U) (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.zero_local_ring_at)" 
-  proof- 
-    have "(key_map U) (zero_sheaf_spec U) = pi.zero_local_ring_at" 
-      using zero_sheaf_spec_def key_map_def pi.zero_local_ring_at_def assms(1,2) spectrum_def zero_sheaf_spec_in_sheaf_spec by fastforce 
-    moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow> y \<in> \<O> U \<Longrightarrow>
+  proof intro_locales
+    show "Set_Theory.map (local.key_map U) (\<O> U) pi.carrier_local_ring_at"
+      by (simp add: assms(1) key_map_is_map)
+    show "Group_Theory.monoid (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U)"
+      "Group_Theory.group_axioms (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U)"
+      using pr.is_ring_from_is_homomorphism [OF \<open>is_zariski_open U\<close>]
+      unfolding ring_def Group_Theory.group_def abelian_group_def
+      by blast+
+    have 1: "(key_map U) (zero_sheaf_spec U) = pi.zero_local_ring_at" 
+      using assms
+      unfolding key_map_def pi.zero_local_ring_at_def
+      using zero_sheaf_spec_def zero_sheaf_spec_in_sheaf_spec by force
+    have 2: "\<And>x y. \<lbrakk>x \<in> \<O> U; y \<in> \<O> U\<rbrakk> \<Longrightarrow>
            (key_map U) (add_sheaf_spec U x y) = pi.add_local_ring_at (key_map U x) (key_map U y)"
       using add_sheaf_spec_in_sheaf_spec key_map_def assms pi.add_local_ring_at_def add_sheaf_spec_def spectrum_def zariski_open_is_subset by fastforce 
-    thus ?thesis 
-      sorry
-      (* my tweaks about locale structures somehow affect this proof, I will fix it later. -- Wenda
-      unfolding group_homomorphism_def monoid_homomorphism_def monoid_homomorphism_axioms_def
-      by (metis Group_Theory.group_def abelian_group.axioms(1) assms calculation comm_ring.axioms(1) comm_ring.sheaf_spec_on_open_is_ring key_map_is_map local.comm_ring_axioms pi.local_ring_at_is_comm_ring ring_def)
-      *)
-  qed 
-next 
-  show "monoid_homomorphism (key_map U) (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.mult_local_ring_at) (pi.one_local_ring_at)" 
-  proof- 
-    have "(key_map U) (one_sheaf_spec U) = pi.one_local_ring_at" 
-      using one_sheaf_spec_def key_map_def pi.one_local_ring_at_def assms one_sheaf_spec_in_sheaf_spec spectrum_def by fastforce 
-    moreover have "\<And>x y. x \<in> \<O> U \<Longrightarrow> y \<in> \<O> U \<Longrightarrow>
-           (key_map U) (mult_sheaf_spec U x y) = pi.mult_local_ring_at (key_map U x) (key_map U y)" 
-      using mult_sheaf_spec_in_sheaf_spec key_map_def assms(1,2) pi.mult_local_ring_at_def 
-mult_sheaf_spec_def spectrum_def zariski_open_is_subset by fastforce 
-    thus ?thesis unfolding monoid_homomorphism_def monoid_homomorphism_axioms_def
-      by (meson assms(1,2) calculation key_map_is_map pi.multiplicative.monoid_axioms pr.is_ring_from_is_homomorphism ring_def) 
+    show "monoid_homomorphism_axioms (local.key_map U) (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) pi.add_local_ring_at pi.zero_local_ring_at"
+      unfolding monoid_homomorphism_axioms_def
+      by (auto simp: 1 2)
   qed
+next 
+  have "(key_map U) (one_sheaf_spec U) = pi.one_local_ring_at" 
+    using one_sheaf_spec_def key_map_def pi.one_local_ring_at_def assms one_sheaf_spec_in_sheaf_spec spectrum_def by fastforce 
+  moreover have "\<And>x y. \<lbrakk>x \<in> \<O> U; y \<in> \<O> U\<rbrakk> \<Longrightarrow>
+           (key_map U) (mult_sheaf_spec U x y) = pi.mult_local_ring_at (key_map U x) (key_map U y)" 
+    using mult_sheaf_spec_in_sheaf_spec key_map_def assms pi.mult_local_ring_at_def 
+      mult_sheaf_spec_def spectrum_def zariski_open_is_subset by fastforce 
+  ultimately show "monoid_homomorphism (key_map U) (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.mult_local_ring_at) (pi.one_local_ring_at)" 
+    using pr.is_ring_from_is_homomorphism [OF \<open>is_zariski_open U\<close>] \<open>\<pp> \<in> U\<close>
+    unfolding monoid_homomorphism_def monoid_homomorphism_axioms_def ring_def
+    using key_map_is_map pi.multiplicative.monoid_axioms by presburger
 qed
 
 lemma key_map_is_coherent:
