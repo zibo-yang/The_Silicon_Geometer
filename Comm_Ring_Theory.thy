@@ -2411,7 +2411,7 @@ proof -
     unfolding ring_def abelian_group_def Group_Theory.group_def by (meson monoid.unit_closed)
 qed
 
-(*IS THIS GOOD FOR ANYTHING? --CP*)
+(*IS THIS GOOD FOR ANYTHING? --LCP*)
 lemma class_of_add_in:
   assumes "U \<in> I" "x \<in> \<FF> U" "y \<in> \<FF> U"
   shows "(+\<^bsub>U\<^esub>) x  y \<in> \<FF> U"
@@ -3125,8 +3125,8 @@ proof -
 (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U) 
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
     using key_map_is_ring_morphism top.neighborhoods_def sheaf_spec_is_presheaf by force
-  moreover have "\<And>U V x. U\<in>(top.neighborhoods \<pp>) \<Longrightarrow> V\<in>(top.neighborhoods \<pp>) \<Longrightarrow>
-        V \<subseteq> U \<Longrightarrow> x\<in>\<O> U \<Longrightarrow> (key_map V \<circ> sheaf_spec_morphisms U V) x = key_map U x" 
+  moreover have "\<And>U V x. \<lbrakk>U \<in> top.neighborhoods \<pp>; V \<in> top.neighborhoods \<pp>; V \<subseteq> U; x \<in> \<O> U\<rbrakk> 
+                          \<Longrightarrow> (key_map V \<circ> sheaf_spec_morphisms U V) x = key_map U x" 
     using key_map_is_coherent
     by (metis (no_types, lifting) mem_Collect_eq top.neighborhoods_def)
   ultimately show ?thesis 
@@ -3138,9 +3138,26 @@ qed
 lemma class_from_belongs_stalk:
   assumes "s \<in> st.carrier_stalk"
   obtains U s' where "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "s = st.class_of U s'"
-  using assms 
-  unfolding st.carrier_stalk_def
-  sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
+proof -
+  interpret dl: direct_lim Spec is_zariski_open sheaf_spec sheaf_spec_morphisms "\<O>b"
+    add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec "top.neighborhoods \<pp>"
+    by (simp add: st.direct_lim_axioms top.neighborhoods_def)
+  interpret eq: equivalence "Sigma (top.neighborhoods \<pp>) sheaf_spec" "{(x, y). dl.rel x y}"
+    using dl.rel_is_equivalence by force
+  obtain U s' where seq: "s = eq.Class (U, s')" and U: "U \<in> top.neighborhoods \<pp>" and s': "s' \<in> \<O> U"
+    using assms by (auto simp: st.carrier_stalk_def dl.carrier_direct_lim_def eq.Partition_def) 
+  show thesis
+  proof
+    show "is_zariski_open U"
+      using U dl.subset_of_opens by blast
+    show "\<pp> \<in> U"
+      using U top.neighborhoods_def by force
+    show "s' \<in> \<O> U"
+      using s' by blast
+    show "s = st.class_of U s'"
+      using seq st.class_of_def top.neighborhoods_def by presburger
+  qed
+qed
 
 lemma same_class_from_restrict: (*I ADDED THE ASSUMPTION \<pp> \<in> V -- LCP*)
   assumes "is_zariski_open U" "is_zariski_open V" "U \<subseteq> V" "s \<in> \<O> V" "\<pp> \<in> V"
