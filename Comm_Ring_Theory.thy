@@ -2629,10 +2629,10 @@ lemma exercise_0_35:
   assumes "U \<in> I"
   shows "ring carrier_direct_lim add_rel mult_rel \<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor> \<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>"
 proof unfold_locales
-  show 
-    "\<And>a b. a \<in> carrier_direct_lim \<Longrightarrow> b \<in> carrier_direct_lim \<Longrightarrow> add_rel a b \<in> carrier_direct_lim"
-    "\<And>a b. a \<in> carrier_direct_lim \<Longrightarrow> b \<in> carrier_direct_lim \<Longrightarrow> mult_rel a b \<in> carrier_direct_lim"
-    "\<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim" "\<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim"
+  show add_rel: "add_rel a b \<in> carrier_direct_lim" and mult_rel: "mult_rel a b \<in> carrier_direct_lim"
+    if "a \<in> carrier_direct_lim" "b \<in> carrier_direct_lim" for a b
+    using \<open>U \<in> I\<close> that by auto
+  show zero_rel: "\<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim" and one_rel: "\<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim"
     using \<open>U \<in> I\<close> by auto
 
   have op_rel_z:"op_rel_aux x y (SOME z. op_rel_aux x y z)" 
@@ -2657,7 +2657,7 @@ proof unfold_locales
   have "one\<in>\<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor>" "one \<in> Sigma I \<FF>"
     using rel_carrier_Eps_in[OF \<open>\<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim\<close>] unfolding one_def by auto
 
-  show "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = X" if "X \<in> carrier_direct_lim" for X
+  show add_rel_0: "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = X" if "X \<in> carrier_direct_lim" for X
   proof -
     define x where "x=(SOME x. x \<in> X)"
     have "x\<in>X" "x\<in>Sigma I \<FF>" and X_alt:"X= \<lfloor>fst x, snd x\<rfloor>"
@@ -2694,7 +2694,8 @@ proof unfold_locales
     qed
   qed
 
-  show "add_rel X Y = add_rel Y X" if "X \<in> carrier_direct_lim" "Y \<in> carrier_direct_lim" for X Y
+  show add_rel_commute: "add_rel X Y = add_rel Y X" 
+    if "X \<in> carrier_direct_lim" "Y \<in> carrier_direct_lim" for X Y
   proof -
     define x where "x=(SOME x. x \<in> X)"
     define y where "y=(SOME y. y \<in> Y)"
@@ -2739,7 +2740,8 @@ proof unfold_locales
        a \<in> carrier_direct_lim \<Longrightarrow>
        b \<in> carrier_direct_lim \<Longrightarrow>
        c \<in> carrier_direct_lim \<Longrightarrow> add_rel (add_rel a b) c = add_rel a (add_rel b c)" sorry
-  show "\<And>a. a \<in> carrier_direct_lim \<Longrightarrow> add_rel a \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> = a" sorry
+  show "\<And>a. a \<in> carrier_direct_lim \<Longrightarrow> add_rel a \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> = a"
+    using add_rel_0 add_rel_commute zero_rel by force 
   show "\<And>u. u \<in> carrier_direct_lim \<Longrightarrow> monoid.invertible carrier_direct_lim add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> u"
     sorry
   show "\<And>a b c.
