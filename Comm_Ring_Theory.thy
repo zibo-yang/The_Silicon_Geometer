@@ -2427,13 +2427,17 @@ lemma class_of_0_eq:
   assumes "U \<in> I" "U' \<in> I"
   shows "\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor> = \<lfloor>U', \<zero>\<^bsub>U'\<^esub>\<rfloor>"
 proof -
-  interpret eq: equivalence "Sigma I \<FF>" "{(x, y). x \<sim> y}"
-    using rel_is_equivalence by blast
-  have "\<zero>\<^bsub>U\<^esub> \<in> \<FF> U" "\<zero>\<^bsub>U'\<^esub> \<in> \<FF> U'"
+  obtain W where W: "W \<in> I" "W \<subseteq> U" "W \<subseteq> U'"
+    by (metis Int_subset_iff assms has_lower_bound)
+  then have "is_open W" "is_open U" "is_open U'"
+    by (auto simp add: assms subset_of_opens)
+  then have "\<rho> U W \<zero>\<^bsub>U\<^esub> = \<rho> U' W \<zero>\<^bsub>U'\<^esub>"
+    using W is_ring_morphism [of U W] is_ring_morphism [of U' W]
+    by (simp add: ring_homomorphism_def group_homomorphism_def monoid_homomorphism_def
+               monoid_homomorphism_axioms_def)
+  with W have "\<exists>W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> U' \<and> \<rho> U W \<zero>\<^bsub>U\<^esub> = \<rho> U' W \<zero>\<^bsub>U'\<^esub>" by blast
+  moreover  have "\<zero>\<^bsub>U\<^esub> \<in> \<FF> U" "\<zero>\<^bsub>U'\<^esub> \<in> \<FF> U'"
     by (auto simp add: assms class_of_0_in)
-  moreover 
-  have "\<exists>W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> U' \<and> \<rho> U W \<zero>\<^bsub>U\<^esub> = \<rho> U' W \<zero>\<^bsub>U'\<^esub>"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   ultimately have "(U, \<zero>\<^bsub>U\<^esub>) \<sim> (U', \<zero>\<^bsub>U'\<^esub>)"
     using assms by (auto simp: rel_def)
   then show ?thesis
@@ -2455,12 +2459,18 @@ lemma class_of_1_eq:
   assumes "U \<in> I" and "U' \<in> I"
   shows "\<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor> = \<lfloor>U', \<one>\<^bsub>U'\<^esub>\<rfloor>"
 proof -
-  interpret eq: equivalence "Sigma I \<FF>" "{(x, y). x \<sim> y}"
-    using rel_is_equivalence by blast
+  obtain W where W: "W \<in> I" "W \<subseteq> U" "W \<subseteq> U'"
+    by (metis Int_subset_iff assms has_lower_bound)
+  then have "is_open W" "is_open U" "is_open U'"
+    by (auto simp add: assms subset_of_opens)
+  then have "\<rho> U W \<one>\<^bsub>U\<^esub> = \<rho> U' W \<one>\<^bsub>U'\<^esub>"
+    using W is_ring_morphism [of U W] is_ring_morphism [of U' W]
+    by (simp add: ring_homomorphism_def group_homomorphism_def monoid_homomorphism_def
+               monoid_homomorphism_axioms_def)
+  with W have "\<exists>W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> U' \<and> \<rho> U W \<one>\<^bsub>U\<^esub> = \<rho> U' W \<one>\<^bsub>U'\<^esub>" by blast
+  moreover 
   have "\<one>\<^bsub>U\<^esub> \<in> \<FF> U" "\<one>\<^bsub>U'\<^esub> \<in> \<FF> U'"
     by (auto simp add: assms class_of_1_in)
-  moreover have "\<exists>W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> U' \<and> \<rho> U W \<one>\<^bsub>U\<^esub> = \<rho> U' W \<one>\<^bsub>U'\<^esub>"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
   ultimately have "(U, \<one>\<^bsub>U\<^esub>) \<sim> (U', \<one>\<^bsub>U'\<^esub>)"
     using assms by (auto simp: rel_def)
   then show ?thesis
