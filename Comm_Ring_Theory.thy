@@ -2403,7 +2403,6 @@ interpretation rel:equivalence "(Sigma I \<FF>)" "{(x, y). x \<sim> y}"
 definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor> _ , _ \<rfloor>")
   where "\<lfloor>U,s\<rfloor> \<equiv> rel.Class (U, s)"
 
-(*
 lemma class_of_0_in:
   assumes "U \<in> I" 
   shows "\<zero>\<^bsub>U\<^esub> \<in> \<FF> U"
@@ -2413,7 +2412,6 @@ proof -
   then show ?thesis
     unfolding ring_def abelian_group_def Group_Theory.group_def by (meson monoid.unit_closed)
 qed
-*)
 
 (*IS THIS GOOD FOR ANYTHING? --CP*)
 (*
@@ -2442,7 +2440,7 @@ proof -
     by (simp add: ring_homomorphism_def group_homomorphism_def monoid_homomorphism_def
                monoid_homomorphism_axioms_def)
   with W have "\<exists>W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> U' \<and> \<rho> U W \<zero>\<^bsub>U\<^esub> = \<rho> U' W \<zero>\<^bsub>U'\<^esub>" by blast
-  moreover  have "\<zero>\<^bsub>U\<^esub> \<in> \<FF> U" "\<zero>\<^bsub>U'\<^esub> \<in> \<FF> U'"
+  moreover have "\<zero>\<^bsub>U\<^esub> \<in> \<FF> U" "\<zero>\<^bsub>U'\<^esub> \<in> \<FF> U'"
     by (auto simp add: assms class_of_0_in)
   ultimately have "(U, \<zero>\<^bsub>U\<^esub>) \<sim> (U', \<zero>\<^bsub>U'\<^esub>)" 
     using assms by (auto simp: rel_def)
