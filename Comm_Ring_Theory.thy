@@ -3688,42 +3688,27 @@ lemma spec_is_locally_ringed_space:
   shows "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
 proof (intro locally_ringed_space.intro locally_ringed_space_axioms.intro)
+  interpret sh: sheaf_of_rings Spec is_zariski_open sheaf_spec
+     sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec
+     zero_sheaf_spec one_sheaf_spec
+    using sheaf_spec_is_sheaf .
+
   show "ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
     using spec_is_ringed_space by simp
-next
   show "stalk.is_local is_zariski_open sheaf_spec sheaf_spec_morphisms add_sheaf_spec mult_sheaf_spec 
 zero_sheaf_spec one_sheaf_spec (pr.neighborhoods \<pp>) \<pp> U"
     if "\<pp> \<in> U" "is_zariski_open U" for \<pp> U
   proof -
-    interpret st:stalk Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec 
+    interpret st: stalk Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec 
       mult_sheaf_spec zero_sheaf_spec one_sheaf_spec "pr.neighborhoods \<pp>" \<pp>
-    proof unfold_locales
-      fix U I V s
-      assume "open_cover_of_open_subset Spec is_zariski_open U I V"
-        and "\<And>i. i \<in> I \<Longrightarrow> V i \<subseteq> (U::'a set set)"
-        and "s \<in> \<O> U"
-        and "\<And>i. i \<in> I \<Longrightarrow> sheaf_spec_morphisms U (V i) s = zero_sheaf_spec (V i)"
-      then show "s = zero_sheaf_spec U"
-        by (metis sheaf_of_rings.locality sheaf_spec_is_sheaf)
-    next
-      fix U I V s
-      assume oc: "open_cover_of_open_subset Spec is_zariski_open U I V"
-        and VU: "\<forall>i. i \<in> I \<longrightarrow> V i \<subseteq> U \<and> s i \<in> \<O> V i"
-        and eq: "\<And>i j. \<lbrakk>i \<in> I; j \<in> I\<rbrakk> \<Longrightarrow> sheaf_spec_morphisms (V i) (V i \<inter> V j) (s i) = sheaf_spec_morphisms (V j) (V i \<inter> V j) (s j)"
-      show "\<exists>t. t \<in> \<O> U \<and> (\<forall>i. i \<in> I \<longrightarrow> sheaf_spec_morphisms U (V i) t = s i)"
-        using that sorry (*NO IDEA WHAT TO DO HERE -- LCP*)
-    next
+    proof 
       show "\<pp> \<in> Spec"
         by (meson in_mono that zariski_open_is_subset)
     qed (auto simp: pr.neighborhoods_def)
-
-    interpret pri: pr_ideal  R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
+    interpret pri: pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
       by (simp add: spectrum_imp_pr st.is_elem)
     interpret km: key_map R "(+)" "(\<cdot>)" \<zero> \<one> \<pp>
-    proof
-      show "\<pp> \<in> Spec"
-        by (simp add: st.is_elem)
-    qed
+    proof qed (simp add: st.is_elem)
     have "ring st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk U) (st.one_stalk U)"
       using st.stalk_is_ring sheaf_spec_is_presheaf \<open>is_zariski_open U\<close> \<open>\<pp> \<in> U\<close> by blast
     also have "local_ring pri.carrier_local_ring_at pri.add_local_ring_at pri.mult_local_ring_at 
@@ -3733,13 +3718,7 @@ pri.zero_local_ring_at pri.one_local_ring_at"
     moreover have "\<exists>f. ring_isomorphism f
 st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk U) (st.one_stalk U)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pr_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (pr_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
-    proof-
-      have "pr_ideal R \<pp> (+) (\<cdot>) \<zero> \<one>"
-        using spectrum_def zariski_open_is_subset st.is_elem by auto
-      thus ?thesis 
-        using km.stalk_at_prime_is_iso_to_local_ring_at_prime [OF \<open>is_zariski_open U\<close> \<open>\<pp> \<in> U\<close>]
-        using st.index by presburger
-    qed
+      by (simp add: km.stalk_at_prime_is_iso_to_local_ring_at_prime st.index that)
     ultimately show "stalk.is_local is_zariski_open sheaf_spec sheaf_spec_morphisms add_sheaf_spec mult_sheaf_spec 
 zero_sheaf_spec one_sheaf_spec (pr.neighborhoods \<pp>) \<pp> U"
       using isomorphic_to_local_is_local \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> st.is_local_def by fastforce
