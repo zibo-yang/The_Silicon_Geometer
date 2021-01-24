@@ -2843,19 +2843,13 @@ qed
 lemma stalk_is_ring:
   assumes "is_open V" and "x \<in> V"
   shows "ring carrier_stalk add_stalk mult_stalk (zero_stalk V) (one_stalk V)"
-proof intro_locales
-  interpret equivalence "Sigma I \<FF>" "{(x, y). x \<sim> y}"
-    using rel_is_equivalence by blast
-  show "Group_Theory.monoid carrier_stalk add_stalk (zero_stalk V)"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "Group_Theory.group_axioms carrier_stalk add_stalk (zero_stalk V)"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "commutative_monoid_axioms carrier_stalk add_stalk"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "Group_Theory.monoid carrier_stalk mult_stalk (one_stalk V)"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "ring_axioms carrier_stalk add_stalk mult_stalk"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
+proof -
+  interpret r: ring carrier_direct_lim add_rel mult_rel "\<lfloor> V, \<zero>\<^bsub>V\<^esub> \<rfloor>"  "\<lfloor> V, \<one>\<^bsub>V\<^esub> \<rfloor>"
+    using assms exercise_0_35 index by blast
+  show ?thesis
+    using r.additive.monoid_axioms 
+    unfolding zero_stalk_def one_stalk_def add_stalk_def mult_stalk_def carrier_stalk_def
+    using index neighborhoods_def r.ring_axioms by metis
 qed
 
 lemma universal_property_for_stalk:
