@@ -2909,6 +2909,7 @@ locale local_ring = ring +
 assumes is_unique: "\<And>I J. max_lideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
 and has_max_lideal: "\<exists>\<ww>. max_lideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
 
+(*Can this be proved from the analogous result for left, right ideals?*)
 lemma im_of_ideal_is_ideal:
   assumes I: "ideal I A addA multA zeroA oneA" 
     and f: "ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
@@ -2969,6 +2970,147 @@ proof -
       then show "multB fi b \<in> f ` I"
         by (metis IA.additive.sub IA.ideal(2) a i fepi.multiplicative.commutes_with_composition imageI)
     qed
+  qed
+qed
+
+lemma im_of_lideal_is_lideal:
+  assumes I: "lideal I A addA multA zeroA oneA" 
+    and f: "ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "lideal (f ` I) B addB multB zeroB oneB"
+proof -
+  interpret IA: lideal I A addA multA zeroA oneA
+    using I by blast
+  interpret fepi: ring_epimorphism f A addA multA zeroA oneA B addB multB zeroB oneB
+    using f by force
+  show ?thesis
+  proof intro_locales
+    show sma: "submonoid_axioms (f ` I) B addB zeroB"
+    proof
+      show "f ` I \<subseteq> B"
+        by blast
+      have "zeroA \<in> I"
+        by simp
+      then show "zeroB \<in> f ` I"
+        using fepi.additive.commutes_with_unit by blast
+    next
+      fix b1 b2
+      assume "b1 \<in> f ` I" and "b2 \<in> f ` I"
+      then show "addB b1 b2 \<in> f ` I"
+        unfolding image_iff
+        by (metis IA.additive.sub IA.additive.sub_composition_closed fepi.additive.commutes_with_composition)
+    qed
+    show "Group_Theory.monoid (f ` I) addB zeroB"
+    proof
+      fix a b
+      assume "a \<in> f ` I" "b \<in> f ` I"
+      then show "addB a b \<in> f ` I"
+        by (meson sma submonoid_axioms_def)
+    next
+      show "zeroB \<in> f ` I"
+        using fepi.additive.commutes_with_unit by blast
+    qed auto
+    show "Group_Theory.group_axioms (f ` I) addB zeroB"
+    proof
+      fix b
+      assume "b \<in> f ` I"
+      then obtain i where "b = f i" "i \<in> I"
+        by blast
+      then obtain j where "addA i j = zeroA" "j \<in> I"
+        using IA.additive.sub.invertible_right_inverse by blast
+      then show "monoid.invertible (f ` I) addB zeroB b"
+        by (metis IA.additive.commutative IA.additive.sub \<open>Group_Theory.monoid (f ` I) addB zeroB\<close> \<open>b = f i\<close> \<open>i \<in> I\<close> fepi.additive.commutes_with_composition fepi.additive.commutes_with_unit image_eqI monoid.invertibleI)
+    qed
+    show "lideal_axioms (f ` I) B multB"
+    proof
+      fix b fi
+      assume "b \<in> B" and "fi \<in> f ` I"
+      then obtain i where i: "fi = f i" "i \<in> I"
+        by blast
+      obtain a where a: "a \<in> A" "f a = b"
+        using \<open>b \<in> B\<close> fepi.surjective by blast
+      then show "multB b fi \<in> f ` I"
+        by (metis IA.additive.submonoid_axioms IA.lideal(1) \<open>fi = f i\<close> \<open>i \<in> I\<close> fepi.multiplicative.commutes_with_composition image_iff submonoid.sub)
+    qed
+  qed
+qed
+
+
+lemma im_of_max_lideal_is_max:
+  assumes I: "max_lideal I A addA multA zeroA oneA" 
+    and f: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  shows "max_lideal (f ` I) B addB multB zeroB oneB"
+proof -
+  interpret maxI: max_lideal I A addA multA zeroA oneA
+    using I by blast
+  interpret fiso: ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB
+    using f by force
+  interpret fIB: lideal "f ` I" B addB multB zeroB oneB
+  proof intro_locales
+    show "submonoid_axioms (f ` I) B addB zeroB"
+      using maxI.additive.submonoid_axioms 
+      unfolding submonoid_def submonoid_axioms_def
+      by (smt (verit, best) fiso.additive.commutes_with_composition fiso.additive.commutes_with_unit fiso.surjective image_iff image_mono maxI.additive.sub)
+    then show "Group_Theory.monoid (f ` I) addB zeroB"
+      using fiso.target.additive.monoid_axioms
+      unfolding submonoid_axioms_def monoid_def
+      by (meson subsetD)
+    then show "Group_Theory.group_axioms (f ` I) addB zeroB"
+      apply (clarsimp simp:  Group_Theory.group_axioms_def image_iff monoid.invertible_def)
+      by (metis fiso.additive.commutes_with_composition fiso.additive.commutes_with_unit maxI.additive.sub maxI.additive.sub.invertible maxI.additive.sub.invertible_def)
+    show "lideal_axioms (f ` I) B multB"
+      apply unfold_locales
+      apply clarify
+      by (smt (verit, ccfv_threshold) fiso.multiplicative.commutes_with_composition fiso.surjective image_iff maxI.additive.submonoid_axioms maxI.lideal submonoid.sub)
+  qed
+  show ?thesis
+  proof unfold_locales
+    show "f ` I \<noteq> B"
+      using maxI.neq_ring fiso.bijective maxI.additive.submonoid_axioms 
+      unfolding submonoid_axioms_def submonoid_def
+      by (metis bij_betw_imp_inj_on fiso.surjective inj_on_image_eq_iff subset_iff)
+  next
+    fix J 
+    assume "lideal J B addB multB zeroB oneB" and "J \<noteq> B" and fim: "f ` I \<subseteq> J"
+    then interpret JB: lideal J B addB multB zeroB oneB
+      by blast
+    have \<section>: "lideal (f \<^sup>\<inverse> A J) A addA multA zeroA oneA"
+    proof intro_locales
+      show sma: "submonoid_axioms (f \<^sup>\<inverse> A J) A addA zeroA"
+      proof
+        show "addA a b \<in> f \<^sup>\<inverse> A J" if "a \<in> f \<^sup>\<inverse> A J" and "b \<in> f \<^sup>\<inverse> A J" for a b
+          using that
+          apply clarsimp
+          using JB.additive.sub_composition_closed fiso.additive.commutes_with_composition by presburger
+      qed blast+
+      show "Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA"
+        by (smt (verit, ccfv_threshold) Group_Theory.monoid.intro IntD2 sma maxI.additive.associative maxI.additive.left_unit maxI.additive.right_unit submonoid_axioms_def)
+      show "Group_Theory.group_axioms (f \<^sup>\<inverse> A J) addA zeroA"
+      proof 
+        fix x
+        assume "x \<in> f \<^sup>\<inverse> A J"
+        then show "monoid.invertible (f \<^sup>\<inverse> A J) addA zeroA x"
+          apply clarify
+          by (smt (verit, best) JB.additive.sub.invertible JB.additive.submonoid_inverse_closed IntI \<open>Group_Theory.monoid (f \<^sup>\<inverse> A J) addA zeroA\<close> fiso.additive.invertible_commutes_with_inverse maxI.additive.inverse_equality maxI.additive.invertible maxI.additive.invertibleE monoid.invertible_def vimageI)
+      qed
+      show "lideal_axioms (f \<^sup>\<inverse> A J) A multA"
+      proof
+        fix a j
+        assume \<section>: "a \<in> A" "j \<in> f \<^sup>\<inverse> A J"
+        then show "multA a j \<in> f \<^sup>\<inverse> A J"
+          using JB.lideal(1) fiso.map_closed fiso.multiplicative.commutes_with_composition
+          by simp
+      qed
+    qed
+    have "I = f \<^sup>\<inverse> A J"
+    proof (rule maxI.is_max [OF \<section>])
+      show "f \<^sup>\<inverse> A J \<noteq> A"
+        using JB.additive.sub \<open>J \<noteq> B\<close> fiso.surjective by blast
+      show "I \<subseteq> f \<^sup>\<inverse> A J"
+        by (meson fim image_subset_iff_subset_vimage inf_greatest maxI.additive.sub subset_iff)
+    qed
+    then have "J \<subseteq> f ` I"
+      using JB.additive.sub fiso.surjective by blast
+    with fim show "f ` I = J" ..
   qed
 qed
 
@@ -3050,6 +3192,7 @@ proof -
     qed
   qed
 qed
+
 
 lemma preim_of_ideal_is_ideal:
   fixes f :: "'a\<Rightarrow>'b"
@@ -3186,8 +3329,7 @@ qed
 lemma isomorphic_to_local_is_local:
   assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB" 
     and iso: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB" 
-  shows "local_ring A addA multA zeroA oneA" sorry
-(*
+  shows "local_ring A addA multA zeroA oneA" 
 proof intro_locales
   show "Group_Theory.monoid A addA zeroA"
     by (meson abelian_group.axioms(2) assms(1) commutative_monoid_def ring_def)
@@ -3204,42 +3346,24 @@ proof intro_locales
   have "bij_betw f A B"
     using iso map.graph
     by (simp add: bijective.bijective ring_isomorphism_def bijective_map_def)
-  show "comm_ring_axioms A multA" 
-  proof 
-    fix a b
-    assume "a \<in> A" and "b \<in> A"
-    have "f a \<in> B"
-      using \<open>a \<in> A\<close> \<open>bij_betw f A B\<close> bij_betwE by blast
-    have "f b \<in> B"
-      using \<open>b \<in> A\<close> \<open>bij_betw f A B\<close> bij_betwE by blast
-    have "f (multA a b) = multB (f a) (f b)"
-      by (meson \<open>a \<in> A\<close> \<open>b \<in> A\<close> hom monoid_homomorphism.commutes_with_composition)
-    also have "... = multB (f b) (f a)"
-      using lring \<open>f a \<in> B\<close> \<open>f b \<in> B\<close>
-      by (auto simp: local_ring_def local_ring_axioms_def comm_ring_def comm_ring_axioms_def)
-    also have "... = f (multA b a)"
-      using \<open>a \<in> A\<close> \<open>b \<in> A\<close> hom monoid_homomorphism.commutes_with_composition by fastforce
-    finally show "multA a b = multA b a"
-      by (metis (full_types) \<open>Group_Theory.monoid A multA oneA\<close> \<open>a \<in> A\<close> \<open>b \<in> A\<close> \<open>bij_betw f A B\<close> bij_betw_iff_bijections monoid.composition_closed)
-  qed
   show "local_ring_axioms A addA multA zeroA oneA"
   proof unfold_locales
     fix I J
-    assume I: "max_ideal A I addA multA zeroA oneA" and J: "max_ideal A J addA multA zeroA oneA" 
+    assume I: "max_lideal A I addA multA zeroA oneA" and J: "max_lideal A J addA multA zeroA oneA" 
     show "(I::'a set) = J"
     proof-
-      have "max_ideal B (f ` I) addB multB zeroB oneB"
+      have "max_lideal B (f ` I) addB multB zeroB oneB"
         by (meson I im_of_max_ideal_is_max iso)
-      moreover have "max_ideal B (f ` J) addB multB zeroB oneB"
+      moreover have "max_lideal B (f ` J) addB multB zeroB oneB"
         by (meson J im_of_max_ideal_is_max iso)
       ultimately have "f ` I = f ` J"
         by (meson local_ring.is_unique lring)
       thus ?thesis 
         using bij_betw_imp_inj_on [OF \<open>bij_betw f A B\<close>]
-        by (meson I J comm_ring.ideal_implies_subset inj_on_image_eq_iff max_ideal.axioms)
+        by (meson I J comm_ring.lideal_implies_subset inj_on_image_eq_iff max_lideal.axioms)
     qed
   next
-    show "\<exists>\<ww>. max_ideal A \<ww> addA multA zeroA oneA"
+    show "\<exists>\<ww>. max_lideal A \<ww> addA multA zeroA oneA"
       by (meson iso local_ring.has_max_ideal lring preim_of_max_ideal_is_max)
   qed
 qed
