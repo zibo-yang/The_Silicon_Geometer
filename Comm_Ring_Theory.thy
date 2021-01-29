@@ -1351,13 +1351,6 @@ sublocale comm_ring carrier_local_ring_at add_local_ring_at mult_local_ring_at
   by (simp add: add_local_ring_at_def carrier_local_ring_at_def local.local.comm_ring_axioms 
       mult_local_ring_at_def one_local_ring_at_def zero_local_ring_at_def)
 
-(*
-lemma local_ring_at_is_comm_ring:
-  shows "comm_ring carrier_local_ring_at add_local_ring_at mult_local_ring_at 
-            zero_local_ring_at one_local_ring_at"
-  by (simp add: add_local_ring_at_def carrier_local_ring_at_def local.local.comm_ring_axioms 
-      mult_local_ring_at_def one_local_ring_at_def zero_local_ring_at_def)
-*)
 
 lemma frac_from_carrier_local:
   assumes "X \<in> carrier_local_ring_at"
@@ -3530,8 +3523,9 @@ proof -
     using key_map_is_coherent
     by (metis (no_types, lifting) mem_Collect_eq top.neighborhoods_def)
   ultimately show ?thesis 
-    using assms local.sheaf_spec_is_presheaf zariski_open_is_subset st.universal_property_for_stalk[of "V" "(R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)" 
-"pi.add_local_ring_at" "pi.mult_local_ring_at" "pi.zero_local_ring_at" "pi.one_local_ring_at" "key_map"] 
+    using assms local.sheaf_spec_is_presheaf zariski_open_is_subset 
+      st.universal_property_for_stalk[of "R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>" "pi.add_local_ring_at" "pi.mult_local_ring_at" 
+        "pi.zero_local_ring_at" "pi.one_local_ring_at" "key_map"] 
     by auto
 qed
 
@@ -3706,6 +3700,7 @@ next
           show "(a, c) \<in> RR" if "(a, b) \<in> RR" and "(b, c) \<in> RR" for a b c
             using that
             apply (clarsimp simp add: RR_iff simp del: local.q.sub)
+              (*PRESUMABLY SOME RING EXPRESSION IS REQUIRED HERE*)
             sorry
         qed
         have Fq: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
