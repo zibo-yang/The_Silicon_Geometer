@@ -2899,6 +2899,19 @@ subsubsection \<open>Maximal Left Ideals\<close>
 locale lideal = subgroup_of_additive_group_of_ring +
   assumes lideal: "\<lbrakk> r \<in> R; a \<in> I \<rbrakk> \<Longrightarrow> r \<cdot> a \<in> I"
 
+lemma lideal_zero: "lideal A R add mult zero unit \<Longrightarrow> zero \<in> A"
+  by (simp add: lideal_def subgroup_of_additive_group_of_ring_def subgroup_def submonoid_def submonoid_axioms_def)
+
+lemma lideal_implies_subset:
+  assumes "lideal A R add mult zero unit"
+  shows "A \<subseteq> R"
+  by (meson assms lideal.axioms(1) subgroup_def subgroup_of_additive_group_of_ring_def submonoid.subset)
+
+lemma ideal_add:
+  assumes "a \<in> A"  "b \<in> A" "lideal A R add mult zero unit"
+  shows "add a b \<in> A"
+  by (meson Group_Theory.group_def assms lideal_def monoid.composition_closed subgroup_def subgroup_of_additive_group_of_ring_def)
+
 locale max_lideal = lideal +
 assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. lideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
 
@@ -3047,9 +3060,12 @@ proof -
   interpret fIB: lideal "f ` I" B addB multB zeroB oneB
   proof intro_locales
     show "submonoid_axioms (f ` I) B addB zeroB"
-      using maxI.additive.submonoid_axioms 
-      unfolding submonoid_def submonoid_axioms_def
-      by (smt (verit, best) fiso.additive.commutes_with_composition fiso.additive.commutes_with_unit fiso.surjective image_iff image_mono maxI.additive.sub)
+    proof
+      show "addB a b \<in> f ` I"
+        if "a \<in> f ` I" "b \<in> f ` I" for a b
+        using that
+        by (clarsimp simp: image_iff) (metis fiso.additive.commutes_with_composition maxI.additive.sub maxI.additive.sub_composition_closed)
+    qed (use fiso.additive.commutes_with_unit in auto)
     then show "Group_Theory.monoid (f ` I) addB zeroB"
       using fiso.target.additive.monoid_axioms
       unfolding submonoid_axioms_def monoid_def
@@ -3057,10 +3073,10 @@ proof -
     then show "Group_Theory.group_axioms (f ` I) addB zeroB"
       apply (clarsimp simp:  Group_Theory.group_axioms_def image_iff monoid.invertible_def)
       by (metis fiso.additive.commutes_with_composition fiso.additive.commutes_with_unit maxI.additive.sub maxI.additive.sub.invertible maxI.additive.sub.invertible_def)
-    show "lideal_axioms (f ` I) B multB"
-      apply unfold_locales
-      apply clarify
-      by (smt (verit, ccfv_threshold) fiso.multiplicative.commutes_with_composition fiso.surjective image_iff maxI.additive.submonoid_axioms maxI.lideal submonoid.sub)
+    have "\<And>r x. \<lbrakk>r \<in> B; x \<in> I\<rbrakk> \<Longrightarrow> \<exists>xa\<in>I. multB r (f x) = f xa"
+      by (metis (no_types, lifting) fiso.multiplicative.commutes_with_composition fiso.surjective image_iff maxI.additive.sub maxI.lideal)
+  then show "lideal_axioms (f ` I) B multB"
+    by (force intro!: lideal_axioms.intro)
   qed
   show ?thesis
   proof unfold_locales
@@ -3353,21 +3369,20 @@ proof intro_locales
     show "(I::'a set) = J"
     proof-
       have "max_lideal (f ` I) B addB multB zeroB oneB"
-        by (meson I im_of_max_ideal_is_max iso)
+        by (meson I im_of_max_lideal_is_max iso)
       moreover have "max_lideal (f ` J) B addB multB zeroB oneB"
-        by (meson J im_of_max_ideal_is_max iso)
+        by (meson J im_of_max_lideal_is_max iso)
       ultimately have "f ` I = f ` J"
         by (meson local_ring.is_unique lring)
       thus ?thesis 
         using bij_betw_imp_inj_on [OF \<open>bij_betw f A B\<close>]
-        by (meson I J comm_ring.lideal_implies_subset inj_on_image_eq_iff max_lideal.axioms)
+        by (metis I J inj_on_image_eq_iff max_lideal.axioms(1) lideal_implies_subset)
     qed
   next
-    show "\<exists>\<ww>. max_lideal A \<ww> addA multA zeroA oneA"
-      by (meson iso local_ring.has_max_ideal lring preim_of_max_ideal_is_max)
+    show "\<exists>\<ww>. max_lideal \<ww> A addA multA zeroA oneA"
+      by (meson im_of_max_lideal_is_max iso local_ring.has_max_lideal lring ring_isomorphism.inverse_ring_isomorphism)
   qed
 qed
-*)
 
 (* ex. 0.40 *)
 lemma (in pr_ideal) local_ring_at_is_local:
@@ -3579,22 +3594,20 @@ proof -
     using assms(2) class_from_belongs_stalk by blast
   show thesis
   proof
-    show "is_zariski_open (U \<inter> V)" using topological_space.open_inter 
-      by (simp add: \<open>is_zariski_open U\<close> \<open>is_zariski_open V\<close>)
     have "U \<inter> V \<subseteq> Spec" 
       using zariski_open_is_subset HU(1) by blast
     show "\<pp> \<in> U \<inter> V" 
       by (simp add: \<open>\<pp> \<in> U\<close> \<open>\<pp> \<in> V\<close>)
+    show UV: "is_zariski_open (U \<inter> V)" using topological_space.open_inter 
+      by (simp add: \<open>is_zariski_open U\<close> \<open>is_zariski_open V\<close>)
     show "s = st.class_of (U \<inter> V) (sheaf_spec_morphisms U (U \<inter> V) s')"
-      by (simp add: HU \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
+      by (simp add: HU UV same_class_from_restrict)
     show "t = st.class_of (U \<inter> V) (sheaf_spec_morphisms V (U \<inter> V) t')"
-      by (simp add: HV \<open>is_zariski_open (U \<inter> V)\<close> same_class_from_restrict)
-    show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)" sorry
-(* AB: same problem with my Isabelle version
-      by (metis HU(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI) *)
-    show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)" sorry
-(* AB: idem
-      by (metis HV(3) Int_iff map.map_closed sheaf_spec_morphisms_are_maps subsetI) *)
+      by (simp add: HV UV same_class_from_restrict)
+    show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)"
+      using HU(3) UV map.map_closed sheaf_spec_morphisms_are_maps by fastforce
+    show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)"
+      using HV(3) UV map.map_closed sheaf_spec_morphisms_are_maps by fastforce
   qed
 qed
 
