@@ -2906,8 +2906,8 @@ subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
 locale local_ring = ring +
-assumes is_unique: "\<And>I J. max_lideal R I (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal R J (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
-and has_max_lideal: "\<exists>\<ww>. max_lideal R \<ww> (+) (\<cdot>) \<zero> \<one>"
+assumes is_unique: "\<And>I J. max_lideal I R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal J R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
+and has_max_lideal: "\<exists>\<ww>. max_lideal \<ww> R (+) (\<cdot>) \<zero> \<one>"
 
 (*Can this be proved from the analogous result for left, right ideals?*)
 lemma im_of_ideal_is_ideal:
@@ -3349,12 +3349,12 @@ proof intro_locales
   show "local_ring_axioms A addA multA zeroA oneA"
   proof unfold_locales
     fix I J
-    assume I: "max_lideal A I addA multA zeroA oneA" and J: "max_lideal A J addA multA zeroA oneA" 
+    assume I: "max_lideal I A addA multA zeroA oneA" and J: "max_lideal J A addA multA zeroA oneA" 
     show "(I::'a set) = J"
     proof-
-      have "max_lideal B (f ` I) addB multB zeroB oneB"
+      have "max_lideal (f ` I) B addB multB zeroB oneB"
         by (meson I im_of_max_ideal_is_max iso)
-      moreover have "max_lideal B (f ` J) addB multB zeroB oneB"
+      moreover have "max_lideal (f ` J) B addB multB zeroB oneB"
         by (meson J im_of_max_ideal_is_max iso)
       ultimately have "f ` I = f ` J"
         by (meson local_ring.is_unique lring)
