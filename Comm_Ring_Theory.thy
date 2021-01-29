@@ -2668,21 +2668,27 @@ proof unfold_locales
       define z where "z=(SOME z. op_rel_aux zero x z)"
       have "op_rel_aux zero x z" "z \<in> I" "z \<subseteq> fst zero \<inter> fst x"
         using op_rel_z[OF \<open>zero \<in> Sigma I \<FF>\<close> \<open>x \<in> Sigma I \<FF>\<close>, folded z_def] by auto
+      have "is_open z"
+        by (simp add: \<open>z \<in> I\<close> subset_of_opens)
+      have "is_open (fst x)"
+        using \<open>x \<in> Sigma I \<FF>\<close> subset_of_opens by force
 
-      interpret zeroz:ring_homomorphism "(\<rho> (fst zero) z)" "(\<FF> (fst zero))" "+\<^bsub>fst zero\<^esub>" "\<cdot>\<^bsub>fst zero\<^esub>"
-                      "\<zero>\<^bsub>fst zero\<^esub>" "\<one>\<^bsub>fst zero\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
+      interpret zeroz: ring_homomorphism "(\<rho> (fst zero) z)" 
+                            "(\<FF> (fst zero))" "+\<^bsub>fst zero\<^esub>" "\<cdot>\<^bsub>fst zero\<^esub>" "\<zero>\<^bsub>fst zero\<^esub>" "\<one>\<^bsub>fst zero\<^esub>" 
+                            "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
         apply (rule is_ring_morphism)
         using \<open>z \<in> I\<close> \<open>z \<subseteq> fst zero \<inter> fst x\<close> \<open>zero \<in> Sigma I \<FF>\<close> subset_of_opens by auto
-      interpret xz:ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" 
-                      "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
+      interpret xz: ring_homomorphism "(\<rho> (fst x) z)" 
+                            "(\<FF> (fst x))" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>"  "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" 
+                            "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
         apply (rule is_ring_morphism)
         using \<open>z \<in> I\<close> \<open>z \<subseteq> fst zero \<inter> fst x\<close> \<open>x \<in> Sigma I \<FF>\<close> subset_of_opens by auto
 
       have "\<rho> z z (+\<^bsub>z\<^esub> (\<rho> (fst zero) z (snd zero)) (\<rho> (fst x) z (snd x))) = \<rho> (fst x) z (snd x)"
-        sorry
+         sorry
         (*
           I believe this is the key to finish this case,
-           but really have no idea how to proceed here :-( --Wenda
+           but really have no idea how to proceed here :-( --Wenda [same here--LCP]
         *)
       then have "\<lfloor> z , +\<^bsub>z\<^esub> (\<rho> (fst zero) z (snd zero)) (\<rho> (fst x) z (snd x)) \<rfloor> = \<lfloor>fst x , snd x\<rfloor>"
         apply (rule_tac class_of_eqI[where W=z])
@@ -2765,20 +2771,6 @@ proof unfold_locales
     sorry
 qed
 
-(*
-proof intro_locales
-  show "Group_Theory.monoid carrier_direct_lim add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "Group_Theory.group_axioms carrier_direct_lim add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "commutative_monoid_axioms carrier_direct_lim add_rel"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "Group_Theory.monoid carrier_direct_lim mult_rel \<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor>"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-  show "ring_axioms carrier_direct_lim add_rel mult_rel"
-    sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-qed
-*)
 
 (* The canonical function from \<FF> U into lim \<FF> for U \<in> I: *)
 definition canonical_fun:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set"
@@ -2786,7 +2778,7 @@ definition canonical_fun:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<time
 
 end (* direct_lim *)
 
-notation direct_lim.carrier_direct_lim ("lim _ _ _")
+abbreviation "lim \<equiv> direct_lim.carrier_direct_lim"
 
 
 subsubsection \<open>Universal property of direct limits\<close>
@@ -2854,13 +2846,15 @@ qed
 
 lemma universal_property_for_stalk:
   fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
-  assumes "is_open V" and "x \<in> V" and "ring A add mult zero one" and 
-    "\<And>U. U\<in>(neighborhoods x) \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
-    and "\<And>U V. U\<in>(neighborhoods x) \<Longrightarrow> V\<in>(neighborhoods x) \<Longrightarrow> V\<subseteq>U \<Longrightarrow> (\<And>s. s\<in>(\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) s = \<psi> U s)"
+  assumes ringA: "ring A add mult zero one" 
+    and hom: "\<And>U. U \<in> neighborhoods x \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
+    and eq: "\<And>U V s. \<lbrakk>U \<in> neighborhoods x; V \<in> neighborhoods x; V\<subseteq>U; s \<in> \<FF> U\<rbrakk> \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) s = \<psi> U s"
   shows "\<forall>V\<in>(neighborhoods x). \<exists>!u. ring_homomorphism u  
 carrier_stalk add_stalk mult_stalk (zero_stalk V) (one_stalk V) A add mult zero one 
 \<and> (\<forall>U\<in>(neighborhoods x). \<forall>s\<in>(\<FF> U). (u \<circ> canonical_fun U) s = \<psi> U s)"
-  using direct_lim.universal_property sorry
+  using direct_lim.universal_property [OF direct_lim_axioms ringA hom eq] 
+  using add_stalk_def carrier_stalk_def index mult_stalk_def neighborhoods_def one_stalk_def zero_stalk_def 
+  by force
 
 end (* stalk *)
 
