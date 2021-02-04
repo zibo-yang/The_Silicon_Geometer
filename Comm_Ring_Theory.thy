@@ -2899,6 +2899,35 @@ lemma ideal_add:
   shows "add a b \<in> A"
   by (meson Group_Theory.group_def assms lideal_def monoid.composition_closed subgroup_def subgroup_of_additive_group_of_ring_def)
 
+lemma (in comm_ring) ideal_iff_lideal: 
+  "ideal I R (+) (\<cdot>) \<zero> \<one> \<longleftrightarrow> lideal I R (+) (\<cdot>) \<zero> \<one>" (is "?lhs = ?rhs")
+proof
+  assume ?lhs
+  then interpret I: ideal I R "(+)" "(\<cdot>)" \<zero> \<one>
+    by blast
+  show ?rhs
+  proof
+    fix r a
+    assume "r \<in> R" "a \<in> I"
+    then show "r \<cdot> a \<in> I"
+      using I.ideal by presburger
+  qed
+next
+  assume ?rhs
+  then interpret I: lideal I R "(+)" "(\<cdot>)" \<zero> \<one>
+    by blast
+  show ?lhs
+  proof
+    fix r a
+    assume "r \<in> R" "a \<in> I"
+    then show "r \<cdot> a \<in> I"
+      using I.lideal by blast
+    then show "a \<cdot> r \<in> I"
+      by (simp add: \<open>a \<in> I\<close> \<open>r \<in> R\<close> comm_mult)
+  qed
+qed
+
+
 locale max_lideal = lideal +
   assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. lideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
 
@@ -3383,7 +3412,8 @@ proof
   show "J' = J"
   unfolding carrier_local_ring_at_def  
     apply ( simp add: max_lideal_def max_lideal_axioms_def)
-    sorry
+  sorry
+next
   show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
     sorry
 qed
