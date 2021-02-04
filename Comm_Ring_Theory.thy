@@ -287,7 +287,8 @@ ideal, so that we can introduce some syntactic sugar later.
 \<close>
 
 text \<open>remark 0.21\<close>
-lemma shows "\<one> \<notin> I"
+lemma not_1:
+  shows "\<one> \<notin> I"
 proof
   assume "\<one> \<in> I"
   then have "\<And>x. \<lbrakk>\<one> \<in> I; x \<in> R\<rbrakk> \<Longrightarrow> x \<in> I"
@@ -298,9 +299,19 @@ proof
     using carrier_neq by blast
 qed
 
+lemma not_invertible:
+  assumes "x \<in> I"
+  shows "\<not> comm.multiplicative.invertible x"
+proof
+  assume "comm.multiplicative.invertible x"
+  then have "\<one> \<in> I"
+    using assms ideal by auto
+  then show False
+    using assms not_1 by blast
+qed
 
 text \<open>ex. 0.22\<close>
-lemma
+lemma submonoid_notin:
   assumes "S = {x \<in> R. x \<notin> I}"
   shows "submonoid S R (\<cdot>) \<one>"
 proof
