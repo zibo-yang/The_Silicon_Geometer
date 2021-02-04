@@ -1333,7 +1333,7 @@ definition carrier_local_ring_at:: "('a \<times> 'a) set set"
 
 definition add_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
   where "add_local_ring_at \<equiv> local.add_rel "
-
+                                  
 definition mult_local_ring_at:: "('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> ('a \<times> 'a) set"
   where "mult_local_ring_at \<equiv> local.mult_rel "
 
@@ -2900,14 +2900,14 @@ lemma ideal_add:
   by (meson Group_Theory.group_def assms lideal_def monoid.composition_closed subgroup_def subgroup_of_additive_group_of_ring_def)
 
 locale max_lideal = lideal +
-assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. lideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
+  assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. lideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
 
 subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
 locale local_ring = ring +
-assumes is_unique: "\<And>I J. max_lideal I R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal J R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
-and has_max_lideal: "\<exists>\<ww>. max_lideal \<ww> R (+) (\<cdot>) \<zero> \<one>"
+  assumes is_unique: "\<And>I J. max_lideal I R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal J R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> I = J"
+    and has_max_lideal: "\<exists>\<ww>. max_lideal \<ww> R (+) (\<cdot>) \<zero> \<one>"
 
 (*Can this be proved from the analogous result for left, right ideals?*)
 lemma im_of_ideal_is_ideal:
@@ -3375,7 +3375,18 @@ qed
 lemma (in pr_ideal) local_ring_at_is_local:
   shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
 (zero_local_ring_at) (one_local_ring_at)"
-  sorry
+proof
+  fix J' J
+  assume "max_lideal J' carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+      and "max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+  then 
+  show "J' = J"
+  unfolding carrier_local_ring_at_def  
+    apply ( simp add: max_lideal_def max_lideal_axioms_def)
+    sorry
+  show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+    sorry
+qed
 
 definition (in stalk) is_local:: "'a set \<Rightarrow> bool" where
 "is_local U \<equiv> local_ring carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
