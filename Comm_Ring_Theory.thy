@@ -1375,8 +1375,8 @@ proof-
 qed
 
 lemma eq_from_eq_frac:
-  assumes "s \<in> (R \<setminus> I)" and "s' \<in> (R \<setminus> I)" and "r \<in> R" "r' \<in> R" and
-          "local.frac r s = local.frac r' s'"
+  assumes "local.frac r s = local.frac r' s'"
+    and "s \<in> (R \<setminus> I)" and "s' \<in> (R \<setminus> I)" and "r \<in> R" "r' \<in> R" 
   obtains h where "h \<in> (R \<setminus> I)" "h \<cdot> (s' \<cdot> r - s \<cdot> r') = \<zero>"
     using local.frac_eq_Ex[of r s r' s'] assms by blast
 
@@ -3410,6 +3410,10 @@ lemma (in pr_ideal) local_ring_at_is_local:
 (zero_local_ring_at) (one_local_ring_at)"
 proof
   define \<ww> where "\<ww> \<equiv> {quotient_ring.frac (R\<setminus>I) R (+) (\<cdot>) \<zero> r s| r s. r \<in> I \<and> s \<in> (R \<setminus> I)}"
+  have \<ww>_sub: "\<ww> \<subseteq> carrier_local_ring_at"
+    unfolding \<ww>_def
+    by (auto simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
+
   interpret cq: quotient_ring "R\<setminus>I" R "(+)" "(\<cdot>)" \<zero> \<one>
     by (simp add: Comm_Ring_Theory.quotient_ring_def comm.comm_ring_axioms submonoid_pr_ideal) 
   have uminus_closed: "uminus_local_ring_at u \<in> \<ww>" if "u \<in> \<ww>" for u
@@ -3466,7 +3470,7 @@ proof
         then show "add_local_ring_at (uminus_local_ring_at u) u = zero_local_ring_at"
           using subm unfolding submonoid_axioms_def
           by (simp add: \<open>u \<in> \<ww>\<close> additive.commutative subset_iff uminus_closed)
-      qed (use  \<open>u \<in> \<ww>\<close> uminus_closed in auto)
+      qed (use \<open>u \<in> \<ww>\<close> uminus_closed in auto)
     qed
     show "ideal_axioms \<ww> carrier_local_ring_at mult_local_ring_at"
     proof
@@ -3474,6 +3478,8 @@ proof
       assume a: "a \<in> carrier_local_ring_at" 
       then obtain ra sa where a: "a = cq.frac ra sa" and "ra \<in> R" and sa: "sa \<in> R" "sa \<notin> I"
         by (meson frac_from_carrier_local)
+      then have "a \<in> carrier_local_ring_at"
+        by (simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
       assume "b \<in> \<ww>"
       then obtain rb sb where b: "b = cq.frac rb sb" and "rb \<in> I" and sb: "sb \<in> R" "sb \<notin> I"
         using \<ww>_def by blast
@@ -3484,9 +3490,7 @@ proof
         apply (clarsimp simp add: mult_local_ring_at_def \<ww>_def a b)
         by (metis Diff_iff \<open>ra \<in> R\<close> \<open>rb \<in> I\<close> cq.sub_composition_closed ideal(1) sa sb)
       then show "mult_local_ring_at b a \<in> \<ww>"
-        using \<open>b \<in> \<ww>\<close> a comm_mult subm sa pr_ideal_axioms
-        unfolding submonoid_axioms_def
-        by (simp add: \<open>sa \<in> R\<close> \<open>ra \<in> R\<close> comm.frac_in_carrier_local comm.spectrum_def subset_iff)
+        using \<open>a \<in> carrier_local_ring_at\<close> \<open>b \<in> \<ww>\<close> \<ww>_sub comm_mult by force
     qed
   qed
   show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
@@ -3496,17 +3500,31 @@ proof
       show "mult_local_ring_at r a \<in> \<ww>"
         if "r \<in> carrier_local_ring_at" and "a \<in> \<ww>" for r a
         using that by (simp add: \<ww>.ideal(1))
-      show "\<ww> \<noteq> carrier_local_ring_at"
-        apply (auto simp:   \<ww>_def)
-        apply (auto simp:  \<ww>_def set_eq_iff carrier_local_ring_at_def)
-        sorry
+      have "\<ww> \<subseteq> carrier_local_ring_at"
+        unfolding \<ww>_def by (force simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
+      have False
+        if s: "s \<notin> I" "s \<in> R" and "r \<in> I" and eq: "cq.frac \<one> \<one> = cq.frac r s"
+        for r s
+      proof -
+        have "s \<in> R\<setminus>I"
+          using s by blast
+        then show False
+          using eq_from_eq_frac [OF eq] \<open>r \<in> I\<close> comm.additive.abelian_group_axioms
+          unfolding abelian_group_def
+          by (metis Diff_iff absorbent additive.sub comm.additive.cancel_imp_equal comm.inverse_distributive(1) comm.multiplicative.composition_closed cq.sub_unit_closed ideal(1))
+      qed
+      then have "cq.frac \<one> \<one> \<notin> \<ww>"
+        using \<ww>_def by blast
+      moreover have "cq.frac \<one> \<one> \<in> carrier_local_ring_at"
+        using carrier_local_ring_at_def cq.multiplicative.unit_closed cq.one_rel_def by force
+      ultimately show "\<ww> \<noteq> carrier_local_ring_at"
+        by blast
       show "\<ww> = \<aa>"
         if "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
           and "\<aa> \<noteq> carrier_local_ring_at"
           and "\<ww> \<subseteq> \<aa>"
         for \<aa> 
         using that
-
         sorry
     qed
   qed
