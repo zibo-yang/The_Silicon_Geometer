@@ -2914,19 +2914,12 @@ lemma (in comm_ring) ideal_iff_lideal:
   "ideal I R (+) (\<cdot>) \<zero> \<one> \<longleftrightarrow> lideal I R (+) (\<cdot>) \<zero> \<one>" (is "?lhs = ?rhs")
 proof
   assume ?lhs
-  then interpret I: ideal I R "(+)" "(\<cdot>)" \<zero> \<one>
-    by blast
+  then interpret I: ideal I R "(+)" "(\<cdot>)" \<zero> \<one> .
   show ?rhs
-  proof
-    fix r a
-    assume "r \<in> R" "a \<in> I"
-    then show "r \<cdot> a \<in> I"
-      using I.ideal by presburger
-  qed
+  proof qed (use I.ideal in presburger)
 next
   assume ?rhs
-  then interpret I: lideal I R "(+)" "(\<cdot>)" \<zero> \<one>
-    by blast
+  then interpret I: lideal I R "(+)" "(\<cdot>)" \<zero> \<one> .
   show ?lhs
   proof
     fix r a
@@ -3416,6 +3409,78 @@ lemma (in pr_ideal) local_ring_at_is_local:
   shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
 (zero_local_ring_at) (one_local_ring_at)"
 proof
+  define \<ww> where "\<ww> \<equiv> {quotient_ring.frac (R\<setminus>I) R (+) (\<cdot>) \<zero> r s| r s. r \<in> I \<and> s \<in> (R \<setminus> I)}"
+  have add_closed: "add_local_ring_at a b \<in> \<ww>" if "a \<in> \<ww>" "b \<in> \<ww>" for a b
+    sorry
+  interpret \<ww>: ideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at
+    zero_local_ring_at one_local_ring_at
+  proof intro_locales
+    show subm: "submonoid_axioms \<ww> carrier_local_ring_at add_local_ring_at zero_local_ring_at"
+    proof
+      show "\<ww> \<subseteq> carrier_local_ring_at"
+        using \<ww>_def comm.comm_ring_axioms comm.frac_in_carrier_local comm_ring.spectrum_def pr_ideal_axioms by fastforce
+      show "zero_local_ring_at \<in> \<ww>"
+        using \<ww>_def comm.spectrum_def comm.spectrum_imp_cxt_quotient_ring not_1 pr_ideal_axioms quotient_ring.zero_rel_def zero_local_ring_at_def by fastforce
+    qed (auto simp: add_closed)
+    show "Group_Theory.monoid \<ww> add_local_ring_at zero_local_ring_at"
+    proof 
+      show "zero_local_ring_at \<in> \<ww>"
+        by (meson subm submonoid_axioms_def)
+    next
+      fix a b c
+      assume "a \<in> \<ww>" "b \<in> \<ww>" "c \<in> \<ww>"
+      then show "add_local_ring_at (add_local_ring_at a b) c = add_local_ring_at a (add_local_ring_at b c)"
+        by (meson additive.associative in_mono subm submonoid_axioms_def)
+    next
+      fix a assume "a \<in> \<ww>"
+      show "add_local_ring_at zero_local_ring_at a = a"
+        by (meson \<open>a \<in> \<ww>\<close> subm additive.left_unit in_mono submonoid_axioms_def) 
+      show "add_local_ring_at a zero_local_ring_at = a"
+        by (meson \<open>a \<in> \<ww>\<close> additive.right_unit in_mono subm submonoid_axioms_def)
+    qed (auto simp: add_closed)
+    show "Group_Theory.group_axioms \<ww> add_local_ring_at zero_local_ring_at"
+    proof unfold_locales
+      fix u
+      assume "u \<in> \<ww>"
+      then
+      show "monoid.invertible \<ww> add_local_ring_at zero_local_ring_at u"
+        apply (auto simp:  \<ww>_def)
+        sorry
+    qed
+    show "ideal_axioms \<ww> carrier_local_ring_at mult_local_ring_at"
+    proof
+      fix a b
+      assume "a \<in> carrier_local_ring_at" and "b \<in> \<ww>"
+      show "mult_local_ring_at a b \<in> \<ww>"
+        apply (auto simp:  \<ww>_def)
+        sorry
+      show "mult_local_ring_at b a \<in> \<ww>"
+        sorry
+    qed
+  qed
+  show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+  proof
+    show "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+    proof
+      show "mult_local_ring_at r a \<in> \<ww>"
+        if "r \<in> carrier_local_ring_at" and "a \<in> \<ww>" for r a
+        using that by (simp add: \<ww>.ideal(1))
+      show "\<ww> \<noteq> carrier_local_ring_at"
+        apply (auto simp:   \<ww>_def)
+
+        apply (auto simp:  \<ww>_def set_eq_iff carrier_local_ring_at_def)
+        sorry
+      show "\<ww> = \<aa>"
+        if "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+          and "\<aa> \<noteq> carrier_local_ring_at"
+          and "\<ww> \<subseteq> \<aa>"
+        for \<aa> 
+        using that
+
+        sorry
+    qed
+  qed
+next
   fix J' J
   assume "max_lideal J' carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
       and "max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
@@ -3424,9 +3489,6 @@ proof
   unfolding carrier_local_ring_at_def  
     apply ( simp add: max_lideal_def max_lideal_axioms_def)
   sorry
-next
-  show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-    sorry
 qed
 
 definition (in stalk) is_local:: "'a set \<Rightarrow> bool" where
