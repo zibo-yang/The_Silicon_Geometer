@@ -2935,6 +2935,31 @@ qed
 locale max_lideal = lideal +
   assumes neq_ring: "I \<noteq> R" and is_max: "\<And>\<aa>. lideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> \<aa> \<noteq> R \<Longrightarrow> I \<subseteq> \<aa> \<Longrightarrow> I = \<aa>"
 
+(**WHY ARE THE ARGUMENT ORDERS OF max_ideal vs max_lideal INCONSISTENT?**)
+lemma (in comm_ring) max_ideal_iff_max_lideal: 
+  "max_ideal R I (+) (\<cdot>) \<zero> \<one> \<longleftrightarrow> max_lideal I R (+) (\<cdot>) \<zero> \<one>" (is "?lhs = ?rhs") 
+proof
+  assume ?lhs
+  then interpret I: max_ideal R I "(+)" "(\<cdot>)" \<zero> \<one> .
+  show ?rhs
+  proof intro_locales
+    show "lideal_axioms I R (\<cdot>)"
+      by (simp add: I.ideal(1) lideal_axioms.intro)
+    show "max_lideal_axioms I R (+) (\<cdot>) \<zero> \<one>"
+      by (simp add: I.is_max I.neq_ring ideal_iff_lideal max_lideal_axioms.intro)
+  qed
+next
+  assume ?rhs
+  then interpret I: max_lideal I R "(+)" "(\<cdot>)" \<zero> \<one> .
+  show ?lhs
+  proof intro_locales
+    show "ideal_axioms I R (\<cdot>)"
+      by (meson I.lideal_axioms ideal_def ideal_iff_lideal)
+    show "max_ideal_axioms R I (+) (\<cdot>) \<zero> \<one>"
+      by (meson I.is_max I.neq_ring ideal_iff_lideal max_ideal_axioms.intro)
+  qed
+qed
+
 subsubsection \<open>Local Rings\<close>
 
 (* definition 0.39 *)
@@ -3404,6 +3429,18 @@ proof intro_locales
   qed
 qed
 
+(*An ideal P in A is prime if and only if A/P is an integral domain. 
+  An ideal m in A is maximal if and only if A/m is a field.*)
+lemma (in max_ideal) is_pr_ideal: "pr_ideal R I (+) (\<cdot>) \<zero> \<one>"
+proof
+  show "I \<noteq> R"
+    using neq_ring by fastforce
+  fix x y
+  assume "x \<in> R" "y \<in> R" and dot: "x \<cdot> y \<in> I"
+  then show "x \<in> I \<or> y \<in> I"
+    sorry
+qed
+
 (* ex. 0.40 *)
 lemma (in pr_ideal) local_ring_at_is_local:
   shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
@@ -3421,7 +3458,7 @@ proof
   have add_closed: "add_local_ring_at a b \<in> \<ww>" if "a \<in> \<ww>" "b \<in> \<ww>" for a b
   proof -
     obtain ra sa rb sb where ab: "a = cq.frac ra sa" "b = cq.frac rb sb"
-      and "ra \<in> I" and "rb \<in> I" and "sa \<in> R" and "sa \<notin> I" and "sb \<in> R" and "sb \<notin> I"
+      and "ra \<in> I" "rb \<in> I" "sa \<in> R" "sa \<notin> I" "sb \<in> R" "sb \<notin> I"
       using \<open>a \<in> \<ww>\<close> \<open>b \<in> \<ww>\<close> by (auto simp: \<ww>_def)
     then have "add_local_ring_at (cq.frac ra sa) (cq.frac rb sb) = cq.frac (ra \<cdot> sb + rb \<cdot> sa) (sa \<cdot> sb)"
       by (force simp add: cq.add_rel_frac add_local_ring_at_def)
@@ -3493,50 +3530,72 @@ proof
         using \<open>a \<in> carrier_local_ring_at\<close> \<open>b \<in> \<ww>\<close> \<ww>_sub comm_mult by force
     qed
   qed
-  show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+  have "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
   proof
-    show "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-    proof
-      show "mult_local_ring_at r a \<in> \<ww>"
-        if "r \<in> carrier_local_ring_at" and "a \<in> \<ww>" for r a
-        using that by (simp add: \<ww>.ideal(1))
-      have "\<ww> \<subseteq> carrier_local_ring_at"
-        unfolding \<ww>_def by (force simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
-      have False
-        if s: "s \<notin> I" "s \<in> R" and "r \<in> I" and eq: "cq.frac \<one> \<one> = cq.frac r s"
-        for r s
-      proof -
-        have "s \<in> R\<setminus>I"
-          using s by blast
-        then show False
-          using eq_from_eq_frac [OF eq] \<open>r \<in> I\<close> comm.additive.abelian_group_axioms
-          unfolding abelian_group_def
-          by (metis Diff_iff absorbent additive.sub comm.additive.cancel_imp_equal comm.inverse_distributive(1) comm.multiplicative.composition_closed cq.sub_unit_closed ideal(1))
-      qed
-      then have "cq.frac \<one> \<one> \<notin> \<ww>"
-        using \<ww>_def by blast
-      moreover have "cq.frac \<one> \<one> \<in> carrier_local_ring_at"
-        using carrier_local_ring_at_def cq.multiplicative.unit_closed cq.one_rel_def by force
-      ultimately show "\<ww> \<noteq> carrier_local_ring_at"
-        by blast
-      show "\<ww> = \<aa>"
-        if "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-          and "\<aa> \<noteq> carrier_local_ring_at"
-          and "\<ww> \<subseteq> \<aa>"
-        for \<aa> 
-        using that
+    fix r a
+    assume "r \<in> carrier_local_ring_at" and "a \<in> \<ww>" 
+    then show "mult_local_ring_at r a \<in> \<ww>"
+      by (simp add: \<ww>.ideal(1))
+  next
+    have "\<ww> \<subseteq> carrier_local_ring_at"
+      unfolding \<ww>_def by (force simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
+    have False
+      if s: "s \<notin> I" "s \<in> R" and "r \<in> I" and eq: "cq.frac \<one> \<one> = cq.frac r s"
+      for r s
+    proof -
+      have "s \<in> R\<setminus>I"
+        using s by blast
+      then show False
+        using eq_from_eq_frac [OF eq] \<open>r \<in> I\<close> comm.additive.abelian_group_axioms
+        unfolding abelian_group_def
+        by (metis Diff_iff absorbent additive.sub comm.additive.cancel_imp_equal comm.inverse_distributive(1) comm.multiplicative.composition_closed cq.sub_unit_closed ideal(1))
+    qed
+    then have "cq.frac \<one> \<one> \<notin> \<ww>"
+      using \<ww>_def by blast
+    moreover have "cq.frac \<one> \<one> \<in> carrier_local_ring_at"
+      using carrier_local_ring_at_def cq.multiplicative.unit_closed cq.one_rel_def by force
+    ultimately show "\<ww> \<noteq> carrier_local_ring_at"
+      by blast
+  next
+    fix \<aa> 
+    assume li: "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+      and ne: "\<aa> \<noteq> carrier_local_ring_at"
+      and "\<ww> \<subseteq> \<aa>"
+    then interpret li: lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+      by force
+    have "\<aa> \<subseteq> carrier_local_ring_at"
+      by blast
+    then obtain u where "u \<in> carrier_local_ring_at" "u \<notin> \<aa>"
+      using ne by blast
+    then have "\<aa> \<subseteq> \<ww>"
+    proof (clarsimp simp: \<ww>_def carrier_local_ring_at_def cq.valid_frac_def)
+      fix x r s
+      assume \<section>: "cq.frac r s \<notin> \<aa>" "x \<in> \<aa>" "r \<in> R" "s \<in> R" "s \<notin> I"
+      have "x \<in> carrier_local_ring_at"
+        using \<open>x \<in> \<aa>\<close> by force
+      with \<section> show "\<exists>r s. x = cq.frac r s \<and> r \<in> I \<and> s \<in> R \<and> s \<notin> I"
+        apply (auto simp:  \<ww>_def carrier_local_ring_at_def cq.valid_frac_def)
         sorry
     qed
+    with \<open>\<ww> \<subseteq> \<aa>\<close> show "\<ww> = \<aa>"
+      by blast
   qed
-next
-  fix J' J
-  assume "max_lideal J' carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-      and "max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-  then 
+  then show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at" 
+    by metis
+  have \<section>: "J \<subseteq> \<ww>" if "pr_ideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at
+    zero_local_ring_at one_local_ring_at" for J
+    sorry
   show "J' = J"
-  unfolding carrier_local_ring_at_def  
-    apply ( simp add: max_lideal_def max_lideal_axioms_def)
-  sorry
+    if "max_lideal J' carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+      and "max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+    for J' J
+  proof -
+    have J': "pr_ideal carrier_local_ring_at J' add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+      and J: "pr_ideal carrier_local_ring_at J add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+      by (simp_all add: max_ideal.is_pr_ideal max_ideal_iff_max_lideal that)
+    then show "J' = J"
+      sorry
+  qed
 qed
 
 definition (in stalk) is_local:: "'a set \<Rightarrow> bool" where
