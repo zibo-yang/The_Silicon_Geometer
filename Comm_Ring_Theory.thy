@@ -3530,7 +3530,7 @@ proof
         using \<open>a \<in> carrier_local_ring_at\<close> \<open>b \<in> \<ww>\<close> \<ww>_sub comm_mult by force
     qed
   qed
-  have "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+  have max_\<ww>: "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
   proof
     fix r a
     assume "r \<in> carrier_local_ring_at" and "a \<in> \<ww>" 
@@ -3582,19 +3582,19 @@ proof
   qed
   then show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at" 
     by metis
-  have \<section>: "J \<subseteq> \<ww>" if "pr_ideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at
+  have \<section>: "J \<subseteq> \<ww>" if "pr_ideal carrier_local_ring_at J add_local_ring_at mult_local_ring_at
     zero_local_ring_at one_local_ring_at" for J
     sorry
   show "J' = J"
     if "max_lideal J' carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-      and "max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+      "max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
     for J' J
   proof -
     have J': "pr_ideal carrier_local_ring_at J' add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
       and J: "pr_ideal carrier_local_ring_at J add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
       by (simp_all add: max_ideal.is_pr_ideal max_ideal_iff_max_lideal that)
     then show "J' = J"
-      sorry
+      using that \<section> max_\<ww> unfolding max_lideal_def max_lideal_axioms_def by metis
   qed
 qed
 
