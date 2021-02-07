@@ -2576,6 +2576,18 @@ proof -
   finally show ?thesis .
 qed
 
+lemma add_rel_well_defined:
+  fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
+  assumes "op_rel_aux x y z" and "op_rel_aux x y z'"
+  shows "\<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
+\<lfloor>z', add_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>"
+  sorry
+
+lemma add_rel_well_defined_bis:
+  assumes "\<lfloor>U, x\<rfloor> = \<lfloor>U', x'\<rfloor>" and "\<lfloor>V, y\<rfloor> = \<lfloor>V', y'\<rfloor>"
+  shows "add_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = add_rel \<lfloor>U', x'\<rfloor> \<lfloor>V', y'\<rfloor>"
+  sorry
+
 lemma mult_rel_carrier[intro]:
   assumes "X \<in> carrier_direct_lim" "Y \<in> carrier_direct_lim"
   shows "mult_rel X Y \<in> carrier_direct_lim"
