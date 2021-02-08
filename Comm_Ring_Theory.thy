@@ -2626,6 +2626,18 @@ proof -
   finally show ?thesis .
 qed
 
+lemma mult_rel_well_defined:
+  fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
+  assumes "op_rel_aux x y z" and "op_rel_aux x y z'"
+  shows "\<lfloor>z, mult_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
+\<lfloor>z', mult_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>"
+  sorry
+
+lemma mult_rel_well_defined_bis:
+  assumes "\<lfloor>U, x\<rfloor> = \<lfloor>U', x'\<rfloor>" and "\<lfloor>V, y\<rfloor> = \<lfloor>V', y'\<rfloor>"
+  shows "mult_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = mult_rel \<lfloor>U', x'\<rfloor> \<lfloor>V', y'\<rfloor>"
+  sorry
+
 lemma class_of_eqD:
   assumes "\<lfloor>U1,s1\<rfloor> = \<lfloor>U2,s2\<rfloor>" "(U1,s1) \<in> Sigma I \<FF>" "(U2,s2) \<in> Sigma I \<FF>"
   obtains W where "W \<in> I" "W \<subseteq> U1 \<inter> U2" "\<rho> U1 W s1 = \<rho> U2 W s2"
