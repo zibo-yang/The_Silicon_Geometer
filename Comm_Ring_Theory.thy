@@ -2590,80 +2590,6 @@ proof -
   finally show ?thesis .
 qed
 
-lemma add_rel_well_defined:
-  fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
-  assumes "x \<in> Sigma I \<FF>" "y \<in> Sigma I \<FF>"
-  assumes "op_rel_aux x y z" and "op_rel_aux x y z'"
-  shows "\<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
-          \<lfloor>z', add_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>"
-proof -
-  have z:"z\<in>I" "z \<subseteq> fst x" "z \<subseteq> fst y"
-    using \<open>op_rel_aux x y z\<close> unfolding op_rel_aux_def by auto
-  have z':"z'\<in>I" "z' \<subseteq> fst x" "z' \<subseteq> fst y"
-    using  \<open>op_rel_aux x y z'\<close> unfolding op_rel_aux_def by auto
-
-  interpret xz:ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" 
-              "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>x \<in> Sigma I \<FF>\<close> z by auto
-  interpret yz:ring_homomorphism "(\<rho> (fst y) z)" "(\<FF> (fst y))" 
-              "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>y \<in> Sigma I \<FF>\<close> z by auto
-  interpret xz':ring_homomorphism "(\<rho> (fst x) z')" "(\<FF> (fst x))" 
-              "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>x \<in> Sigma I \<FF>\<close> z' by auto
-  interpret yz':ring_homomorphism "(\<rho> (fst y) z')" "(\<FF> (fst y))" 
-              "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>y \<in> Sigma I \<FF>\<close> z' by auto
-
-  obtain w where w:"w \<in> I" "w \<subseteq> z \<inter> z'"
-    using has_lower_bound by (meson assms(3) assms(4) op_rel_aux_def)
-
-  interpret zw:ring_homomorphism "\<rho> z w" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-      "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> \<open>op_rel_aux x y z\<close> unfolding op_rel_aux_def
-    by auto
-  interpret z'w:ring_homomorphism "\<rho> z' w" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>" 
-      "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> \<open>op_rel_aux x y z'\<close> unfolding op_rel_aux_def
-    by auto
-
-  show ?thesis
-  proof (rule class_of_eqI[OF _ _ \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close>])
-    define xz yz where "xz = \<rho> (fst x) z (snd x)" and "yz = \<rho> (fst y) z (snd y)"
-    define xz' yz' where "xz' = \<rho> (fst x) z' (snd x)" and "yz' = \<rho> (fst y) z' (snd y)"
-    show "(z, +\<^bsub>z\<^esub> xz yz) \<in> Sigma I \<FF>" "(z', +\<^bsub>z'\<^esub> xz' yz') \<in> Sigma I \<FF>"
-      unfolding xz_def yz_def xz'_def yz'_def 
-      using assms op_rel_aux_def by auto
-
-    have "\<rho> z w (+\<^bsub>z\<^esub> xz yz) = +\<^bsub>w\<^esub> (\<rho> z w xz) (\<rho> z w yz)"
-      apply (rule zw.additive.commutes_with_composition)
-      using assms(1,2) xz_def yz_def by force+
-    also have "... = +\<^bsub>w\<^esub> (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))"
-      unfolding xz_def yz_def
-      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
-      using assms(1,2) w z by auto
-    also have "... = +\<^bsub>w\<^esub> (\<rho> z' w xz') (\<rho> z' w yz')"
-      unfolding xz'_def yz'_def
-      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
-      using assms(1,2) w z' by auto
-    also have "... = \<rho> z' w (+\<^bsub>z'\<^esub> xz' yz')"
-      apply (rule z'w.additive.commutes_with_composition[symmetric])
-      using assms(1,2) xz'_def yz'_def by force+
-    finally show "\<rho> z w (+\<^bsub>z\<^esub> xz yz) = \<rho> z' w (+\<^bsub>z'\<^esub> xz' yz')" .
-  qed
-qed
-
-lemma add_rel_well_defined_bis:
-  assumes "\<lfloor>U, x\<rfloor> = \<lfloor>U', x'\<rfloor>" and "\<lfloor>V, y\<rfloor> = \<lfloor>V', y'\<rfloor>"
-  shows "add_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = add_rel \<lfloor>U', x'\<rfloor> \<lfloor>V', y'\<rfloor>"
-  sorry
-
 lemma mult_rel_carrier[intro]:
   assumes "X \<in> carrier_direct_lim" "Y \<in> carrier_direct_lim"
   shows "mult_rel X Y \<in> carrier_direct_lim"
@@ -2702,18 +2628,92 @@ proof -
   finally show ?thesis .
 qed
 
-lemma mult_rel_well_defined:
+lemma 
   fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
+  assumes xy: "x \<in> Sigma I \<FF>" "y \<in> Sigma I \<FF>"
   assumes "op_rel_aux x y z" and "op_rel_aux x y z'"
-  shows "\<lfloor>z, mult_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
-\<lfloor>z', mult_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>"
-  sorry
+  shows add_rel_well_defined:
+        "\<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
+         \<lfloor>z', add_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>" (is "?add")
+    and mult_rel_well_defined:
+        "\<lfloor>z, mult_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
+         \<lfloor>z', mult_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>" (is "?mult")
+proof -
+  have z: "z\<in>I" "z \<subseteq> fst x" "z \<subseteq> fst y" and z': "z'\<in>I" "z' \<subseteq> fst x" "z' \<subseteq> fst y"
+    using assms unfolding op_rel_aux_def by auto
 
-lemma mult_rel_well_defined_bis:
-  assumes "\<lfloor>U, x\<rfloor> = \<lfloor>U', x'\<rfloor>" and "\<lfloor>V, y\<rfloor> = \<lfloor>V', y'\<rfloor>"
-  shows "mult_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = mult_rel \<lfloor>U', x'\<rfloor> \<lfloor>V', y'\<rfloor>"
-  sorry
+  interpret xz: ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" 
+              "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
+    using is_ring_morphism subset_of_opens \<open>x \<in> Sigma I \<FF>\<close> z by fastforce
+  interpret yz: ring_homomorphism "(\<rho> (fst y) z)" "(\<FF> (fst y))" 
+              "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
+    using is_ring_morphism subset_of_opens \<open>y \<in> Sigma I \<FF>\<close> z by fastforce
+  interpret xz': ring_homomorphism "(\<rho> (fst x) z')" "(\<FF> (fst x))" 
+              "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
+    using is_ring_morphism subset_of_opens \<open>x \<in> Sigma I \<FF>\<close> z' by fastforce
+  interpret yz': ring_homomorphism "(\<rho> (fst y) z')" "(\<FF> (fst y))" 
+              "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
+    using is_ring_morphism subset_of_opens \<open>y \<in> Sigma I \<FF>\<close> z' by fastforce
 
+  obtain w where w:"w \<in> I" "w \<subseteq> z \<inter> z'"
+    using has_lower_bound by (meson assms(3) assms(4) op_rel_aux_def)
+
+  interpret zw: ring_homomorphism "\<rho> z w" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
+      "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
+    by (meson inf.boundedE is_ring_morphism subset_of_opens w \<open>z\<in>I\<close>)
+  interpret z'w: ring_homomorphism "\<rho> z' w" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>" 
+      "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
+    by (meson is_ring_morphism le_inf_iff subset_of_opens w \<open>z'\<in>I\<close>)
+
+  show ?add
+  proof (rule class_of_eqI[OF _ _ \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close>])
+    define xz yz where "xz = \<rho> (fst x) z (snd x)" and "yz = \<rho> (fst y) z (snd y)"
+    define xz' yz' where "xz' = \<rho> (fst x) z' (snd x)" and "yz' = \<rho> (fst y) z' (snd y)"
+    show "(z, +\<^bsub>z\<^esub> xz yz) \<in> Sigma I \<FF>" "(z', +\<^bsub>z'\<^esub> xz' yz') \<in> Sigma I \<FF>"
+      unfolding xz_def yz_def xz'_def yz'_def 
+      using assms op_rel_aux_def by auto
+
+    have "\<rho> z w (+\<^bsub>z\<^esub> xz yz) = +\<^bsub>w\<^esub> (\<rho> z w xz) (\<rho> z w yz)"
+      apply (rule zw.additive.commutes_with_composition)
+      using xy xz_def yz_def by force+
+    also have "... = +\<^bsub>w\<^esub> (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))"
+      unfolding xz_def yz_def
+      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
+      using xy w z by auto
+    also have "... = +\<^bsub>w\<^esub> (\<rho> z' w xz') (\<rho> z' w yz')"
+      unfolding xz'_def yz'_def
+      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
+      using xy w z' by auto
+    also have "... = \<rho> z' w (+\<^bsub>z'\<^esub> xz' yz')"
+      apply (rule z'w.additive.commutes_with_composition[symmetric])
+      using xy xz'_def yz'_def by force+
+    finally show "\<rho> z w (+\<^bsub>z\<^esub> xz yz) = \<rho> z' w (+\<^bsub>z'\<^esub> xz' yz')" .
+  qed
+
+  show ?mult
+  proof (rule class_of_eqI[OF _ _ \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close>])
+    define xz yz where "xz = \<rho> (fst x) z (snd x)" and "yz = \<rho> (fst y) z (snd y)"
+    define xz' yz' where "xz' = \<rho> (fst x) z' (snd x)" and "yz' = \<rho> (fst y) z' (snd y)"
+    show "(z, \<cdot>\<^bsub>z\<^esub> xz yz) \<in> Sigma I \<FF>" "(z', \<cdot>\<^bsub>z'\<^esub> xz' yz') \<in> Sigma I \<FF>"
+      unfolding xz_def yz_def xz'_def yz'_def 
+      using assms op_rel_aux_def by auto
+    have "\<rho> z w (\<cdot>\<^bsub>z\<^esub> xz yz) = \<cdot>\<^bsub>w\<^esub> (\<rho> z w xz) (\<rho> z w yz)"
+      apply (rule zw.multiplicative.commutes_with_composition)
+      using xy xz_def yz_def by force+
+    also have "... = \<cdot>\<^bsub>w\<^esub> (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))"
+      unfolding xz_def yz_def
+      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
+      using xy w z by auto
+    also have "... = \<cdot>\<^bsub>w\<^esub> (\<rho> z' w xz') (\<rho> z' w yz')"
+      unfolding xz'_def yz'_def
+      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
+      using xy w z' by auto
+    also have "... = \<rho> z' w (\<cdot>\<^bsub>z'\<^esub> xz' yz')"
+      apply (rule z'w.multiplicative.commutes_with_composition[symmetric])
+      using xy xz'_def yz'_def by force+
+    finally show "\<rho> z w (\<cdot>\<^bsub>z\<^esub> xz yz) = \<rho> z' w (\<cdot>\<^bsub>z'\<^esub> xz' yz')"   .
+  qed
+qed
 
 
 (* exercise 0.35 *)
@@ -2973,9 +2973,18 @@ lemma
 Let A be a maximal ideal. Then R/A contains no proper ideals, by the correspondence theorem.
 Indeed, R/A is a field (assuming that R contains an identity). Hence, A is a prime ideal.
 https://math.stackexchange.com/questions/68489/why-are-maximal-ideals-prime *)
-lemma 
-  shows "pr_ideal R I (+) (\<cdot>) \<zero> \<one>" 
+(*ALTERNATIVE PROOF\<in>
+  An ideal P in A is prime if and only if A/P is an integral domain. 
+  An ideal m in A is maximal if and only if A/m is a field.*)
+lemma is_pr_ideal: "pr_ideal R I (+) (\<cdot>) \<zero> \<one>"
+proof
+  show "I \<noteq> R"
+    using neq_ring by fastforce
+  fix x y
+  assume "x \<in> R" "y \<in> R" and dot: "x \<cdot> y \<in> I"
+  then show "x \<in> I \<or> y \<in> I"
     sorry
+qed
 
 end (* locale max_ideal *)
 
@@ -3517,17 +3526,6 @@ proof intro_locales
   qed
 qed
 
-(*An ideal P in A is prime if and only if A/P is an integral domain. 
-  An ideal m in A is maximal if and only if A/m is a field.*)
-lemma (in max_ideal) is_pr_ideal: "pr_ideal R I (+) (\<cdot>) \<zero> \<one>"
-proof
-  show "I \<noteq> R"
-    using neq_ring by fastforce
-  fix x y
-  assume "x \<in> R" "y \<in> R" and dot: "x \<cdot> y \<in> I"
-  then show "x \<in> I \<or> y \<in> I"
-    sorry
-qed
 
 (* ex. 0.40 *)
 lemma (in pr_ideal) local_ring_at_is_local:
