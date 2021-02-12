@@ -3917,12 +3917,13 @@ proof -
   qed
 qed
 
+
 lemma stalk_at_prime_is_iso_to_local_ring_at_prime_aux:
   assumes "is_zariski_open V" and "\<pp> \<in> V" and
-    "ring_homomorphism \<phi>
-st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
+    \<phi>: "ring_homomorphism \<phi>
+      st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
-    and "\<forall>U\<in>(top.neighborhoods \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> st.canonical_fun U) s = key_map U s"
+    and all_eq: "\<forall>U\<in>(top.neighborhoods \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> st.canonical_fun U) s = key_map U s"
   shows "ring_isomorphism \<phi>
 st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
@@ -3940,11 +3941,11 @@ next
     have "inj_on \<phi> st.carrier_stalk"
     proof
       fix s t assume "s \<in> st.carrier_stalk" "t \<in> st.carrier_stalk" "\<phi> s = \<phi> t"
-      obtain U s' t' a f b g where FU: "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "t' \<in> \<O> U"
-        "s = st.class_of U s'" "t = st.class_of U t'" 
-        "s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)" 
-        "t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)" 
-        "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>"
+      obtain U s' t' a f b g where FU [simp]: "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "t' \<in> \<O> U"
+        and s: "s = st.class_of U s'" "t = st.class_of U t'" 
+        and s': "s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)" 
+        and t': "t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)" 
+        and "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>"
       proof-
         obtain V s' t' where HV: "s = st.class_of V s'" "t = st.class_of V t'" 
                             "s' \<in> \<O> V" "t' \<in> \<O> V" "is_zariski_open V" "\<pp> \<in> V"
@@ -3985,12 +3986,22 @@ next
         also have "\<dots> = key_map U t'" 
           using \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> \<open>t' \<in> \<O> U\<close> assms(4) top.neighborhoods_def by auto
         also have "\<dots> = local.frac b g"
-          using FU(2) FU(4) FU(8) key_map_def by force
+          using FU(4) local.key_map_def t' by force
         finally show ?thesis .
       qed
-      then obtain h where Hh:"h \<in> R" "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" 
+      then obtain h where Hh: "h \<in> R" "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" 
         using pi.eq_from_eq_frac by (metis Diff_iff \<open>a \<in> R\<close> \<open>b \<in> R\<close> \<open>f \<in> R\<close> \<open>f \<notin> \<pp>\<close> \<open>g \<in> R\<close> \<open>g \<notin> \<pp>\<close>)
-      have "s' \<qq> = t' \<qq>" if "\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)" for \<qq>
+      have izo: "is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))" 
+        using local.standard_open_is_zariski_open
+        by (simp add: Hh(1) \<open>f \<in> R\<close> \<open>g \<in> R\<close> standard_open_is_zariski_open)
+      have ssm_s': "sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s'
+                \<in> \<O> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))"
+        by (metis (no_types, hide_lams) FU(3) Int_assoc inf_le1 izo map.map_closed sheaf_spec_morphisms_are_maps)
+      have ssm_t': "sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t'
+                \<in> \<O> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))"
+        by (metis (no_types, hide_lams) FU(4) Int_assoc inf_le1 izo map.map_closed sheaf_spec_morphisms_are_maps)      have [simp]: "\<pp> \<in> \<D>(f)" "\<pp> \<in> \<D>(g)" "\<pp> \<in> \<D>(h)"
+        using Hh \<open>f \<in> R\<close> \<open>f \<notin> \<pp>\<close> \<open>g \<in> R\<close> \<open>g \<notin> \<pp>\<close> belongs_standard_open_iff st.is_elem by blast+
+      have eq: "s' \<qq> = t' \<qq>" if "\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)" for \<qq>
       proof -
         have "\<qq> \<in> Spec"
           using standard_open_def that by auto
@@ -4000,33 +4011,41 @@ next
         define RR where "RR \<equiv> {(x, y). (x, y) \<in> (R \<times> (R\<setminus>\<qq>)) \<times> R \<times> (R\<setminus>\<qq>) \<and> q.rel x y}"
         interpret eq: equivalence "R \<times> (R\<setminus>\<qq>)" "RR"
           unfolding RR_def by (blast intro: equivalence.intro q.rel_refl q.rel_sym q.rel_trans)
-        have Fq: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
+        have Fq [simp]: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
           using belongs_standard_open_iff that
-            apply (meson FU(11) IntD1 IntD2 standard_open_is_subset subsetD)
-           apply (metis Diff_iff IntD1 IntD2 that \<open>g \<in> R\<close> belongs_standard_open_iff standard_open_def)
-          by (meson Hh(1) that IntD2 belongs_standard_open_iff standard_open_is_subset subsetD)
+          apply (meson Int_iff \<open>\<qq> \<in> Spec\<close> \<open>f \<in> R\<close>)
+          apply (meson Int_iff \<open>\<qq> \<in> Spec\<close> \<open>g \<in> R\<close> belongs_standard_open_iff that)
+          by (meson Hh(1) IntD2 \<open>\<qq> \<in> Spec\<close> belongs_standard_open_iff that)
         moreover  have "eq.Class (a, f) = eq.Class (b, g)"
         proof (rule eq.Class_eq)
-          show "((a,f), b,g) \<in> RR"
-            using Fq(1-3) FU(9-13) Hh(1) Hh(3)
-            by (fastforce simp add: RR_def q.rel_def)
+          have "\<exists>s1. s1 \<in> R \<and> s1 \<notin> \<qq> \<and> s1 \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>"
+            using Hh \<open>h \<notin> \<qq>\<close> by blast
+          then show "((a,f), b,g) \<in> RR"
+            by (simp add: RR_def q.rel_def  \<open>a \<in> R\<close> \<open>b \<in> R\<close> \<open>f \<in> R\<close> \<open>g \<in> R\<close>)
         qed
         ultimately have "q.frac a f = q.frac b g"
           using RR_def q.frac_def by metis 
         thus "s' \<qq> = t' \<qq>"
-          by (simp add: FU(7) FU(8))
+          by (simp add: s' t')
       qed
-      thus "s = t"
+      show "s = t"
       proof-
-        have izo: "is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))" 
-          using local.standard_open_is_zariski_open by (simp add: FU(1,11,12) Hh(1) standard_open_is_zariski_open)
         have "s = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s')"
-          by (simp add: FU(1,2,3,5) izo same_class_from_restrict subset_eq)
+          by (metis (no_types, lifting) FU(1-3) Int_assoc inf_le1 izo s(1) same_class_from_restrict)
         also have "\<dots> = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')" 
-          using fact same_class_from_restrict          
-          sorry (*NO IDEA WHAT TO DO HERE -- LCP*)
+        proof (rule local.st.class_of_eqI)
+          show "sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s') = sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')"
+          proof (rule local.pr.eq_\<rho>)
+            show "sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s') = 
+                  sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')"
+              using eq FU(3) FU(4)
+              apply (simp add: sheaf_spec_morphisms_def)
+              apply (metis eq restrict_ext)
+              done
+          qed (use izo ssm_s' ssm_t' in auto)
+        qed (auto simp: izo ssm_s' ssm_t')
         also have "\<dots> = t"
-          by (metis (mono_tags, lifting) FU(1,2,4,6) Int_assoc Int_lower1 \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> same_class_from_restrict)
+          by (metis (no_types, lifting) FU(1,2,4) Int_assoc inf_le1 izo s(2) same_class_from_restrict)
         finally show ?thesis .
       qed
     qed 
@@ -4063,8 +4082,9 @@ next
           have "\<phi> (st.class_of \<D>(f) s) = \<phi> (st.canonical_fun \<D>(f) s)" 
             using st.canonical_fun_def direct_lim.canonical_fun_def st.class_of_def is_prime by fastforce
           also have "\<dots> = key_map \<D>(f) s" 
-            using assms(4) by (metis (no_types, lifting) F(2,3) belongs_standard_open_iff comp_apply 
-is_prime mem_Collect_eq top.neighborhoods_def sec standard_open_is_zariski_open)
+            using all_eq st.is_elem F(2) F(3) sec
+            apply (simp add: top.neighborhoods_def)
+            by (meson belongs_standard_open_iff standard_open_is_zariski_open)
           also have "... = local.frac a f"
             by (metis (mono_tags, lifting) F(2,3) belongs_standard_open_iff is_prime key_map_def restrict_apply sec sec_def)
           finally show ?thesis .
