@@ -892,49 +892,57 @@ lemmas comm_ring_simps =
 definition rel:: "('a \<times> 'a) \<Rightarrow> ('a \<times> 'a) \<Rightarrow> bool" (infix "\<sim>" 80)
   where "x \<sim> y \<equiv> \<exists>s1. s1 \<in> S \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>"
 
-interpretation rel:equivalence "R \<times> S" "{(x,y) \<in> (R\<times>S)\<times>(R\<times>S). x \<sim> y}"
-proof (intro equivalence.intro; simp)
-  show "\<And>x. x \<in> R \<times> S \<Longrightarrow> x \<sim> x"
+lemma rel_refl: "\<And>x. x \<in> R \<times> S \<Longrightarrow> x \<sim> x"
     by (auto simp: rel_def)
-  have "\<And>r s r1 s2 s1.
-       \<lbrakk>r \<in> R; s \<in> S; r1 \<in> R; s2 \<in> S; s1 \<in> S; s1 \<cdot> (s2 \<cdot> r - s \<cdot> r1) = \<zero>\<rbrakk> \<Longrightarrow> s1 \<cdot> (s \<cdot> r1 - s2 \<cdot> r) = \<zero>"
-    by (smt comm.additive.composition_closed comm.additive.inverse_composition_commute 
-        comm.additive.inverse_unit comm.additive.invertible comm.additive.invertible_inverse_closed 
-        comm.additive.monoid_axioms comm.multiplicative.composition_closed 
-        comm.right_minus monoid.invertible_inverse_inverse sub)
-  then show "\<And>x y. x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y \<Longrightarrow> y \<sim> x"
-    by (metis SigmaE prod.sel rel_def)
-  show  "\<And>x y z. \<lbrakk>x \<in> R \<times> S \<and> y \<in> R \<times> S \<and> x \<sim> y; z \<in> R \<times> S \<and> y \<sim> z\<rbrakk> \<Longrightarrow> x \<sim> z"
-  proof (clarsimp simp: rel_def)
-    fix r s r2 s2 r1 s1 sx sy
-    assume \<section>: "r \<in> R" "s \<in> S" "r1 \<in> R" "s1 \<in> S" "sx \<in> S" "r2 \<in> R" "s2 \<in> S" "sy \<in> S"
-      and sx0: "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" and sy0: "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
-    show "\<exists>u. u \<in> S \<and> u \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>"
-    proof (intro exI conjI)
-      show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S"
-        using \<section> by blast
-      have sx: "sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1" and sy: "sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2"
-        using sx0 sy0 \<section> comm.additive.cancel_imp_equal comm.inverse_distributive(1) 
-              comm.multiplicative.associative comm.multiplicative.composition_closed sub 
-        by metis+
-      then
-      have "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s1 \<cdot> r - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
-        using "\<section>" \<open>sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S\<close> 
-          comm.inverse_distributive(1) comm.multiplicative.associative comm.multiplicative.composition_closed
-          sub 
-        by presburger
-      also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
-        using \<section> 
-        by (smt sy comm.comm_mult comm.multiplicative.associative comm.multiplicative.composition_closed sub)
-      also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s1 \<cdot> s \<cdot> r2"
-        using \<section> by (smt sx comm.comm_mult comm.multiplicative.associative
-            comm.multiplicative.composition_closed sub)
-      also have "... = \<zero>"
-        using \<section> by (simp add: comm.ring_mult_ac)
-      finally show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>" .
-    qed
+
+lemma rel_sym: 
+  assumes "x \<sim> y" "x \<in> R \<times> S" "y \<in> R \<times> S" shows "y \<sim> x"
+proof -
+  obtain rx sx ry sy s
+    where \<section>: "rx \<in> R" "sx \<in> S" "ry \<in> R" "s \<in> S" "sy \<in> S" "s \<cdot> (sy \<cdot> rx - sx \<cdot> ry) = \<zero>" "x = (rx,sx)" "y = (ry,sy)"
+    using assms by (auto simp: rel_def)
+  then have "s \<cdot> (sx \<cdot> ry - sy \<cdot> rx) = \<zero>"
+    by (metis sub comm.additive.cancel_imp_equal comm.inverse_distributive(1) comm.multiplicative.composition_closed)
+  with \<section> show ?thesis
+    by (auto simp: rel_def)
+qed
+
+lemma rel_trans: 
+  assumes "x \<sim> y" "y \<sim> z" "x \<in> R \<times> S" "y \<in> R \<times> S" "z \<in> R \<times> S" shows "x \<sim> z"
+  using assms
+proof (clarsimp simp: rel_def)
+  fix r s r2 s2 r1 s1 sx sy
+  assume \<section>: "r \<in> R" "s \<in> S" "r1 \<in> R" "s1 \<in> S" "sx \<in> S" "r2 \<in> R" "s2 \<in> S" "sy \<in> S"
+    and sx0: "sx \<cdot> (s1 \<cdot> r2 - s2 \<cdot> r1) = \<zero>" and sy0: "sy \<cdot> (s2 \<cdot> r - s \<cdot> r2) = \<zero>"
+  show "\<exists>u. u \<in> S \<and> u \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>"
+  proof (intro exI conjI)
+    show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S"
+      using \<section> by blast
+    have sx: "sx \<cdot> s1 \<cdot> r2 = sx \<cdot> s2 \<cdot> r1" and sy: "sy \<cdot> s2 \<cdot> r = sy \<cdot> s \<cdot> r2"
+      using sx0 sy0 \<section> comm.additive.cancel_imp_equal comm.inverse_distributive(1) 
+        comm.multiplicative.associative comm.multiplicative.composition_closed sub 
+      by metis+
+    then
+    have "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s1 \<cdot> r - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
+      using "\<section>" \<open>sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<in> S\<close> 
+        comm.inverse_distributive(1) comm.multiplicative.associative comm.multiplicative.composition_closed
+        sub 
+      by presburger
+    also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> s \<cdot> r1"
+      using \<section> 
+      by (smt sy comm.comm_mult comm.multiplicative.associative comm.multiplicative.composition_closed sub)
+    also have "... = sx \<cdot> sy \<cdot> s1 \<cdot> s \<cdot> s1 \<cdot> r2 - sx \<cdot> sy \<cdot> s1 \<cdot> s1 \<cdot> s \<cdot> r2"
+      using \<section> by (smt sx comm.comm_mult comm.multiplicative.associative
+          comm.multiplicative.composition_closed sub)
+    also have "... = \<zero>"
+      using \<section> by (simp add: comm.ring_mult_ac)
+    finally show "sx \<cdot> sy \<cdot> s1 \<cdot> s2 \<cdot> (s1 \<cdot> r - s \<cdot> r1) = \<zero>" .
   qed
-qed auto
+qed
+
+interpretation rel: equivalence "R \<times> S" "{(x,y) \<in> (R\<times>S)\<times>(R\<times>S). x \<sim> y}"
+  by (blast intro: equivalence.intro rel_refl rel_sym rel_trans)
+
 
 notation equivalence.Partition (infixl "'/" 75)
 
@@ -2621,7 +2629,6 @@ proof -
   finally show ?thesis .
 qed
 
-
 definition principal_subs :: "'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set filter" where
   "principal_subs As A = Abs_filter (\<lambda>P. \<forall>x. (x\<in>As \<and> x \<subseteq> A) \<longrightarrow> P x)"
 
@@ -2780,30 +2787,29 @@ proof -
     using llbound_lbound[of "{fst x,fst y}"] xy(1,2) by auto
 qed
 
-lemma add_rel_well_defined:
+lemma
   fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
-  assumes "x \<in> Sigma I \<FF>" "y \<in> Sigma I \<FF>"
+  assumes xy:"x \<in> Sigma I \<FF>" "y \<in> Sigma I \<FF>"
   assumes z:"z\<in>I" "z \<subseteq> fst x" "z \<subseteq> fst y"
   assumes z':"z'\<in>I" "z' \<subseteq> fst x" "z' \<subseteq> fst y"
-  shows "\<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
-          \<lfloor>z', add_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>"
+  shows add_rel_well_defined:"\<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
+          \<lfloor>z', add_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>" (is "?add")
+    and mult_rel_well_defined:
+        "\<lfloor>z, mult_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
+         \<lfloor>z', mult_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>" (is "?mult")
 proof -
   interpret xz:ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" 
               "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>x \<in> Sigma I \<FF>\<close> z by auto
+    using is_ring_morphism \<open>x \<in> Sigma I \<FF>\<close> z by auto
   interpret yz:ring_homomorphism "(\<rho> (fst y) z)" "(\<FF> (fst y))" 
               "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>y \<in> Sigma I \<FF>\<close> z by auto
+    using is_ring_morphism \<open>y \<in> Sigma I \<FF>\<close> z by auto
   interpret xz':ring_homomorphism "(\<rho> (fst x) z')" "(\<FF> (fst x))" 
               "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>x \<in> Sigma I \<FF>\<close> z' by auto
+    using is_ring_morphism \<open>x \<in> Sigma I \<FF>\<close> z' by auto
   interpret yz':ring_homomorphism "(\<rho> (fst y) z')" "(\<FF> (fst y))" 
               "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>y \<in> Sigma I \<FF>\<close> z' by auto
+    using is_ring_morphism \<open>y \<in> Sigma I \<FF>\<close> z' by auto
 
   obtain w where w:"w \<in> I" "w \<subseteq> z \<inter> z'"
     using has_lower_bound \<open>z\<in>I\<close> \<open>z'\<in>I\<close> by meson
@@ -2817,7 +2823,7 @@ proof -
     apply (rule is_ring_morphism)
     using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> z' by auto
 
-  show ?thesis
+  show ?add
   proof (rule class_of_eqI[OF _ _ \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close>])
     define xz yz where "xz = \<rho> (fst x) z (snd x)" and "yz = \<rho> (fst y) z (snd y)"
     define xz' yz' where "xz' = \<rho> (fst x) z' (snd x)" and "yz' = \<rho> (fst y) z' (snd y)"
@@ -2840,6 +2846,30 @@ proof -
       apply (rule z'w.additive.commutes_with_composition[symmetric])
       using assms(1,2) xz'_def yz'_def by force+
     finally show "\<rho> z w (+\<^bsub>z\<^esub> xz yz) = \<rho> z' w (+\<^bsub>z'\<^esub> xz' yz')" .
+  qed
+
+  show ?mult
+  proof (rule class_of_eqI[OF _ _ \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close>])
+    define xz yz where "xz = \<rho> (fst x) z (snd x)" and "yz = \<rho> (fst y) z (snd y)"
+    define xz' yz' where "xz' = \<rho> (fst x) z' (snd x)" and "yz' = \<rho> (fst y) z' (snd y)"
+    show "(z, \<cdot>\<^bsub>z\<^esub> xz yz) \<in> Sigma I \<FF>" "(z', \<cdot>\<^bsub>z'\<^esub> xz' yz') \<in> Sigma I \<FF>"
+      unfolding xz_def yz_def xz'_def yz'_def 
+      using assms by auto
+    have "\<rho> z w (\<cdot>\<^bsub>z\<^esub> xz yz) = \<cdot>\<^bsub>w\<^esub> (\<rho> z w xz) (\<rho> z w yz)"
+      apply (rule zw.multiplicative.commutes_with_composition)
+      using xy xz_def yz_def by force+
+    also have "... = \<cdot>\<^bsub>w\<^esub> (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))"
+      unfolding xz_def yz_def
+      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
+      using xy w z by auto
+    also have "... = \<cdot>\<^bsub>w\<^esub> (\<rho> z' w xz') (\<rho> z' w yz')"
+      unfolding xz'_def yz'_def
+      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
+      using xy w z' by auto
+    also have "... = \<rho> z' w (\<cdot>\<^bsub>z'\<^esub> xz' yz')"
+      apply (rule z'w.multiplicative.commutes_with_composition[symmetric])
+      using xy xz'_def yz'_def by force+
+    finally show "\<rho> z w (\<cdot>\<^bsub>z\<^esub> xz yz) = \<rho> z' w (\<cdot>\<^bsub>z'\<^esub> xz' yz')"   .
   qed
 qed
 
@@ -2920,7 +2950,6 @@ proof -
   ultimately show ?thesis by auto
 qed
  
-
 lemma mult_rel_carrier[intro]:
   assumes "X \<in> carrier_direct_lim" "Y \<in> carrier_direct_lim"
   shows "mult_rel X Y \<in> carrier_direct_lim"
@@ -2950,7 +2979,7 @@ proof -
     unfolding carrier_direct_lim_def class_of_def
   proof (rule rel.Block_closed)
     interpret ring "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>" 
-      by (simp add: \<open>z \<in> I\<close> is_ring_from_is_homomorphism subset_of_opens)
+      by (simp add: \<open>z \<in> I\<close> is_ring_from_is_homomorphism)
     show "(z, \<cdot>\<^bsub>z\<^esub> (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))) \<in> Sigma I \<FF>"
       by (metis SigmaE SigmaI \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> \<open>z \<in> I\<close> \<open>z \<subseteq> fst x\<close> \<open>z \<subseteq> fst y\<close> 
           direct_lim.subset_of_opens direct_lim_axioms fst_conv 
@@ -2958,20 +2987,6 @@ proof -
   qed
   finally show ?thesis .
 qed
-
-lemma mult_rel_well_defined:
-  fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
-  assumes "op_rel_aux x y z" and "op_rel_aux x y z'"
-  shows "\<lfloor>z, mult_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
-\<lfloor>z', mult_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>"
-  sorry
-
-lemma mult_rel_well_defined_bis:
-  assumes "\<lfloor>U, x\<rfloor> = \<lfloor>U', x'\<rfloor>" and "\<lfloor>V, y\<rfloor> = \<lfloor>V', y'\<rfloor>"
-  shows "mult_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = mult_rel \<lfloor>U', x'\<rfloor> \<lfloor>V', y'\<rfloor>"
-  sorry
-
-
 
 (* exercise 0.35 *)
 lemma exercise_0_35:
@@ -2999,8 +3014,6 @@ proof unfold_locales
       using rel_carrier_Eps_in[OF \<open>X \<in> carrier_direct_lim\<close>] 
       unfolding x_def by auto
     
-
-
     obtain w0 where w0:"w0\<in>I" "w0 \<subseteq> U" "w0 \<subseteq> fst x" 
       using has_lower_bound[OF \<open>U\<in>I\<close> \<open>fst x\<in>I\<close>] by blast
 
@@ -3209,9 +3222,18 @@ lemma
 Let A be a maximal ideal. Then R/A contains no proper ideals, by the correspondence theorem.
 Indeed, R/A is a field (assuming that R contains an identity). Hence, A is a prime ideal.
 https://math.stackexchange.com/questions/68489/why-are-maximal-ideals-prime *)
-lemma 
-  shows "pr_ideal R I (+) (\<cdot>) \<zero> \<one>" 
+(*ALTERNATIVE PROOF\<in>
+  An ideal P in A is prime if and only if A/P is an integral domain. 
+  An ideal m in A is maximal if and only if A/m is a field.*)
+lemma is_pr_ideal: "pr_ideal R I (+) (\<cdot>) \<zero> \<one>"
+proof
+  show "I \<noteq> R"
+    using neq_ring by fastforce
+  fix x y
+  assume "x \<in> R" "y \<in> R" and dot: "x \<cdot> y \<in> I"
+  then show "x \<in> I \<or> y \<in> I"
     sorry
+qed
 
 end (* locale max_ideal *)
 
@@ -3753,17 +3775,6 @@ proof intro_locales
   qed
 qed
 
-(*An ideal P in A is prime if and only if A/P is an integral domain. 
-  An ideal m in A is maximal if and only if A/m is a field.*)
-lemma (in max_ideal) is_pr_ideal: "pr_ideal R I (+) (\<cdot>) \<zero> \<one>"
-proof
-  show "I \<noteq> R"
-    using neq_ring by fastforce
-  fix x y
-  assume "x \<in> R" "y \<in> R" and dot: "x \<cdot> y \<in> I"
-  then show "x \<in> I \<or> y \<in> I"
-    sorry
-qed
 
 (* ex. 0.40 *)
 lemma (in pr_ideal) local_ring_at_is_local:
@@ -3897,8 +3908,11 @@ proof
       assume \<section>: "cq.frac r s \<notin> \<aa>" "x \<in> \<aa>" "r \<in> R" "s \<in> R" "s \<notin> I"
       have "x \<in> carrier_local_ring_at"
         using \<open>x \<in> \<aa>\<close> by force
+      then obtain r' s' where "r' \<in> R" and x: "x = cq.frac r' s'" and "s' \<in> R" and "s' \<notin> I"
+        by (auto simp: carrier_local_ring_at_def cq.valid_frac_def)
+      then have "s \<cdot> s' \<notin> I"
+        by (meson "\<section>"(4) "\<section>"(5) absorbent)
       with \<section> show "\<exists>r s. x = cq.frac r s \<and> r \<in> I \<and> s \<in> R \<and> s \<notin> I"
-        apply (auto simp:  \<ww>_def carrier_local_ring_at_def cq.valid_frac_def)
         sorry
     qed
     with \<open>\<ww> \<subseteq> \<aa>\<close> show "\<ww> = \<aa>"
@@ -4144,12 +4158,13 @@ proof -
   qed
 qed
 
+
 lemma stalk_at_prime_is_iso_to_local_ring_at_prime_aux:
   assumes "is_zariski_open V" and "\<pp> \<in> V" and
-    "ring_homomorphism \<phi>
-st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
+    \<phi>: "ring_homomorphism \<phi>
+      st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
-    and "\<forall>U\<in>(top.neighborhoods \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> st.canonical_fun U) s = key_map U s"
+    and all_eq: "\<forall>U\<in>(top.neighborhoods \<pp>). \<forall>s\<in>\<O> U. (\<phi> \<circ> st.canonical_fun U) s = key_map U s"
   shows "ring_isomorphism \<phi>
 st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk V) (st.one_stalk V)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pi.add_local_ring_at) (pi.mult_local_ring_at) (pi.zero_local_ring_at) (pi.one_local_ring_at)"
@@ -4167,11 +4182,11 @@ next
     have "inj_on \<phi> st.carrier_stalk"
     proof
       fix s t assume "s \<in> st.carrier_stalk" "t \<in> st.carrier_stalk" "\<phi> s = \<phi> t"
-      obtain U s' t' a f b g where FU: "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "t' \<in> \<O> U"
-        "s = st.class_of U s'" "t = st.class_of U t'" 
-        "s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)" 
-        "t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)" 
-        "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>"
+      obtain U s' t' a f b g where FU [simp]: "is_zariski_open U" "\<pp> \<in> U" "s' \<in> \<O> U" "t' \<in> \<O> U"
+        and s: "s = st.class_of U s'" "t = st.class_of U t'" 
+        and s': "s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)" 
+        and t': "t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)" 
+        and "a \<in> R" "b \<in> R" "f \<in> R" "g \<in> R" "f \<notin> \<pp>" "g \<notin> \<pp>"
       proof-
         obtain V s' t' where HV: "s = st.class_of V s'" "t = st.class_of V t'" 
                             "s' \<in> \<O> V" "t' \<in> \<O> V" "is_zariski_open V" "\<pp> \<in> V"
@@ -4183,13 +4198,10 @@ next
           using shrinking[of V \<pp> s' t'] by blast
         show ?thesis
         proof
-          show "sheaf_spec_morphisms V U s' \<in> \<O> U" sorry
-(* AB: idem
-            using HU(1,2) HV(3,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce *)
-          show "sheaf_spec_morphisms V U t' \<in> \<O> U" sorry
-(* AB: Idem
-            using HU(1,2) HV(4,5) map.map_closed sheaf_spec_morphisms_are_maps by fastforce *)
-
+          show "sheaf_spec_morphisms V U s' \<in> \<O> U"
+            by (metis (mono_tags, hide_lams) HU(1,2) HV(3) map.map_closed sheaf_spec_morphisms_are_maps)
+          show "sheaf_spec_morphisms V U t' \<in> \<O> U"
+            by (metis (mono_tags, hide_lams) HU(1,2) HV(4) map.map_closed sheaf_spec_morphisms_are_maps)
           show "s = st.class_of U (sheaf_spec_morphisms V U s')"
             using same_class_from_restrict by (simp add: HU(1,2) HV(1,3,5,6))
           show "t = st.class_of U (sheaf_spec_morphisms V U t')"
@@ -4215,63 +4227,66 @@ next
         also have "\<dots> = key_map U t'" 
           using \<open>\<pp> \<in> U\<close> \<open>is_zariski_open U\<close> \<open>t' \<in> \<O> U\<close> assms(4) top.neighborhoods_def by auto
         also have "\<dots> = local.frac b g"
-          using FU(2) FU(4) FU(8) key_map_def by force
+          using FU(4) local.key_map_def t' by force
         finally show ?thesis .
       qed
-      then obtain h where Hh:"h \<in> R" "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" 
+      then obtain h where Hh: "h \<in> R" "h \<notin> \<pp>" "h \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>" 
         using pi.eq_from_eq_frac by (metis Diff_iff \<open>a \<in> R\<close> \<open>b \<in> R\<close> \<open>f \<in> R\<close> \<open>f \<notin> \<pp>\<close> \<open>g \<in> R\<close> \<open>g \<notin> \<pp>\<close>)
-      have "s' \<qq> = t' \<qq>" if "\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)" for \<qq>
+      have izo: "is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))" 
+        using local.standard_open_is_zariski_open
+        by (simp add: Hh(1) \<open>f \<in> R\<close> \<open>g \<in> R\<close> standard_open_is_zariski_open)
+      have ssm_s': "sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s'
+                \<in> \<O> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))"
+        by (metis (no_types, hide_lams) FU(3) Int_assoc inf_le1 izo map.map_closed sheaf_spec_morphisms_are_maps)
+      have ssm_t': "sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t'
+                \<in> \<O> (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))"
+        by (metis (no_types, hide_lams) FU(4) Int_assoc inf_le1 izo map.map_closed sheaf_spec_morphisms_are_maps)      have [simp]: "\<pp> \<in> \<D>(f)" "\<pp> \<in> \<D>(g)" "\<pp> \<in> \<D>(h)"
+        using Hh \<open>f \<in> R\<close> \<open>f \<notin> \<pp>\<close> \<open>g \<in> R\<close> \<open>g \<notin> \<pp>\<close> belongs_standard_open_iff st.is_elem by blast+
+      have eq: "s' \<qq> = t' \<qq>" if "\<qq> \<in> U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)" for \<qq>
       proof -
         have "\<qq> \<in> Spec"
           using standard_open_def that by auto
         then        interpret q: quotient_ring "R\<setminus>\<qq>" R "(+)" "(\<cdot>)" \<zero>
           using spectrum_imp_cxt_quotient_ring by force
+        note local.q.sub [simp del]  \<comment>\<open>Because it definitely loops\<close>
         define RR where "RR \<equiv> {(x, y). (x, y) \<in> (R \<times> (R\<setminus>\<qq>)) \<times> R \<times> (R\<setminus>\<qq>) \<and> q.rel x y}"
-        have RR_iff: "(x,y) \<in> RR \<longleftrightarrow> 
-              (x \<in> R \<times> (R\<setminus>\<qq>) \<and> y \<in> R \<times> (R\<setminus>\<qq>) \<and> (\<exists>s1. s1 \<in> R \<and> s1 \<notin> \<qq> \<and> s1 \<cdot> (snd y \<cdot> fst x - snd x \<cdot> fst y) = \<zero>))" for x y
-          by (simp add: RR_def q.rel_def del: local.q.sub)
         interpret eq: equivalence "R \<times> (R\<setminus>\<qq>)" "RR"
-        proof
-          show "RR \<subseteq> (R \<times> (R\<setminus>\<qq>)) \<times> R \<times> (R\<setminus>\<qq>)"
-            by (auto simp: RR_def)
-          show "(a, a) \<in> RR" if "a \<in> R \<times> (R\<setminus>\<qq>)" for a 
-            using that 
-            apply (simp add: RR_iff del: local.q.sub)
-            by (metis Diff_iff SigmaE prod.sel(1) prod.sel(2) q.frac_eq_Ex)
-          show "(b, a) \<in> RR" if "(a, b) \<in> RR" for a b
-            using that 
-            apply (clarsimp simp add: RR_iff simp del: local.q.sub)
-            by (metis additive.group_axioms fst_conv group.cancel_imp_equal inverse_distributive(1) multiplicative.composition_closed snd_conv)
-          show "(a, c) \<in> RR" if "(a, b) \<in> RR" and "(b, c) \<in> RR" for a b c
-            using that
-            apply (clarsimp simp add: RR_iff simp del: local.q.sub)
-              (*PRESUMABLY SOME RING EXPRESSION IS REQUIRED HERE*)
-            sorry
-        qed
-        have Fq: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
+          unfolding RR_def by (blast intro: equivalence.intro q.rel_refl q.rel_sym q.rel_trans)
+        have Fq [simp]: "f \<notin> \<qq>" "g \<notin> \<qq>" "h \<notin> \<qq>" 
           using belongs_standard_open_iff that
-            apply (meson FU(11) IntD1 IntD2 standard_open_is_subset subsetD)
-           apply (metis Diff_iff IntD1 IntD2 that \<open>g \<in> R\<close> belongs_standard_open_iff standard_open_def)
-          by (meson Hh(1) that IntD2 belongs_standard_open_iff standard_open_is_subset subsetD)
+          apply (meson Int_iff \<open>\<qq> \<in> Spec\<close> \<open>f \<in> R\<close>)
+          apply (meson Int_iff \<open>\<qq> \<in> Spec\<close> \<open>g \<in> R\<close> belongs_standard_open_iff that)
+          by (meson Hh(1) IntD2 \<open>\<qq> \<in> Spec\<close> belongs_standard_open_iff that)
         moreover  have "eq.Class (a, f) = eq.Class (b, g)"
-          apply (rule eq.Class_eq)
-          using Fq(1-3) FU(9-13) Hh(1) Hh(3)
-          by (force simp add: RR_iff simp del: local.q.sub)
+        proof (rule eq.Class_eq)
+          have "\<exists>s1. s1 \<in> R \<and> s1 \<notin> \<qq> \<and> s1 \<cdot> (g \<cdot> a - f \<cdot> b) = \<zero>"
+            using Hh \<open>h \<notin> \<qq>\<close> by blast
+          then show "((a,f), b,g) \<in> RR"
+            by (simp add: RR_def q.rel_def  \<open>a \<in> R\<close> \<open>b \<in> R\<close> \<open>f \<in> R\<close> \<open>g \<in> R\<close>)
+        qed
         ultimately have "q.frac a f = q.frac b g"
           using RR_def q.frac_def by metis 
         thus "s' \<qq> = t' \<qq>"
-          by (simp add: FU(7) FU(8))
+          by (simp add: s' t')
       qed
-      thus "s = t"
+      show "s = t"
       proof-
-        have izo: "is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))" 
-          using local.standard_open_is_zariski_open by (simp add: FU(1,11,12) Hh(1) standard_open_is_zariski_open)
         have "s = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s')"
-          by (simp add: FU(1,2,3,5) izo same_class_from_restrict subset_eq)
+          by (metis (no_types, lifting) FU(1-3) Int_assoc inf_le1 izo s(1) same_class_from_restrict)
         also have "\<dots> = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')" 
-          using fact same_class_from_restrict sorry (*NO IDEA WHAT TO DO HERE -- LCP*)
+        proof (rule local.st.class_of_eqI)
+          show "sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s') = sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')"
+          proof (rule local.pr.eq_\<rho>)
+            show "sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s') = 
+                  sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')"
+              using eq FU(3) FU(4)
+              apply (simp add: sheaf_spec_morphisms_def)
+              apply (metis eq restrict_ext)
+              done
+          qed (use izo ssm_s' ssm_t' in auto)
+        qed (auto simp: izo ssm_s' ssm_t')
         also have "\<dots> = t"
-          by (metis (mono_tags, lifting) FU(1,2,4,6) Int_assoc Int_lower1 \<open>is_zariski_open (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h))\<close> same_class_from_restrict)
+          by (metis (no_types, lifting) FU(1,2,4) Int_assoc inf_le1 izo s(2) same_class_from_restrict)
         finally show ?thesis .
       qed
     qed 
@@ -4308,8 +4323,9 @@ next
           have "\<phi> (st.class_of \<D>(f) s) = \<phi> (st.canonical_fun \<D>(f) s)" 
             using st.canonical_fun_def direct_lim.canonical_fun_def st.class_of_def is_prime by fastforce
           also have "\<dots> = key_map \<D>(f) s" 
-            using assms(4) by (metis (no_types, lifting) F(2,3) belongs_standard_open_iff comp_apply 
-is_prime mem_Collect_eq top.neighborhoods_def sec standard_open_is_zariski_open)
+            using all_eq st.is_elem F(2) F(3) sec
+            apply (simp add: top.neighborhoods_def)
+            by (meson belongs_standard_open_iff standard_open_is_zariski_open)
           also have "... = local.frac a f"
             by (metis (mono_tags, lifting) F(2,3) belongs_standard_open_iff is_prime key_map_def restrict_apply sec sec_def)
           finally show ?thesis .
