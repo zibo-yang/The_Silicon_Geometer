@@ -1,10 +1,9 @@
 theory Comm_Ring_Theory
   imports 
-          "Group_Further_Theory"
-          "Topological_Space_Theory" 
-          "Jacobson_Basic_Algebra.Ring_Theory"
-          "Set_Further_Theory"
-
+    "Group_Further_Theory"
+    "Topological_Space_Theory" 
+    "Jacobson_Basic_Algebra.Ring_Theory"
+    "Set_Further_Theory"
 begin
 
 section \<open>Commutative Rings\<close> 
@@ -482,7 +481,7 @@ definition is_zariski_open:: "'a set set \<Rightarrow> bool" where
 
 lemma is_zariski_open_empty [simp]: "is_zariski_open {}"
   using UNIV is_zariski_open_def generated_topology_is_topology topological_space.open_empty 
-  by blast
+  by simp
 
 lemma is_zariski_open_Spec [simp]: "is_zariski_open Spec"
   by (simp add: UNIV is_zariski_open_def)
@@ -537,7 +536,8 @@ end (* comm_ring *)
 subsection \<open>Presheaves of Rings\<close>
 
 (* def 0.17 *)
-locale presheaf_of_rings = topological_space + fixes \<FF>:: "'a set \<Rightarrow> 'b set"
+locale presheaf_of_rings = Topological_Space_Theory.topological_space 
+  + fixes \<FF>:: "'a set \<Rightarrow> 'b set"
   and \<rho>:: "'a set \<Rightarrow> 'a set \<Rightarrow> ('b \<Rightarrow> 'b)" and b:: "'b" 
   and add_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" ("+\<^bsub>_\<^esub>") 
   and mult_str:: "'a set \<Rightarrow> ('b \<Rightarrow> 'b \<Rightarrow> 'b)" ("\<cdot>\<^bsub>_\<^esub>") 
@@ -2366,7 +2366,7 @@ subsection \<open>Direct Limits of Rings\<close>
 (* construction 0.34 *)
 locale direct_lim = sheaf_of_rings + 
   fixes I:: "'a set set"
-  assumes subset_of_opens[intro]: "\<And>U. U \<in> I \<Longrightarrow> is_open U" 
+  assumes subset_of_opens[intro,simp]: "\<And>U. U \<in> I \<Longrightarrow> is_open U" 
     and has_lower_bound: "\<And>U V. \<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
 begin
 
@@ -2498,22 +2498,59 @@ proof -
     unfolding class_of_def by (simp add: rel.Class_eq)
 qed
 
-definition op_rel_aux:: "('a set \<times> 'b) \<Rightarrow> ('a set \<times> 'b) \<Rightarrow> 'a set \<Rightarrow> bool"
-  where "op_rel_aux x y z \<equiv> (z \<in> I) \<and> (z \<subseteq> fst x \<inter> fst y)"
+definition get_lower_bound:: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+  "get_lower_bound U V= (SOME W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> V)"
 
-definition add_rel:: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
-  where "add_rel \<equiv> \<lambda>X Y.
-let x = (SOME x. x \<in> X) in
-let y = (SOME y. y \<in> Y) in 
-let z = (SOME z. op_rel_aux x y z) in
-\<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
+lemma get_lower_bound[intro]:
+  assumes "U \<in> I" "V \<in> I"
+  shows "get_lower_bound U V \<in> I" "get_lower_bound U V \<subseteq> U" "get_lower_bound U V \<subseteq> V"
+proof -
+  have "\<exists>W. W \<in> I \<and> W \<subseteq> U \<and> W \<subseteq> V"
+    using has_lower_bound[OF assms] by auto
+  from someI_ex[OF this] 
+  show "get_lower_bound U V \<in> I" "get_lower_bound U V \<subseteq> U" "get_lower_bound U V \<subseteq> V"
+    unfolding get_lower_bound_def by auto
+qed
 
-definition mult_rel:: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
-  where "mult_rel \<equiv> \<lambda>X Y.
-let x = (SOME x. x \<in> X) in
-let y = (SOME y. y \<in> Y) in 
-let z = (SOME z. op_rel_aux x y z) in
-\<lfloor>z, mult_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
+lemma obtain_lower_bound_finite:
+  assumes "finite Us"  "Us \<noteq> {}" "Us \<subseteq> I"
+  obtains W where "W \<in> I" "\<forall>U\<in>Us. W \<subseteq> U"
+  using assms
+proof (induct Us arbitrary:thesis)
+  case (insert U F)
+  have ?case when "F={}"
+    using insert.prems(1) insert.prems(3) that by blast
+  moreover have ?case when "F\<noteq>{}"
+  proof -
+    obtain W where "W \<in> I" "\<forall>U\<in>F. W \<subseteq> U"
+      using insert.hyps(3) insert.prems(3) by auto
+    obtain W1 where "W1 \<in>I" "W1 \<subseteq> U" "W1 \<subseteq> W"
+      by (meson \<open>W \<in> I\<close> get_lower_bound(1) get_lower_bound(2) get_lower_bound(3) 
+          insert.prems(3) insert_subset)
+    then have "\<forall>a\<in>insert U F. W1 \<subseteq> a"
+      using \<open>\<forall>U\<in>F. W \<subseteq> U\<close> by auto
+    with \<open>W1 \<in>I\<close> show ?thesis 
+      using insert(4) by auto
+  qed
+  ultimately show ?case by auto
+qed simp
+
+definition add_rel :: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
+  where "add_rel X Y \<equiv> let 
+              x = (SOME x. x \<in> X); 
+              y = (SOME y. y \<in> Y);  
+              w = get_lower_bound (fst x) (fst y) 
+            in
+              \<lfloor>w, add_str w (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))\<rfloor>"
+
+definition mult_rel :: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
+  where "mult_rel X Y \<equiv> let 
+              x = (SOME x. x \<in> X); 
+              y = (SOME y. y \<in> Y);  
+              w = get_lower_bound (fst x) (fst y) 
+            in
+              \<lfloor>w, mult_str w (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))\<rfloor>"
+
 
 definition carrier_direct_lim:: "('a set \<times> 'b) set set"
   where "carrier_direct_lim \<equiv> rel.Partition"
@@ -2558,21 +2595,12 @@ lemma add_rel_carrier[intro]:
 proof -
   define x where "x=(SOME x. x \<in> X)"
   define y where "y=(SOME y. y \<in> Y)"
-  define z where "z=(SOME z. op_rel_aux x y z)"
+  define z where "z=get_lower_bound (fst x) (fst y)"
 
   have "x\<in>X" "x\<in>Sigma I \<FF>" 
     using rel_carrier_Eps_in[OF \<open>X \<in> carrier_direct_lim\<close>] unfolding x_def by auto
   have "y\<in>Y" "y \<in> Sigma I \<FF>" 
     using rel_carrier_Eps_in[OF \<open>Y \<in> carrier_direct_lim\<close>] unfolding y_def by auto
-
-  have "op_rel_aux x y z"
-  proof -
-    have "fst x\<in>I" "fst y\<in>I" 
-      using \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> by auto
-    from has_lower_bound[OF this]
-    show ?thesis unfolding op_rel_aux_def
-      by (metis op_rel_aux_def tfl_some z_def)
-  qed
 
   have "add_rel X Y = \<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
     unfolding add_rel_def Let_def
@@ -2580,28 +2608,186 @@ proof -
   also have "... \<in> carrier_direct_lim"
     unfolding carrier_direct_lim_def class_of_def
   proof (rule rel.Block_closed)
-    interpret ring "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>" 
-      using \<open>op_rel_aux x y z\<close> is_ring_from_is_homomorphism op_rel_aux_def subset_of_opens by auto
+    have "z\<in>I" using \<open>x\<in>Sigma I \<FF>\<close> \<open>y\<in>Sigma I \<FF>\<close> unfolding z_def by auto
+    then interpret ring "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>" 
+      using is_ring_from_is_homomorphism subset_of_opens by auto
     show "(z, +\<^bsub>z\<^esub> (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))) \<in> Sigma I \<FF>"
-      by (metis SigmaE \<open>op_rel_aux x y z\<close> \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> 
-          additive.composition_closed fst_conv is_map_from_is_homomorphism le_inf_iff 
-          map.map_closed mem_Sigma_iff op_rel_aux_def snd_conv subset_of_opens)
+      using \<open>z\<in>I\<close>
+      apply simp
+      by (metis \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> additive.composition_closed 
+          direct_lim.subset_of_opens direct_lim_axioms get_lower_bound(2) get_lower_bound(3) 
+          is_map_from_is_homomorphism map.map_closed mem_Sigma_iff prod.exhaust_sel z_def)
   qed
   finally show ?thesis .
+qed
+
+
+definition principal_subs :: "'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set filter" where
+  "principal_subs As A = Abs_filter (\<lambda>P. \<forall>x. (x\<in>As \<and> x \<subseteq> A) \<longrightarrow> P x)"
+
+lemma eventually_principal_subs: "eventually P (principal_subs As A) \<longleftrightarrow> (\<forall>x. x\<in>As \<and> x\<subseteq>A \<longrightarrow> P x)"
+  unfolding principal_subs_def
+  by (rule eventually_Abs_filter, rule is_filter.intro) auto
+
+find_theorems eventually bot
+thm filter_eq_iff
+
+lemma principal_subs_UNIV[simp]: "principal_subs UNIV UNIV = top"
+  by (auto simp: filter_eq_iff eventually_principal_subs)
+
+lemma principal_subs_empty[simp]: "principal_subs {} s = bot" 
+  (*"principal_subs ss {} = bot"*)
+  by (auto simp: filter_eq_iff eventually_principal_subs)
+
+lemma principal_subs_le_iff[iff]: 
+  "principal_subs As A \<le> principal_subs As' A' 
+            \<longleftrightarrow> {x. x\<in>As \<and> x \<subseteq> A} \<subseteq> {x. x\<in>As' \<and> x \<subseteq> A'}"
+  unfolding le_filter_def eventually_principal_subs by blast
+
+lemma principal_subs_eq_iff[iff]:
+    "principal_subs As A = principal_subs As' A' \<longleftrightarrow>{x. x\<in>As \<and> x \<subseteq> A} = {x. x\<in>As' \<and> x \<subseteq> A'}"
+  unfolding eq_iff by simp
+
+lemma principal_subs_inj_on[simp]:"inj_on (principal_subs As) As"
+  unfolding inj_on_def by auto
+
+definition lbound :: "'a set set \<Rightarrow> ('a set) filter" where
+  "lbound Us = (INF S\<in>{S. S\<in>I \<and> (\<forall>u\<in>Us. S \<subseteq> u)}. principal_subs I S)"
+
+term at_bot term at_within
+find_theorems Inf " _ \<noteq> bot"
+
+lemma eventually_lbound_finite:
+  assumes "finite A" "A\<noteq>{}" "A\<subseteq>I"
+  shows "(\<forall>\<^sub>F w in lbound A. P w) \<longleftrightarrow> (\<exists>w0. w0 \<in> I \<and> (\<forall>a\<in>A. w0 \<subseteq> a) \<and> (\<forall>w. (w\<subseteq>w0 \<and> w\<in>I) \<longrightarrow> P w))"
+proof -
+  have "\<exists>x. x \<in> I \<and> (\<forall>xa\<in>A. x \<subseteq> xa)" 
+    by (metis Int_iff assms inf.order_iff obtain_lower_bound_finite)
+  moreover have " \<exists>x. x \<in> I \<and> Ball A ((\<subseteq>) x) 
+              \<and> {xa \<in> I. xa \<subseteq> x} \<subseteq> {x \<in> I. x \<subseteq> a} 
+                \<and> {xa \<in> I. xa \<subseteq> x} \<subseteq> {x \<in> I. x \<subseteq> b}"
+    if "a \<in> I \<and> (\<forall>x\<in>A. a \<subseteq> x)" "b \<in> I \<and> (\<forall>x\<in>A. b \<subseteq> x)" for a b
+    apply (rule exI[where x="get_lower_bound a b"])
+    using that apply auto
+    subgoal using get_lower_bound(2) by blast
+    subgoal by (meson get_lower_bound(2) subsetD)
+    subgoal by (meson get_lower_bound(3) subsetD)
+    done
+  moreover have "(\<exists>b\<in>{S \<in> I. Ball A ((\<subseteq>) S)}. eventually P (principal_subs I b)) =
+    (\<exists>w0. w0 \<in> I \<and> Ball A ((\<subseteq>) w0) \<and> (\<forall>w. w \<subseteq> w0 \<and> w \<in> I \<longrightarrow> P w))" 
+    unfolding eventually_principal_subs by force
+  ultimately show ?thesis unfolding lbound_def
+    by (subst eventually_INF_base) auto
+qed
+
+lemma lbound_eq:
+  assumes A:"finite A" "A\<noteq>{}" "A\<subseteq>I"
+  assumes B:"finite B" "B\<noteq>{}" "B\<subseteq>I"
+  shows "lbound A = lbound B"
+proof -
+  have "eventually P (lbound A')" if "eventually P (lbound B')"
+    and A':"finite A'" "A'\<noteq>{}" "A' \<subseteq> I"
+    and B':"finite B'" "B'\<noteq>{}" "B' \<subseteq> I"
+  for P A' B' 
+  proof -
+    obtain w0 where w0:"w0 \<in> I" "(\<forall>a\<in>B'. w0 \<subseteq> a)" "(\<forall>w. w \<subseteq> w0 \<and> w \<in> I \<longrightarrow> P w)"
+      using \<open>eventually P (lbound B')\<close> unfolding eventually_lbound_finite[OF B',of P]  
+      by auto
+    obtain w1 where w1:"w1 \<in> I" "\<forall>U\<in>A'. w1 \<subseteq> U"
+      using obtain_lower_bound_finite[OF A'] by auto
+    define w2 where "w2=get_lower_bound w0 w1"
+    have "w2 \<in> I" using \<open>w0 \<in> I\<close> \<open>w1 \<in> I\<close> unfolding w2_def by auto
+    moreover have "\<forall>a\<in>A'. w2 \<subseteq> a"
+      unfolding w2_def by (meson dual_order.trans get_lower_bound(3) w0(1) w1(1) w1(2))
+    moreover have "\<forall>w. w \<subseteq> w2 \<and> w \<in> I \<longrightarrow> P w"
+      unfolding w2_def by (meson dual_order.trans get_lower_bound(2) w0(1) w0(3) w1(1))
+    ultimately show ?thesis unfolding eventually_lbound_finite[OF A',of P] by auto
+  qed
+  then have "eventually P (lbound A) = eventually P (lbound B)" for P 
+    using A B by auto
+  then show ?thesis unfolding filter_eq_iff by auto
+qed
+
+lemma lbound_leq:
+  assumes "A \<subseteq> B"
+  shows "lbound A \<le>lbound B"
+  unfolding lbound_def
+  apply (rule Inf_superset_mono)
+  apply (rule image_mono)
+  using assms by auto
+
+definition llbound::"('a set) filter" where 
+  "llbound = lbound {SOME a. a\<in>I}"
+
+lemma llbound_not_bot:
+  assumes "I\<noteq> {}"
+  shows "llbound \<noteq> bot"
+  unfolding trivial_limit_def llbound_def
+  apply (subst eventually_lbound_finite)
+  using assms by (auto simp add: some_in_eq)
+
+lemma llbound_lbound:
+  assumes "finite A" "A\<noteq>{}" "A\<subseteq>I" 
+  shows "lbound A = llbound"
+  unfolding llbound_def
+  apply (rule lbound_eq)
+  using assms by (auto simp add: some_in_eq)
+
+
+lemma rel_eventually_llbound:
+  assumes "x \<sim> y"
+  shows "\<forall>\<^sub>F w in llbound. \<rho> (fst x) w (snd x) = \<rho> (fst y) w (snd y)"
+proof -
+  have xy:"fst x \<in> I" "fst y \<in> I" "snd x \<in> \<FF> (fst x)" "snd y \<in> \<FF> (fst y)"
+    using \<open>x \<sim> y\<close> unfolding rel_def by auto
+  obtain w0 where w0:"w0 \<in> I" "w0 \<subseteq> fst x \<inter> fst y" "\<rho> (fst x) w0 (snd x) = \<rho> (fst y) w0 (snd y)"
+    using \<open>x \<sim> y\<close> unfolding rel_def by auto
+
+  interpret xw0:ring_homomorphism "\<rho> (fst x) w0" "\<FF> (fst x)" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" 
+        "\<one>\<^bsub>fst x\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
+    apply (rule is_ring_morphism)
+    using \<open>fst x \<in> I\<close> w0(1,2) by auto
+  interpret yw0:ring_homomorphism "\<rho> (fst y) w0" "\<FF> (fst y)" "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" 
+        "\<one>\<^bsub>fst y\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
+    apply (rule is_ring_morphism)
+    using \<open>fst y \<in> I\<close> w0(1,2) by auto
+
+  have "\<rho> (fst x) w (snd x) = \<rho> (fst y) w (snd y)" if "w \<subseteq> w0" "w \<in> I" for w 
+  proof -
+    interpret w0w:ring_homomorphism "\<rho> w0 w" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>" "\<FF> w" 
+                  "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
+      apply (rule is_ring_morphism)
+      using that \<open>w0 \<in> I\<close> by auto
+
+    have "\<rho> (fst x) w (snd x) = (\<rho> w0 w \<circ> \<rho> (fst x) w0) (snd x)"
+      apply (rule assoc_comp)
+      using xy that w0(1,2) by auto
+    also have "... = (\<rho> w0 w \<circ> \<rho> (fst y) w0) (snd y)"
+      unfolding comp_def
+      using w0(3) by auto
+    also have "... = \<rho> (fst y) w (snd y)"
+      apply (rule assoc_comp[symmetric])
+      using xy that w0(1,2) by auto
+    finally show ?thesis .
+  qed
+  with w0 have "\<exists>w0. w0 \<in> I \<and> w0 \<subseteq> fst x \<inter> fst y 
+            \<and> (\<forall>w. (w\<subseteq>w0 \<and> w\<in>I) \<longrightarrow> \<rho> (fst x) w (snd x) = \<rho> (fst y) w (snd y))" 
+    by auto
+  then have "\<forall>\<^sub>F w in lbound {fst x,fst y}. \<rho> (fst x) w (snd x) = \<rho> (fst y) w (snd y)" 
+    apply (subst eventually_lbound_finite)
+    using xy(1,2) by auto
+  then show ?thesis
+    using llbound_lbound[of "{fst x,fst y}"] xy(1,2) by auto
 qed
 
 lemma add_rel_well_defined:
   fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
   assumes "x \<in> Sigma I \<FF>" "y \<in> Sigma I \<FF>"
-  assumes "op_rel_aux x y z" and "op_rel_aux x y z'"
+  assumes z:"z\<in>I" "z \<subseteq> fst x" "z \<subseteq> fst y"
+  assumes z':"z'\<in>I" "z' \<subseteq> fst x" "z' \<subseteq> fst y"
   shows "\<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
           \<lfloor>z', add_str z' (\<rho> (fst x) z' (snd x)) (\<rho> (fst y) z' (snd y))\<rfloor>"
 proof -
-  have z:"z\<in>I" "z \<subseteq> fst x" "z \<subseteq> fst y"
-    using \<open>op_rel_aux x y z\<close> unfolding op_rel_aux_def by auto
-  have z':"z'\<in>I" "z' \<subseteq> fst x" "z' \<subseteq> fst y"
-    using  \<open>op_rel_aux x y z'\<close> unfolding op_rel_aux_def by auto
-
   interpret xz:ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" 
               "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
     apply (rule is_ring_morphism)
@@ -2620,27 +2806,25 @@ proof -
     using \<open>y \<in> Sigma I \<FF>\<close> z' by auto
 
   obtain w where w:"w \<in> I" "w \<subseteq> z \<inter> z'"
-    using has_lower_bound by (meson assms(3) assms(4) op_rel_aux_def)
+    using has_lower_bound \<open>z\<in>I\<close> \<open>z'\<in>I\<close> by meson
 
   interpret zw:ring_homomorphism "\<rho> z w" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
       "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
     apply (rule is_ring_morphism)
-    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> \<open>op_rel_aux x y z\<close> unfolding op_rel_aux_def
-    by auto
+    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> z by auto thm zw.additive.commutes_with_composition
   interpret z'w:ring_homomorphism "\<rho> z' w" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>" 
       "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
     apply (rule is_ring_morphism)
-    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> \<open>op_rel_aux x y z'\<close> unfolding op_rel_aux_def
-    by auto
+    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> z' by auto
 
   show ?thesis
   proof (rule class_of_eqI[OF _ _ \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close>])
     define xz yz where "xz = \<rho> (fst x) z (snd x)" and "yz = \<rho> (fst y) z (snd y)"
     define xz' yz' where "xz' = \<rho> (fst x) z' (snd x)" and "yz' = \<rho> (fst y) z' (snd y)"
     show "(z, +\<^bsub>z\<^esub> xz yz) \<in> Sigma I \<FF>" "(z', +\<^bsub>z'\<^esub> xz' yz') \<in> Sigma I \<FF>"
-      unfolding xz_def yz_def xz'_def yz'_def 
-      using assms op_rel_aux_def by auto
-
+      subgoal using assms(1) assms(2) xz_def yz_def z(1) by fastforce
+      subgoal using assms(1) assms(2) xz'_def yz'_def z'(1) by fastforce
+      done
     have "\<rho> z w (+\<^bsub>z\<^esub> xz yz) = +\<^bsub>w\<^esub> (\<rho> z w xz) (\<rho> z w yz)"
       apply (rule zw.additive.commutes_with_composition)
       using assms(1,2) xz_def yz_def by force+
@@ -2659,10 +2843,83 @@ proof -
   qed
 qed
 
-lemma add_rel_well_defined_bis:
-  assumes "\<lfloor>U, x\<rfloor> = \<lfloor>U', x'\<rfloor>" and "\<lfloor>V, y\<rfloor> = \<lfloor>V', y'\<rfloor>"
-  shows "add_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = add_rel \<lfloor>U', x'\<rfloor> \<lfloor>V', y'\<rfloor>"
-  sorry
+lemma add_rel_well_defined_llbound:
+  fixes x y:: "'a set \<times> 'b" and z z':: "'a set"
+  assumes "x \<in> Sigma I \<FF>" "y \<in> Sigma I \<FF>"
+  assumes z:"z\<in>I" "z \<subseteq> fst x" "z \<subseteq> fst y"
+  shows "\<forall>\<^sub>F w in llbound. \<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor> =
+          \<lfloor>w, add_str w (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))\<rfloor>" (is "\<forall>\<^sub>F w in _. ?P w")
+proof -
+  have  "\<forall>w. w \<subseteq> z \<and> w \<in> I \<longrightarrow>?P w "
+    by (meson add_rel_well_defined assms(1) assms(2) dual_order.trans z(1) z(2) z(3))
+  then have "\<forall>\<^sub>F w in lbound {fst x,fst y}. ?P w"
+    apply (subst eventually_lbound_finite)
+    using assms by auto
+  then show ?thesis
+    using llbound_lbound[of "{fst x,fst y}"] assms(1,2) by auto 
+qed
+
+
+lemma add_rel_class_of:
+  fixes U V W :: "'a set" and x y :: 'b  
+  assumes uv_sigma:"(U, x) \<in> Sigma I \<FF>" "(V, y) \<in> Sigma I \<FF>"
+  assumes w:"W \<in> I" "W \<subseteq> U" "W \<subseteq> V"
+  shows "add_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = \<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W x) (\<rho> V W y) \<rfloor>"
+proof -
+  define ux where "ux = (SOME ux. ux \<in> \<lfloor> U , x \<rfloor>)"
+  define vy where "vy = (SOME ux. ux \<in> \<lfloor> V , y \<rfloor>)"
+  have "ux \<in> \<lfloor> U , x \<rfloor>" "vy \<in> \<lfloor> V , y \<rfloor> " 
+    unfolding ux_def vy_def using uv_sigma class_of_def some_in_eq by blast+
+  then have "ux \<in> Sigma I \<FF>" "vy \<in> Sigma I \<FF>"
+    using class_of_def uv_sigma by blast+
+
+  define w1 where "w1 = get_lower_bound (fst ux) (fst vy)"
+  have w1:"w1 \<in> I" "w1 \<subseteq> fst ux" "w1 \<subseteq> fst vy"
+  proof -
+    have "fst ux \<in> I" "fst vy \<in> I"
+      using \<open>ux \<in> \<lfloor> U , x \<rfloor>\<close> \<open>vy \<in> \<lfloor> V , y \<rfloor>\<close> uv_sigma
+      by (metis class_of_def mem_Sigma_iff prod.collapse rel.Class_closed)+
+    from get_lower_bound[OF this]
+    show "w1 \<in> I" "w1 \<subseteq> fst ux" "w1 \<subseteq> fst vy"
+      unfolding w1_def by simp_all
+  qed
+
+  have "add_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> = \<lfloor>w1 , +\<^bsub>w1\<^esub> (\<rho> (fst ux) w1 (snd ux)) (\<rho> (fst vy) w1 (snd vy)) \<rfloor>"
+    unfolding add_rel_def
+    apply (fold ux_def vy_def)
+    by (simp add:Let_def w1_def)
+  moreover have "\<forall>\<^sub>F w in llbound. 
+            ... = \<lfloor>w, add_str w (\<rho> (fst ux) w (snd ux)) (\<rho> (fst vy) w (snd vy))\<rfloor>"
+    apply (rule add_rel_well_defined_llbound)
+    using \<open>ux \<in> Sigma I \<FF>\<close> \<open>vy \<in> Sigma I \<FF>\<close> w1 by auto
+  ultimately have "\<forall>\<^sub>F w in llbound. add_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> 
+      = \<lfloor>w, add_str w (\<rho> (fst ux) w (snd ux)) (\<rho> (fst vy) w (snd vy))\<rfloor>"
+    by simp
+  moreover have 
+    "\<forall>\<^sub>F w in llbound. \<rho> (fst ux) w (snd ux) = \<rho> (fst (U, x)) w (snd (U, x))"
+    "\<forall>\<^sub>F w in llbound. \<rho> (fst vy) w (snd vy) = \<rho> (fst (V, y)) w (snd (V, y))"
+    subgoal 
+      apply (rule rel_eventually_llbound)
+      using \<open>ux \<in> \<lfloor> U , x \<rfloor>\<close> class_of_def uv_sigma(1) by auto
+    subgoal 
+      apply (rule rel_eventually_llbound)
+      using \<open>vy \<in> \<lfloor> V , y \<rfloor>\<close> class_of_def uv_sigma(2) by auto
+    done
+  ultimately have "\<forall>\<^sub>F w in llbound. add_rel \<lfloor>U, x\<rfloor> \<lfloor>V, y\<rfloor> 
+      = \<lfloor>w, add_str w (\<rho> U w x) (\<rho> V w y)\<rfloor>"
+    apply eventually_elim
+    by auto
+  moreover have "\<forall>\<^sub>F w in llbound. \<lfloor> W , +\<^bsub>W\<^esub> (\<rho> U W x) (\<rho> V W y) \<rfloor> = \<lfloor> w , +\<^bsub>w\<^esub> (\<rho> U w x) (\<rho> V w y) \<rfloor>"
+    apply (rule add_rel_well_defined_llbound[of "(U,x)" "(V,y)" W,simplified])
+    using w uv_sigma by auto
+  ultimately have "\<forall>\<^sub>F w in llbound. 
+      add_rel \<lfloor> U , x \<rfloor> \<lfloor> V , y \<rfloor> = \<lfloor> W , +\<^bsub>W\<^esub> (\<rho> U W x) (\<rho> V W y) \<rfloor>" 
+    apply eventually_elim
+    by auto
+  moreover have "llbound\<noteq>bot" using llbound_not_bot w(1) by blast 
+  ultimately show ?thesis by auto
+qed
+ 
 
 lemma mult_rel_carrier[intro]:
   assumes "X \<in> carrier_direct_lim" "Y \<in> carrier_direct_lim"
@@ -2670,20 +2927,20 @@ lemma mult_rel_carrier[intro]:
 proof -
   define x where "x=(SOME x. x \<in> X)"
   define y where "y=(SOME y. y \<in> Y)"
-  define z where "z=(SOME z. op_rel_aux x y z)"
+  
 
   have "x\<in>X" "x\<in>Sigma I \<FF>" 
     using rel_carrier_Eps_in[OF \<open>X \<in> carrier_direct_lim\<close>] unfolding x_def by auto
   have "y\<in>Y" "y \<in> Sigma I \<FF>" 
     using rel_carrier_Eps_in[OF \<open>Y \<in> carrier_direct_lim\<close>] unfolding y_def by auto
 
-  have "op_rel_aux x y z"
+  define z where "z=get_lower_bound (fst x) (fst y)"
+  have "z \<in> I" "z \<subseteq> fst x" "z \<subseteq> fst y"
   proof -
-    have "fst x\<in>I" "fst y\<in>I" 
+    have "fst x \<in> I" "fst y \<in> I" 
       using \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> by auto
-    from has_lower_bound[OF this]
-    show ?thesis unfolding op_rel_aux_def
-      by (metis op_rel_aux_def tfl_some z_def)
+    then show "z \<in> I" "z \<subseteq> fst x" "z \<subseteq> fst y"
+      using get_lower_bound[of "fst x" "fst y",folded z_def] by auto
   qed
 
   have "mult_rel X Y = \<lfloor>z, mult_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
@@ -2693,11 +2950,11 @@ proof -
     unfolding carrier_direct_lim_def class_of_def
   proof (rule rel.Block_closed)
     interpret ring "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>" 
-      using \<open>op_rel_aux x y z\<close> is_ring_from_is_homomorphism op_rel_aux_def subset_of_opens by auto
+      by (simp add: \<open>z \<in> I\<close> is_ring_from_is_homomorphism subset_of_opens)
     show "(z, \<cdot>\<^bsub>z\<^esub> (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))) \<in> Sigma I \<FF>"
-      by (metis (no_types, hide_lams) \<open>op_rel_aux x y z\<close> \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> 
-          subset_of_opens  is_map_from_is_homomorphism le_inf_iff map.map_closed 
-          mem_Sigma_iff multiplicative.composition_closed op_rel_aux_def prod.exhaust_sel)
+      by (metis SigmaE SigmaI \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> \<open>z \<in> I\<close> \<open>z \<subseteq> fst x\<close> \<open>z \<subseteq> fst y\<close> 
+          direct_lim.subset_of_opens direct_lim_axioms fst_conv 
+          is_map_from_is_homomorphism map.map_closed multiplicative.composition_closed snd_conv)
   qed
   finally show ?thesis .
 qed
@@ -2727,20 +2984,6 @@ proof unfold_locales
   show zero_rel: "\<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim" and one_rel: "\<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim"
     using \<open>U \<in> I\<close> by auto
 
-  have op_rel_z:"op_rel_aux x y (SOME z. op_rel_aux x y z)" 
-        "(SOME z. op_rel_aux x y z) \<in> I" 
-        "(SOME z. op_rel_aux x y z) \<subseteq> fst x \<inter> fst y"
-    if "x \<in> Sigma I \<FF>" "y \<in> Sigma I \<FF>" for x y
-  proof -
-    have "fst x\<in>I" "fst y\<in>I" 
-      using \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> by auto
-    from has_lower_bound[OF this]
-    show "op_rel_aux x y (SOME z. op_rel_aux x y z)" unfolding op_rel_aux_def
-      by (metis (no_types, lifting) verit_sko_ex')
-    then show "(SOME z. op_rel_aux x y z) \<in> I" "(SOME z. op_rel_aux x y z) \<subseteq> fst x \<inter> fst y" 
-      unfolding op_rel_aux_def by auto
-  qed
-  
   define zero where "zero = (SOME y. y \<in> \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>)"
   have "zero\<in>\<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>" "zero \<in> Sigma I \<FF>" "\<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> = \<lfloor>fst zero , snd zero\<rfloor>"
     using rel_carrier_Eps_in[OF \<open>\<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> \<in> carrier_direct_lim\<close>] unfolding zero_def by auto
@@ -2752,44 +2995,38 @@ proof unfold_locales
   show add_rel_0: "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = X" if "X \<in> carrier_direct_lim" for X
   proof -
     define x where "x=(SOME x. x \<in> X)"
-    have "x\<in>X" "x\<in>Sigma I \<FF>" and X_alt:"X= \<lfloor>fst x, snd x\<rfloor>"
-      using rel_carrier_Eps_in[OF \<open>X \<in> carrier_direct_lim\<close>] unfolding x_def by auto
+    have x:"x\<in>X" "x\<in>Sigma I \<FF>" "fst x\<in>I" and X_alt:"X= \<lfloor>fst x, snd x\<rfloor>"
+      using rel_carrier_Eps_in[OF \<open>X \<in> carrier_direct_lim\<close>] 
+      unfolding x_def by auto
+    
 
-    show "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = X"
-    proof -
-      define z where "z=(SOME z. op_rel_aux zero x z)"
-      have "op_rel_aux zero x z" "z \<in> I" "z \<subseteq> fst zero \<inter> fst x"
-        using op_rel_z[OF \<open>zero \<in> Sigma I \<FF>\<close> \<open>x \<in> Sigma I \<FF>\<close>, folded z_def] by auto
-      have "is_open z"
-        by (simp add: \<open>z \<in> I\<close> subset_of_opens)
-      have "is_open (fst x)"
-        using \<open>x \<in> Sigma I \<FF>\<close> subset_of_opens by force
 
-      interpret zeroz: ring_homomorphism "(\<rho> (fst zero) z)" 
-                            "(\<FF> (fst zero))" "+\<^bsub>fst zero\<^esub>" "\<cdot>\<^bsub>fst zero\<^esub>" "\<zero>\<^bsub>fst zero\<^esub>" "\<one>\<^bsub>fst zero\<^esub>" 
-                            "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-        apply (rule is_ring_morphism)
-        using \<open>z \<in> I\<close> \<open>z \<subseteq> fst zero \<inter> fst x\<close> \<open>zero \<in> Sigma I \<FF>\<close> subset_of_opens by auto
-      interpret xz: ring_homomorphism "(\<rho> (fst x) z)" 
-                            "(\<FF> (fst x))" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>"  "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" 
-                            "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-        apply (rule is_ring_morphism)
-        using \<open>z \<in> I\<close> \<open>z \<subseteq> fst zero \<inter> fst x\<close> \<open>x \<in> Sigma I \<FF>\<close> subset_of_opens by auto
+    obtain w0 where w0:"w0\<in>I" "w0 \<subseteq> U" "w0 \<subseteq> fst x" 
+      using has_lower_bound[OF \<open>U\<in>I\<close> \<open>fst x\<in>I\<close>] by blast
 
-      have "\<rho> z z (+\<^bsub>z\<^esub> (\<rho> (fst zero) z (snd zero)) (\<rho> (fst x) z (snd x))) = \<rho> (fst x) z (snd x)"
-         sorry
-        (*
-          I believe this is the key to finish this case,
-           but really have no idea how to proceed here :-( --Wenda [same here--LCP]
-        *)
-      then have "\<lfloor> z , +\<^bsub>z\<^esub> (\<rho> (fst zero) z (snd zero)) (\<rho> (fst x) z (snd x)) \<rfloor> = \<lfloor>fst x , snd x\<rfloor>"
-        apply (rule_tac class_of_eqI[where W=z])
-        using \<open>x \<in> Sigma I \<FF>\<close> \<open>z \<in> I\<close> \<open>zero \<in> Sigma I \<FF>\<close> \<open>z \<subseteq> fst zero \<inter> fst x\<close> by auto
-      then show ?thesis
-        unfolding add_rel_def Let_def
-        apply (fold zero_def x_def z_def)
-        unfolding class_of_def X_alt .
-    qed
+    interpret uw0:ring_homomorphism "\<rho> U w0" "\<FF> U" "+\<^bsub>U\<^esub>" "\<cdot>\<^bsub>U\<^esub>" "\<zero>\<^bsub>U\<^esub>" "\<one>\<^bsub>U\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" 
+                    "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
+      apply (rule is_ring_morphism)
+      using \<open>U\<in>I\<close> w0 by auto
+    interpret xw0:ring_homomorphism "\<rho> (fst x) w0" "\<FF> (fst x)" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" 
+                    "\<one>\<^bsub>fst x\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
+      apply (rule is_ring_morphism)
+      using \<open>fst x\<in>I\<close> w0 by auto
+
+    have "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = \<lfloor> w0 , +\<^bsub>w0\<^esub> (\<rho> U w0 \<zero>\<^bsub>U\<^esub>) (\<rho> (fst x) w0 (snd x)) \<rfloor>"
+      unfolding X_alt
+      apply (subst add_rel_class_of)
+      using \<open>U \<in> I\<close> w0 x by simp_all
+    also have "... = \<lfloor> w0 , +\<^bsub>w0\<^esub> \<zero>\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) \<rfloor>"
+      by (simp add:uw0.additive.commutes_with_unit )
+    also have "... = \<lfloor> w0 , \<rho> (fst x) w0 (snd x)\<rfloor>"
+      apply (subst uw0.target.additive.left_unit)
+      using carrier_direct_lim_def rel.block_closed that x(1) by auto
+    also have "... = X"
+      unfolding X_alt
+      apply (rule class_of_eqI[where W=w0])
+      using w0 x by auto
+    finally show "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = X" .
   qed
 
   show add_rel_commute: "add_rel X Y = add_rel Y X" 
@@ -2797,34 +3034,33 @@ proof unfold_locales
   proof -
     define x where "x=(SOME x. x \<in> X)"
     define y where "y=(SOME y. y \<in> Y)"
-    define z where "z=(SOME z. op_rel_aux x y z)"
   
-    have "x\<in>X" "x\<in>Sigma I \<FF>" 
+    have x:"x\<in>X" "x\<in>Sigma I \<FF>" 
       using rel_carrier_Eps_in[OF \<open>X \<in> carrier_direct_lim\<close>] unfolding x_def by auto
-    have "y\<in>Y" "y \<in> Sigma I \<FF>" 
+    have y:"y\<in>Y" "y \<in> Sigma I \<FF>" 
       using rel_carrier_Eps_in[OF \<open>Y \<in> carrier_direct_lim\<close>] unfolding y_def by auto
   
-    have "op_rel_aux x y z" "z \<in> I" "z \<subseteq> fst x \<inter> fst y"
+    define z where "z=get_lower_bound (fst x) (fst y)"
+    have z:"z \<in> I" "z \<subseteq> fst x" "z \<subseteq> fst y" and z_alt:"z=get_lower_bound (fst y) (fst x) "
     proof -
-      have "fst x\<in>I" "fst y\<in>I" 
+      have "fst x \<in> I" "fst y \<in> I" 
         using \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> by auto
-      from has_lower_bound[OF this]
-      show "op_rel_aux x y z" unfolding op_rel_aux_def
-        by (metis op_rel_aux_def tfl_some z_def)
-      then show "z \<in> I" "z \<subseteq> fst x \<inter> fst y" unfolding op_rel_aux_def by auto
+      then show "z \<in> I" "z \<subseteq> fst x" "z \<subseteq> fst y"
+        using get_lower_bound[of "fst x" "fst y",folded z_def] by auto
+      show "z=get_lower_bound (fst y) (fst x) " 
+        by (metis (no_types, lifting) Eps_cong get_lower_bound_def z_def)
     qed
-   
-    have z_alt:"z = Eps (op_rel_aux y x) "
-      by (metis Eps_cong Int_commute \<open>z \<equiv> Eps (op_rel_aux x y)\<close> op_rel_aux_def)
+
 
     interpret xz:ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" 
                       "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
       apply (rule is_ring_morphism)
-      using \<open>z \<in> I\<close> \<open>z \<subseteq> fst x \<inter> fst y\<close> \<open>x \<in> Sigma I \<FF>\<close> subset_of_opens by auto
+      using z x by auto
+
     interpret yz:ring_homomorphism "(\<rho> (fst y) z)" "(\<FF> (fst y))" "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" 
                       "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
       apply (rule is_ring_morphism)
-      using \<open>z \<in> I\<close> \<open>z \<subseteq> fst x \<inter> fst y\<close> \<open>y \<in> Sigma I \<FF>\<close> subset_of_opens by auto
+      using z y by auto
 
     have "add_rel X Y = \<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
       unfolding add_rel_def Let_def by (fold x_def y_def z_def,rule)
