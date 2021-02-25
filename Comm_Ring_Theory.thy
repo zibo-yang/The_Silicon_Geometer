@@ -3338,15 +3338,39 @@ proof
                   (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
   proof-
     define u where "u \<equiv> \<lambda>X. let x = (SOME x. x \<in> X) in (\<psi> (fst x)) (snd x)"
-    then have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
+      (* The proposition below proves that u is well defined. *)
+    then have "\<And>X x y. X \<in> carrier_direct_lim \<Longrightarrow> x \<in> X \<Longrightarrow> y \<in> X \<Longrightarrow> 
+(\<psi> (fst x)) (snd x) = (\<psi> (fst y)) (snd y)"
+      sorry
+    moreover have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
                                  A add mult zero one"
       sorry
-    moreover have "(\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
-      sorry
-    moreover have "\<And>u v. (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x) \<Longrightarrow> 
-(\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (v \<circ> canonical_fun U) x = \<psi> U x) \<Longrightarrow> u = v"
-      sorry
-    ultimately show ?thesis by auto
+    moreover have "(\<And>U s. U \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> (u \<circ> canonical_fun U) s = \<psi> U s)"
+    proof-
+      fix U s assume "U \<in> I" "s \<in> \<FF> U" then show "(u \<circ> canonical_fun U) s = \<psi> U s"
+      proof-
+        have "u (\<lfloor>U, s\<rfloor>) = \<psi> U s" sorry 
+        then have "(u \<circ> canonical_fun U) s = \<psi> U s" sorry
+        thus "(u \<circ> canonical_fun U) s = \<psi> U s" sorry
+      qed
+    qed
+    moreover have "\<And>v. (\<forall>U\<in>I. \<forall>s\<in>\<FF> U. (v \<circ> canonical_fun U) s = \<psi> U s) \<Longrightarrow> u = v"
+    proof-
+      fix v assume "(\<forall>U\<in>I. \<forall>s\<in>\<FF> U. (v \<circ> canonical_fun U) s = \<psi> U s)"
+      thus "u = v"
+      proof-
+        have "\<And>U s. U \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> u (\<lfloor>U,s\<rfloor>) = v (\<lfloor>U,s\<rfloor>)"
+        proof-
+          fix U s assume "U \<in> I" "s \<in> \<FF> U"
+          then have "u (\<lfloor>U,s\<rfloor>) = (\<psi> U) s" sorry
+          then have "\<dots> = (v \<circ> canonical_fun U) s" sorry
+          then have "\<dots> = v (\<lfloor>U,s\<rfloor>)" sorry
+          thus "u (\<lfloor>U,s\<rfloor>) = v (\<lfloor>U,s\<rfloor>)" sorry
+        qed
+        thus ?thesis sorry
+      qed
+    qed
+    ultimately show ?thesis by metis
   qed
 qed
 
