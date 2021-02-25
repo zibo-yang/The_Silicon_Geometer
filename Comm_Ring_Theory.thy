@@ -3331,7 +3331,24 @@ and mult:: "'c \<Rightarrow> 'c \<Rightarrow> 'c" and zero:: "'c" and one:: "'c"
 and "\<And>U V. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> V \<subseteq> U \<Longrightarrow> (\<And>x. x \<in> (\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) x = \<psi> U x)"
   shows "\<forall>V\<in>I. \<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor>V,\<zero>\<^bsub>V\<^esub>\<rfloor> \<lfloor>V,\<one>\<^bsub>V\<^esub>\<rfloor> A add mult zero one 
 \<and> (\<forall>U\<in>I. \<forall>x\<in>(\<FF> U). (u \<circ> canonical_fun U) x = \<psi> U x)"
-  sorry
+proof
+  fix V assume "V \<in> I" 
+  then show "\<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
+                                      A add mult zero one \<and>
+                  (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
+  proof-
+    define u where "u \<equiv> \<lambda>X. let x = (SOME x. x \<in> X) in (\<psi> (fst x)) (snd x)"
+    then have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
+                                 A add mult zero one"
+      sorry
+    moreover have "(\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
+      sorry
+    moreover have "\<And>u v. (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x) \<Longrightarrow> 
+(\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (v \<circ> canonical_fun U) x = \<psi> U x) \<Longrightarrow> u = v"
+      sorry
+    ultimately show ?thesis by auto
+  qed
+qed
 
 
 subsection \<open>Locally Ringed Spaces\<close>
