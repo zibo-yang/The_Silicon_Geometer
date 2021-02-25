@@ -3348,11 +3348,49 @@ proof
       then have "\<psi> (fst x) (snd x) = (\<psi> W \<circ> \<rho> (fst x) W) (snd x)" sorry
       moreover have "\<dots> = \<psi> W (\<rho> (fst x) W (snd x))" sorry
       moreover have "\<dots> = \<psi> W (\<rho> (fst y) W (snd y))" sorry
-      ultimately show "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)" sorry
+      ultimately show "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)" using assms(3) sorry
     qed
     moreover have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
                                  A add mult zero one"
-      sorry
+    proof-
+      have "\<And>U. U \<in> I \<Longrightarrow> u (\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor>) = zero"
+      proof-
+        fix U assume "U \<in> I"
+        then have "u (\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor>) = \<psi> U \<zero>\<^bsub>U\<^esub>" sorry
+        moreover have "\<dots> = zero" sorry (* since \<psi> U being a ring morphism maps 0 to 0 *)
+        ultimately show " u (\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor>) = zero" sorry
+      qed
+      moreover have "\<And>U. U \<in> I \<Longrightarrow> u (\<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>) = one" 
+      proof-
+        fix U assume "U \<in> I"
+        then have "u (\<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>) = \<psi> U \<one>\<^bsub>U\<^esub>" sorry
+        moreover have "\<dots> = one" sorry (* since \<psi> U being a ring morphism maps 0 to 0 *)
+        ultimately show " u (\<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>) = one" sorry
+      qed
+      moreover have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
+u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
+      proof-
+        fix U V s t assume "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V"
+        then obtain W where "W \<in> I" "W \<subseteq> U \<inter> V" 
+"u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
+        then have "u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = \<psi> W (+\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))" sorry
+        moreover have "\<dots> = add (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))" sorry (* since \<psi> W is a homomorphism *)
+        moreover have "\<dots> = add (\<psi> U s) (\<psi> V t)" sorry (* by assm(3) *)
+        ultimately show "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" sorry
+      qed
+      moreover have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
+u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" 
+      proof-
+        fix U V s t assume "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V"
+        then obtain W where "W \<in> I" "W \<subseteq> U \<inter> V" 
+"u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
+        then have "u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = \<psi> W (\<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))" sorry
+        moreover have "\<dots> = mult (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))" sorry (* since \<psi> W is a homomorphism *)
+        moreover have "\<dots> = mult (\<psi> U s) (\<psi> V t)" sorry (* by assm(3) *)
+        ultimately show "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" sorry
+      qed
+      ultimately show ?thesis sorry
+    qed
     moreover have "(\<And>U s. U \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> (u \<circ> canonical_fun U) s = \<psi> U s)"
     proof-
       fix U s assume "U \<in> I" "s \<in> \<FF> U" then show "(u \<circ> canonical_fun U) s = \<psi> U s"
