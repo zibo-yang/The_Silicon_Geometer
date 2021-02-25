@@ -3341,7 +3341,15 @@ proof
       (* The proposition below proves that u is well defined. *)
     then have "\<And>X x y. X \<in> carrier_direct_lim \<Longrightarrow> x \<in> X \<Longrightarrow> y \<in> X \<Longrightarrow> 
 (\<psi> (fst x)) (snd x) = (\<psi> (fst y)) (snd y)"
-      sorry
+    proof-
+      fix X x y assume "X \<in> carrier_direct_lim" "x \<in> X" "y \<in> X"
+      then obtain W where "W \<in> I" "W \<subseteq> fst x \<inter> fst y" "\<rho> (fst x) W (snd x) = \<rho> (fst y) W (snd y)"
+        sorry
+      then have "\<psi> (fst x) (snd x) = (\<psi> W \<circ> \<rho> (fst x) W) (snd x)" sorry
+      moreover have "\<dots> = \<psi> W (\<rho> (fst x) W (snd x))" sorry
+      moreover have "\<dots> = \<psi> W (\<rho> (fst y) W (snd y))" sorry
+      ultimately show "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)" sorry
+    qed
     moreover have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
                                  A add mult zero one"
       sorry
