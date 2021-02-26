@@ -2374,7 +2374,7 @@ subsection \<open>Direct Limits of Rings\<close>
 (* construction 0.34 *)
 locale direct_lim = sheaf_of_rings + 
   fixes I:: "'a set set"
-  assumes subset_of_opens[intro,simp]: "\<And>U. U \<in> I \<Longrightarrow> is_open U" 
+  assumes subset_of_opens: "\<And>U. U \<in> I \<Longrightarrow> is_open U" 
     and has_lower_bound: "\<And>U V. \<lbrakk> U\<in>I; V\<in>I \<rbrakk> \<Longrightarrow> \<exists>W\<in>I. W \<subseteq> U \<inter> V"
 begin
 
@@ -2745,29 +2745,23 @@ proof -
 
   interpret xw0:ring_homomorphism "\<rho> (fst x) w0" "\<FF> (fst x)" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" 
         "\<one>\<^bsub>fst x\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>fst x \<in> I\<close> w0(1,2) by auto
+    by (meson is_ring_morphism le_inf_iff subset_of_opens w0 xy(1))
   interpret yw0:ring_homomorphism "\<rho> (fst y) w0" "\<FF> (fst y)" "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" 
         "\<one>\<^bsub>fst y\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>fst y \<in> I\<close> w0(1,2) by auto
-
+    using w0 by (metis is_ring_morphism le_inf_iff subset_of_opens  xy(2))
   have "\<rho> (fst x) w (snd x) = \<rho> (fst y) w (snd y)" if "w \<subseteq> w0" "w \<in> I" for w 
   proof -
     interpret w0w:ring_homomorphism "\<rho> w0 w" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>" "\<FF> w" 
                   "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
-      apply (rule is_ring_morphism)
-      using that \<open>w0 \<in> I\<close> by auto
+      using is_ring_morphism subset_of_opens that w0(1) by presburger
 
     have "\<rho> (fst x) w (snd x) = (\<rho> w0 w \<circ> \<rho> (fst x) w0) (snd x)"
-      apply (rule assoc_comp)
-      using xy that w0(1,2) by auto
+      by (meson assoc_comp le_inf_iff subset_of_opens that w0 xy)
     also have "... = (\<rho> w0 w \<circ> \<rho> (fst y) w0) (snd y)"
       unfolding comp_def
       using w0(3) by auto
     also have "... = \<rho> (fst y) w (snd y)"
-      apply (rule assoc_comp[symmetric])
-      using xy that w0(1,2) by auto
+      using w0 xy by (metis Int_subset_iff assoc_comp subset_of_opens that)
     finally show ?thesis .
   qed
   with w0 have "\<exists>w0. w0 \<in> I \<and> w0 \<subseteq> fst x \<inter> fst y 
@@ -2793,28 +2787,26 @@ lemma
 proof -
   interpret xz:ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" 
               "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-    using is_ring_morphism \<open>x \<in> Sigma I \<FF>\<close> z by auto
+    using is_ring_morphism \<open>x \<in> Sigma I \<FF>\<close> z subset_of_opens by force
   interpret yz:ring_homomorphism "(\<rho> (fst y) z)" "(\<FF> (fst y))" 
               "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-    using is_ring_morphism \<open>y \<in> Sigma I \<FF>\<close> z by auto
+    using is_ring_morphism \<open>y \<in> Sigma I \<FF>\<close> z subset_of_opens by force
   interpret xz':ring_homomorphism "(\<rho> (fst x) z')" "(\<FF> (fst x))" 
               "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
-    using is_ring_morphism \<open>x \<in> Sigma I \<FF>\<close> z' by auto
+    using is_ring_morphism \<open>x \<in> Sigma I \<FF>\<close> z' subset_of_opens by force
   interpret yz':ring_homomorphism "(\<rho> (fst y) z')" "(\<FF> (fst y))" 
               "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>"
-    using is_ring_morphism \<open>y \<in> Sigma I \<FF>\<close> z' by auto
+    using is_ring_morphism \<open>y \<in> Sigma I \<FF>\<close> z' subset_of_opens by force
 
   obtain w where w:"w \<in> I" "w \<subseteq> z \<inter> z'"
     using has_lower_bound \<open>z\<in>I\<close> \<open>z'\<in>I\<close> by meson
 
   interpret zw:ring_homomorphism "\<rho> z w" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
       "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> z by auto thm zw.additive.commutes_with_composition
+    using w by (meson is_ring_morphism le_inf_iff subset_of_opens z(1))
   interpret z'w:ring_homomorphism "\<rho> z' w" "(\<FF> z')" "+\<^bsub>z'\<^esub>" "\<cdot>\<^bsub>z'\<^esub>" "\<zero>\<^bsub>z'\<^esub>" "\<one>\<^bsub>z'\<^esub>" 
       "\<FF> w" "+\<^bsub>w\<^esub>" "\<cdot>\<^bsub>w\<^esub>" "\<zero>\<^bsub>w\<^esub>" "\<one>\<^bsub>w\<^esub>"
-    apply (rule is_ring_morphism)
-    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> z' by auto
+    using \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close> z' by (meson is_ring_morphism le_inf_iff subset_of_opens)
 
   show ?add
   proof (rule class_of_eqI[OF _ _ \<open>w \<in> I\<close> \<open>w \<subseteq> z \<inter> z'\<close>])
@@ -2829,15 +2821,14 @@ proof -
       using assms(1,2) xz_def yz_def by force+
     also have "... = +\<^bsub>w\<^esub> (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))"
       unfolding xz_def yz_def
-      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
-      using assms(1,2) w z by auto
+      using assoc_comp w z subset_of_opens assms
+      by (metis SigmaE le_inf_iff o_def prod.sel)
     also have "... = +\<^bsub>w\<^esub> (\<rho> z' w xz') (\<rho> z' w yz')"
       unfolding xz'_def yz'_def
-      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
-      using assms(1,2) w z' by auto
+      using assoc_comp  w z' subset_of_opens assms
+      by (metis SigmaE le_inf_iff o_def prod.sel)
     also have "... = \<rho> z' w (+\<^bsub>z'\<^esub> xz' yz')"
-      apply (rule z'w.additive.commutes_with_composition[symmetric])
-      using assms(1,2) xz'_def yz'_def by force+
+      using assms(2) xy(1) xz'_def yz'_def z'w.additive.commutes_with_composition by force
     finally show "\<rho> z w (+\<^bsub>z\<^esub> xz yz) = \<rho> z' w (+\<^bsub>z'\<^esub> xz' yz')" .
   qed
 
@@ -2853,16 +2844,16 @@ proof -
       using xy xz_def yz_def by force+
     also have "... = \<cdot>\<^bsub>w\<^esub> (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y))"
       unfolding xz_def yz_def
-      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
-      using xy w z by auto
+      using xy w z assoc_comp
+      by (metis SigmaE fst_conv le_inf_iff o_def snd_conv subset_of_opens)
     also have "... = \<cdot>\<^bsub>w\<^esub> (\<rho> z' w xz') (\<rho> z' w yz')"
       unfolding xz'_def yz'_def
-      apply (subst (1 2) assoc_comp[unfolded comp_def,symmetric])
-      using xy w z' by auto
+      using xy w z' assoc_comp
+      by (metis SigmaE fst_conv le_inf_iff o_def snd_conv subset_of_opens)
     also have "... = \<rho> z' w (\<cdot>\<^bsub>z'\<^esub> xz' yz')"
-      apply (rule z'w.multiplicative.commutes_with_composition[symmetric])
-      using xy xz'_def yz'_def by force+
-    finally show "\<rho> z w (\<cdot>\<^bsub>z\<^esub> xz yz) = \<rho> z' w (\<cdot>\<^bsub>z'\<^esub> xz' yz')"   .
+      unfolding xz'_def yz'_def
+      using monoid_homomorphism.commutes_with_composition xy z'w.multiplicative.monoid_homomorphism_axioms by fastforce
+    finally show "\<rho> z w (\<cdot>\<^bsub>z\<^esub> xz yz) = \<rho> z' w (\<cdot>\<^bsub>z'\<^esub> xz' yz')" .
   qed
 qed
 
@@ -3034,7 +3025,7 @@ proof -
     unfolding carrier_direct_lim_def class_of_def
   proof (rule rel.Block_closed)
     interpret ring "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>" 
-      by (simp add: \<open>z \<in> I\<close> is_ring_from_is_homomorphism)
+      by (simp add: \<open>z \<in> I\<close> is_ring_from_is_homomorphism subset_of_opens)
     show "(z, \<cdot>\<^bsub>z\<^esub> (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))) \<in> Sigma I \<FF>"
       by (metis SigmaE SigmaI \<open>x \<in> Sigma I \<FF>\<close> \<open>y \<in> Sigma I \<FF>\<close> \<open>z \<in> I\<close> \<open>z \<subseteq> fst x\<close> \<open>z \<subseteq> fst y\<close> 
           direct_lim.subset_of_opens direct_lim_axioms fst_conv 
@@ -3069,10 +3060,10 @@ proof unfold_locales
 
     interpret uw0:ring_homomorphism "\<rho> U w0" "\<FF> U" "+\<^bsub>U\<^esub>" "\<cdot>\<^bsub>U\<^esub>" "\<zero>\<^bsub>U\<^esub>" "\<one>\<^bsub>U\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" 
                     "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-      using is_ring_morphism \<open>U\<in>I\<close> w0 by auto
+      using is_ring_morphism \<open>U\<in>I\<close> w0 subset_of_opens by auto
     interpret xw0:ring_homomorphism "\<rho> (fst x) w0" "\<FF> (fst x)" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" 
                     "\<one>\<^bsub>fst x\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-      using is_ring_morphism \<open>fst x\<in>I\<close> w0 by auto
+      using is_ring_morphism \<open>fst x\<in>I\<close> w0 subset_of_opens by auto
 
     have "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = \<lfloor> w0 , +\<^bsub>w0\<^esub> (\<rho> U w0 \<zero>\<^bsub>U\<^esub>) (\<rho> (fst x) w0 (snd x)) \<rfloor>"
       unfolding X_alt
@@ -3086,7 +3077,7 @@ proof unfold_locales
     also have "... = X"
       unfolding X_alt
       apply (rule class_of_eqI[where W=w0])
-      using w0 x by auto
+      using w0 x subset_of_opens by auto
     finally show "add_rel \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> X = X" .
 
     have "mult_rel \<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> X = \<lfloor> w0 , \<cdot>\<^bsub>w0\<^esub> (\<rho> U w0 \<one>\<^bsub>U\<^esub>) (\<rho> (fst x) w0 (snd x)) \<rfloor>"
@@ -3099,9 +3090,7 @@ proof unfold_locales
       apply (subst uw0.target.multiplicative.left_unit)
       using carrier_direct_lim_def rel.block_closed that x(1) by auto
     also have "... = X"
-      unfolding X_alt
-      apply (rule class_of_eqI[where W=w0])
-      using w0 x by auto
+      using X_alt \<open>\<lfloor> w0 , \<rho> (fst x) w0 (snd x) \<rfloor> = X\<close> by force
     finally show "mult_rel \<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> X = X" .
 
     have "mult_rel X \<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> = \<lfloor> w0 , \<cdot>\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) (\<rho> U w0 \<one>\<^bsub>U\<^esub>)\<rfloor>"
@@ -3114,9 +3103,7 @@ proof unfold_locales
       apply (subst uw0.target.multiplicative.right_unit)
       using carrier_direct_lim_def rel.block_closed that x(1) by auto
     also have "... = X"
-      unfolding X_alt
-      apply (rule class_of_eqI[where W=w0])
-      using w0 x by auto
+      using X_alt \<open>\<lfloor> w0 , \<rho> (fst x) w0 (snd x) \<rfloor> = X\<close> by force
     finally show "mult_rel X \<lfloor> U , \<one>\<^bsub>U\<^esub> \<rfloor> = X" .
   qed
 
@@ -3144,11 +3131,11 @@ proof unfold_locales
 
     interpret xz:ring_homomorphism "(\<rho> (fst x) z)" "(\<FF> (fst x))" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" 
                       "\<zero>\<^bsub>fst x\<^esub>" "\<one>\<^bsub>fst x\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-      using is_ring_morphism z x by auto
+      using is_ring_morphism z x subset_of_opens by force
 
     interpret yz:ring_homomorphism "(\<rho> (fst y) z)" "(\<FF> (fst y))" "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" 
                       "\<zero>\<^bsub>fst y\<^esub>" "\<one>\<^bsub>fst y\<^esub>" "(\<FF> z)" "+\<^bsub>z\<^esub>" "\<cdot>\<^bsub>z\<^esub>" "\<zero>\<^bsub>z\<^esub>" "\<one>\<^bsub>z\<^esub>"
-      using is_ring_morphism z y by auto
+      using is_ring_morphism z y subset_of_opens by auto
 
     have "add_rel X Y = \<lfloor>z, add_str z (\<rho> (fst x) z (snd x)) (\<rho> (fst y) z (snd y))\<rfloor>"
       unfolding add_rel_def Let_def by (fold x_def y_def z_def,rule)
@@ -3182,78 +3169,65 @@ proof unfold_locales
 
     interpret xw0:ring_homomorphism "\<rho> (fst x) w0" "\<FF> (fst x)" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" 
                     "\<one>\<^bsub>fst x\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-      using is_ring_morphism x w0 by auto
+      using is_ring_morphism x w0 subset_of_opens by auto
     interpret yw0:ring_homomorphism "\<rho> (fst y) w0" "\<FF> (fst y)" "+\<^bsub>fst y\<^esub>" "\<cdot>\<^bsub>fst y\<^esub>" "\<zero>\<^bsub>fst y\<^esub>" 
                     "\<one>\<^bsub>fst y\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-      using is_ring_morphism y w0 by auto
+      using is_ring_morphism y w0 subset_of_opens by auto
     interpret zw0:ring_homomorphism "\<rho> (fst z) w0" "\<FF> (fst z)" "+\<^bsub>fst z\<^esub>" "\<cdot>\<^bsub>fst z\<^esub>" "\<zero>\<^bsub>fst z\<^esub>" 
                     "\<one>\<^bsub>fst z\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-      using is_ring_morphism z w0 by auto
+      using is_ring_morphism z w0 subset_of_opens by auto
 
     have "add_rel (add_rel X Y) Z = \<lfloor> w0 , +\<^bsub>w0\<^esub> ((+\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) 
                                 (\<rho> (fst y) w0 (snd y)))) (\<rho> (fst z) w0 (snd z)) \<rfloor>"
       unfolding x_alt y_alt z_alt
-      apply (subst add_rel_class_of;(subst add_rel_class_of)?
-                  ;(subst identity_map[of w0])?)    
-      using x y z w0 by auto
+      using x y z w0 subset_of_opens add_rel_class_of 
+      by (force simp add: add_rel_class_of)
     also have "... = \<lfloor> w0 , +\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) 
                               (+\<^bsub>w0\<^esub> (\<rho> (fst y) w0 (snd y)) (\<rho> (fst z) w0 (snd z))) \<rfloor>"
-      apply (subst xw0.target.additive.associative)
-      using w0 x y z by auto
+      using x(2) xw0.target.additive.associative y(2) z(2) by force
     also have "... =  add_rel X (add_rel Y Z)"
       unfolding x_alt y_alt z_alt
-      apply (subst add_rel_class_of;(subst add_rel_class_of)?
-                  ;(subst identity_map[of w0])?) 
-      using x y z w0 by auto
+      using x y z w0 add_rel_class_of subset_of_opens by force
     finally show "add_rel (add_rel X Y) Z = add_rel X (add_rel Y Z)" .
 
     have "mult_rel (mult_rel X Y) Z = \<lfloor> w0 , \<cdot>\<^bsub>w0\<^esub> ((\<cdot>\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) 
                                 (\<rho> (fst y) w0 (snd y)))) (\<rho> (fst z) w0 (snd z)) \<rfloor>"
       unfolding x_alt y_alt z_alt
-      apply (subst mult_rel_class_of;(subst mult_rel_class_of)?;(subst identity_map[of w0])?)
-      using x y z w0 by auto
+      using x y z w0 mult_rel_class_of subset_of_opens by force
     also have "... = \<lfloor> w0 , \<cdot>\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) 
                               (\<cdot>\<^bsub>w0\<^esub> (\<rho> (fst y) w0 (snd y)) (\<rho> (fst z) w0 (snd z))) \<rfloor>"
       apply (subst xw0.target.multiplicative.associative)
       using w0 x y z by auto
     also have "... =  mult_rel X (mult_rel Y Z)"
       unfolding x_alt y_alt z_alt
-      apply (subst mult_rel_class_of;(subst mult_rel_class_of)?;(subst identity_map[of w0])?)
-      using x y z w0 by auto
+      using x y z w0 mult_rel_class_of subset_of_opens by force
     finally show "mult_rel (mult_rel X Y) Z = mult_rel X (mult_rel Y Z)" .
 
     have "mult_rel X (add_rel Y Z) = \<lfloor> w0 , \<cdot>\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x))
                   (+\<^bsub>w0\<^esub> (\<rho> (fst y) w0 (snd y)) (\<rho> (fst z) w0 (snd z))) \<rfloor>"
       unfolding x_alt y_alt z_alt
-      apply (subst add_rel_class_of;(subst mult_rel_class_of)?;(subst identity_map[of w0])?)
-      using x y z w0 by auto
+      using x y z w0 add_rel_class_of mult_rel_class_of subset_of_opens by force
     also have "... = \<lfloor> w0 , +\<^bsub>w0\<^esub> (\<cdot>\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) (\<rho> (fst y) w0 (snd y)))
             (\<cdot>\<^bsub>w0\<^esub> (\<rho> (fst x) w0 (snd x)) (\<rho> (fst z) w0 (snd z))) \<rfloor>"
       apply (subst xw0.target.distributive)
       using w0 x y z by auto
     also have "... = add_rel (mult_rel X Y) (mult_rel X Z)"
       unfolding x_alt y_alt z_alt
-      apply (subst mult_rel_class_of;(subst mult_rel_class_of)?;(subst add_rel_class_of)?
-              ;(subst identity_map[of w0])?;(subst identity_map[of w0])?)
-      using w0 x y z by auto
+      using x y z w0 add_rel_class_of mult_rel_class_of subset_of_opens by force
     finally show "mult_rel X (add_rel Y Z) = add_rel (mult_rel X Y) (mult_rel X Z)" .
 
     have "mult_rel (add_rel Y Z) X = \<lfloor> w0 , \<cdot>\<^bsub>w0\<^esub> (+\<^bsub>w0\<^esub> (\<rho> (fst y) w0 (snd y)) 
                                           (\<rho> (fst z) w0 (snd z))) (\<rho> (fst x) w0 (snd x)) \<rfloor>"
       unfolding x_alt y_alt z_alt
-      apply (subst add_rel_class_of;(subst mult_rel_class_of)?;(subst identity_map[of w0])?)
-      using w0 x y z by auto
+      using x y z w0 add_rel_class_of mult_rel_class_of subset_of_opens by force
     also have "... = \<lfloor> w0 , +\<^bsub>w0\<^esub> (\<cdot>\<^bsub>w0\<^esub> (\<rho> (fst y) w0 (snd y)) (\<rho> (fst x) w0 (snd x)))
             (\<cdot>\<^bsub>w0\<^esub> (\<rho> (fst z) w0 (snd z)) (\<rho> (fst x) w0 (snd x))) \<rfloor>"
       apply (subst xw0.target.distributive)
       using w0 x y z by auto
     also have "... = add_rel (mult_rel Y X) (mult_rel Z X)"
       unfolding x_alt y_alt z_alt
-      apply (subst mult_rel_class_of;(subst mult_rel_class_of)?;(subst add_rel_class_of)?
-              ;(subst identity_map[of w0])?;(subst identity_map[of w0])?)
-      using w0 x y z by auto
-    finally show "mult_rel (add_rel Y Z) X = add_rel (mult_rel Y X) (mult_rel Z X)"
-      .
+      using x y z w0 add_rel_class_of mult_rel_class_of subset_of_opens by force
+    finally show "mult_rel (add_rel Y Z) X = add_rel (mult_rel Y X) (mult_rel Z X)" .
   qed
 
   show add_rel_0':"\<And>a. a \<in> carrier_direct_lim \<Longrightarrow> add_rel a \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor> = a"
@@ -3276,10 +3250,10 @@ proof unfold_locales
 
     interpret uw0:ring_homomorphism "\<rho> U w0" "\<FF> U" "+\<^bsub>U\<^esub>" "\<cdot>\<^bsub>U\<^esub>" "\<zero>\<^bsub>U\<^esub>" "\<one>\<^bsub>U\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" 
                     "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-      using is_ring_morphism \<open>U\<in>I\<close> w0 by auto
+      using is_ring_morphism \<open>U\<in>I\<close> w0 subset_of_opens by auto
     interpret xw0:ring_homomorphism "\<rho> (fst x) w0" "\<FF> (fst x)" "+\<^bsub>fst x\<^esub>" "\<cdot>\<^bsub>fst x\<^esub>" "\<zero>\<^bsub>fst x\<^esub>" 
                     "\<one>\<^bsub>fst x\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" "\<cdot>\<^bsub>w0\<^esub>" "\<zero>\<^bsub>w0\<^esub>" "\<one>\<^bsub>w0\<^esub>"
-      using is_ring_morphism \<open>fst x\<in>I\<close> w0 by auto
+      using is_ring_morphism \<open>fst x\<in>I\<close> w0 subset_of_opens by auto
 
     define Y where "Y=\<lfloor>fst x, xw0.source.additive.inverse (snd x)\<rfloor>"
 
@@ -3296,8 +3270,7 @@ proof unfold_locales
       subgoal using x(2) xw0.source.additive.invertible by force
       using x(2) by auto
     also have "... =  \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>"
-      apply (rule class_of_eqI[where W=w0];(subst identity_map)?)
-      using w0 \<open>U \<in> I\<close> uw0.additive.commutes_with_unit by auto
+      by (simp add: assms class_of_0_eq w0(1))
     finally have "add_rel X Y = \<lfloor> U , \<zero>\<^bsub>U\<^esub> \<rfloor>" .
     moreover have "Y \<in> carrier_direct_lim" 
       using Group_Theory.group_def Y_def carrier_direct_lim_def class_of_def 
@@ -3434,7 +3407,7 @@ begin
 definition carrier_stalk:: "('a set \<times> 'b) set set"
   where "carrier_stalk \<equiv> lim \<FF> \<rho> (neighborhoods x)"
 
-lemma neighborhoods_eq[simp]:"neighborhoods x = I"
+lemma neighborhoods_eq:"neighborhoods x = I"
   unfolding index neighborhoods_def by simp
 
 definition add_stalk:: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
@@ -3482,6 +3455,7 @@ lemma universal_property_for_stalk:
 carrier_stalk add_stalk mult_stalk (zero_stalk V) (one_stalk V) A add mult zero one 
 \<and> (\<forall>U\<in>(neighborhoods x). \<forall>s\<in>(\<FF> U). (u \<circ> canonical_fun U) s = \<psi> U s)"
 proof -
+  note neighborhoods_eq [simp]
   have "\<forall>V\<in>I. \<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel 
                       \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> A add mult zero one \<and>
                           (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
@@ -4703,7 +4677,9 @@ zero_sheaf_spec one_sheaf_spec (pr.neighborhoods \<pp>) \<pp> U"
 pri.zero_local_ring_at pri.one_local_ring_at" 
       using pr_ideal.local_ring_at_is_local
       by (simp add: pr_ideal.local_ring_at_is_local spectrum_imp_pr st.is_elem)
-    moreover have "\<exists>f. ring_isomorphism f
+    moreover
+    note st.subset_of_opens [simp del]
+    have "\<exists>f. ring_isomorphism f
 st.carrier_stalk st.add_stalk st.mult_stalk (st.zero_stalk U) (st.one_stalk U)
 (R \<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>) (pr_ideal.add_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.mult_local_ring_at R \<pp> (+) (\<cdot>) \<zero>) (pr_ideal.zero_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>) (pr_ideal.one_local_ring_at R \<pp> (+) (\<cdot>) \<zero> \<one>)"
       by (simp add: km.stalk_at_prime_is_iso_to_local_ring_at_prime st.index that)
