@@ -3317,7 +3317,7 @@ proof
                                       A add mult zero one \<and>
                   (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
   proof -
-    define u where "u \<equiv> \<lambda>X. let x = (SOME x. x \<in> X) in (\<psi> (fst x)) (snd x)"
+    define u where "u \<equiv> \<lambda>X \<in> carrier_direct_lim. let x = (SOME x. x \<in> X) in (\<psi> (fst x)) (snd x)"
       (* The proposition below proves that u is well defined. *)
     have "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)"
       if "X \<in> carrier_direct_lim" "x \<in> X" "y \<in> X" "x \<sim> y" for X x y
@@ -3329,7 +3329,21 @@ proof
                                  A add mult zero one"
     proof
       show "u \<in> carrier_direct_lim \<rightarrow>\<^sub>E A"
-        sorry
+      proof
+        fix X
+        assume X: "X \<in> carrier_direct_lim"
+        then have Xin: "(SOME x. x \<in> X) \<in> X"
+          using rel_carrier_Eps_in(1) by presburger
+        then obtain a b where ab: "(SOME x. x \<in> X) = (a,b)"
+          by (metis surj_pair)
+        then have "a \<in> I"
+          by (metis SigmaD1 X Xin carrier_direct_lim_def equivalence.partition partition.block_closed rel_is_equivalence)
+        have "\<psi> a b \<in> A"
+          using r_hom [OF \<open>a \<in> I\<close>] unfolding ring_homomorphism_def
+          by (metis X ab map.map_closed mem_Sigma_iff rel_carrier_Eps_in(2))
+        with X show "u X \<in> A"
+          by (simp add: u_def Let_def ab)
+      qed (auto simp: u_def)
       have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
 u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
       proof-
