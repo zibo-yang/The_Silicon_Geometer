@@ -3245,7 +3245,7 @@ proof unfold_locales
       using rel_carrier_Eps_in[OF \<open>X \<in> carrier_direct_lim\<close>] 
       unfolding x_def by auto
     
-    obtain w0 where w0:"w0\<in>I" "w0 \<subseteq> U" "w0 \<subseteq> fst x" 
+    obtain w0 where w0: "w0 \<in> I" "w0 \<subseteq> U" "w0 \<subseteq> fst x" 
       using has_lower_bound[OF \<open>U\<in>I\<close> \<open>fst x\<in>I\<close>] by blast
 
     interpret uw0:ring_homomorphism "\<rho> U w0" "\<FF> U" "+\<^bsub>U\<^esub>" "\<cdot>\<^bsub>U\<^esub>" "\<zero>\<^bsub>U\<^esub>" "\<one>\<^bsub>U\<^esub>" "\<FF> w0" "+\<^bsub>w0\<^esub>" 
@@ -3310,7 +3310,7 @@ proof
     using assms by blast
   interpret ring_V: ring carrier_direct_lim add_rel mult_rel "\<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>" "\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>"
     using \<open>V \<in> I\<close> exercise_0_35 by blast
-  interpret ring_\<psi>: ring_homomorphism "\<psi> V" "\<FF> V" "+\<^bsub>V\<^esub>" "\<cdot>\<^bsub>V\<^esub>" "\<zero>\<^bsub>V\<^esub>" "\<one>\<^bsub>V\<^esub>" A add mult zero one
+  interpret ring_\<psi>V: ring_homomorphism "\<psi> V" "\<FF> V" "+\<^bsub>V\<^esub>" "\<cdot>\<^bsub>V\<^esub>" "\<zero>\<^bsub>V\<^esub>" "\<one>\<^bsub>V\<^esub>" A add mult zero one
     using \<open>V \<in> I\<close> r_hom by presburger
 
   show "\<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor>
@@ -3318,7 +3318,7 @@ proof
                   (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
   proof -
     define u where "u \<equiv> \<lambda>X \<in> carrier_direct_lim. let x = (SOME x. x \<in> X) in (\<psi> (fst x)) (snd x)"
-      (* The proposition below proves that u is well defined. *)
+      \<comment>\<open>The proposition below proves that @{term u} is well defined.\<close>
     have "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)"
       if "X \<in> carrier_direct_lim" "x \<in> X" "y \<in> X" "x \<sim> y" for X x y
       apply (cases x)
@@ -3337,24 +3337,35 @@ proof
         then obtain a b where ab: "(SOME x. x \<in> X) = (a,b)"
           by (metis surj_pair)
         then have "a \<in> I"
-          by (metis SigmaD1 X Xin carrier_direct_lim_def equivalence.partition partition.block_closed rel_is_equivalence)
+          using X Xin unfolding carrier_direct_lim_def
+          by (metis SigmaD1 equivalence.partition partition.block_closed rel_is_equivalence)
         have "\<psi> a b \<in> A"
           using r_hom [OF \<open>a \<in> I\<close>] unfolding ring_homomorphism_def
           by (metis X ab map.map_closed mem_Sigma_iff rel_carrier_Eps_in(2))
         with X show "u X \<in> A"
           by (simp add: u_def Let_def ab)
       qed (auto simp: u_def)
-      have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
-u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
-      proof-
-        fix U V s t assume "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V"
-        then obtain W where "W \<in> I" "W \<subseteq> U \<inter> V" 
-          "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
-        then have "u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = \<psi> W (+\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))" sorry
-        moreover have "\<dots> = add (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))"
-          sorry (* since \<psi> W is a homomorphism *)
-        moreover have "\<dots> = add (\<psi> U s) (\<psi> V t)" sorry (* by assm(3) *)
-        ultimately show "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" sorry
+      have "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
+        if "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V" for U V s t
+      proof -
+        obtain W where "W \<in> I" and Wsub: "W \<subseteq> U \<inter> V" 
+          using Int_subset_iff assms has_lower_bound
+          by (metis \<open>U \<in> I\<close> \<open>V \<in> I\<close>)
+        interpret ring_\<psi>W: ring_homomorphism "\<psi> W" "\<FF> W" "+\<^bsub>W\<^esub>" "\<cdot>\<^bsub>W\<^esub>" "\<zero>\<^bsub>W\<^esub>" "\<one>\<^bsub>W\<^esub>" A add mult zero one
+          using \<open>W \<in> I\<close> r_hom by presburger
+        have ueq: "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)"
+          using Wsub \<open>W \<in> I\<close> add_rel_class_of that by force
+        also have "\<dots> = \<psi> W (+\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))"
+          sorry
+        also have "\<dots> = add (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))"
+          using that
+          by (meson \<open>W \<in> I\<close> \<open>W \<subseteq> U \<inter> V\<close> inf.bounded_iff is_ring_morphism map.map_closed ring_\<psi>W.additive.commutes_with_composition ring_homomorphism_def subset_of_opens)
+        also have "\<dots> = add (\<psi> U s) (\<psi> V t)"
+          using \<open>W \<in> I\<close> \<open>W \<subseteq> U \<inter> V\<close> eq that by force
+        also have "... = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
+          sorry
+        finally show "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
+          using ueq by simp  
       qed
       then show "u (add_rel X Y) = add (u X) (u Y)"
         if "X \<in> carrier_direct_lim" and "Y \<in> carrier_direct_lim"
