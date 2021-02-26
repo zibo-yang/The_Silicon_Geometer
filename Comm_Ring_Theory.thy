@@ -4283,6 +4283,7 @@ fix U I V s
     by (smt (verit, ccfv_threshold) sheaf_of_rings.glueing sheaf_spec_is_sheaf)
 qed (use is_prime in auto)
 
+declare st.subset_of_opens [simp del, rule del] \<comment>\<open>because it loops!\<close>
 
 definition key_map:: "'a set set \<Rightarrow> (('a set \<Rightarrow> ('a \<times> 'a) set) \<Rightarrow> ('a \<times> 'a) set)"
   where "key_map U \<equiv> \<lambda>s\<in>(\<O> U). s \<pp>"
@@ -4335,13 +4336,6 @@ next
   qed
 next 
   have "(key_map U) (one_sheaf_spec U) = pi.one_local_ring_at" 
-    (*
-    by (smt (verit, ccfv_threshold) Comm_Ring_Theory.key_map_def assms(1) assms(2)
-        comm_ring.one_sheaf_spec_in_sheaf_spec key_map.key_map_def key_map_axioms one_sheaf_spec_def 
-        pi.one_local_ring_at_def restrict_apply')
-
-    oops
-  *)
     using one_sheaf_spec_def key_map_def pi.one_local_ring_at_def assms one_sheaf_spec_in_sheaf_spec spectrum_def by fastforce 
   moreover have "\<And>x y. \<lbrakk>x \<in> \<O> U; y \<in> \<O> U\<rbrakk> \<Longrightarrow>
            (key_map U) (mult_sheaf_spec U x y) = pi.mult_local_ring_at (key_map U x) (key_map U y)" 
@@ -4401,8 +4395,11 @@ proof -
     by (simp add: st.direct_lim_axioms top.neighborhoods_def)
   interpret eq: equivalence "Sigma (top.neighborhoods \<pp>) sheaf_spec" "{(x, y). dl.rel x y}"
     using dl.rel_is_equivalence by force
+  note dl.subset_of_opens [simp del]
   obtain U s' where seq: "s = eq.Class (U, s')" and U: "U \<in> top.neighborhoods \<pp>" and s': "s' \<in> \<O> U"
-    using assms by (auto simp: st.carrier_stalk_def dl.carrier_direct_lim_def eq.Partition_def) 
+    using assms 
+    unfolding st.carrier_stalk_def dl.carrier_direct_lim_def
+    by (metis SigmaD1 SigmaD2 eq.representant_exists old.prod.exhaust)
   show thesis
   proof
     show "is_zariski_open U"
