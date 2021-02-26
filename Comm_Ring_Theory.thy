@@ -3298,72 +3298,86 @@ subsubsection \<open>Universal property of direct limits\<close>
 
 lemma (in direct_lim) universal_property:
   fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)" and add:: "'c \<Rightarrow> 'c \<Rightarrow> 'c"
-and mult:: "'c \<Rightarrow> 'c \<Rightarrow> 'c" and zero:: "'c" and one:: "'c" 
-  assumes "ring A add mult zero one" and 
-"\<And>U. U \<in> I \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
-and "\<And>U V. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> V \<subseteq> U \<Longrightarrow> (\<And>x. x \<in> (\<FF> U) \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) x = \<psi> U x)"
+    and mult:: "'c \<Rightarrow> 'c \<Rightarrow> 'c" and zero:: "'c" and one:: "'c" 
+  assumes "ring A add mult zero one"
+    and r_hom: "\<And>U. U \<in> I \<Longrightarrow> ring_homomorphism (\<psi> U) (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> A add mult zero one" 
+    and eq: "\<And>U V x. \<lbrakk>U \<in> I; V \<in> I; V \<subseteq> U; x \<in> (\<FF> U)\<rbrakk> \<Longrightarrow> (\<psi> V \<circ> \<rho> U V) x = \<psi> U x"
   shows "\<forall>V\<in>I. \<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor>V,\<zero>\<^bsub>V\<^esub>\<rfloor> \<lfloor>V,\<one>\<^bsub>V\<^esub>\<rfloor> A add mult zero one 
 \<and> (\<forall>U\<in>I. \<forall>x\<in>(\<FF> U). (u \<circ> canonical_fun U) x = \<psi> U x)"
 proof
   fix V assume "V \<in> I" 
-  then show "\<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
+  interpret ring_A: ring A add mult zero one
+    using assms by blast
+  interpret ring_V: ring carrier_direct_lim add_rel mult_rel "\<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>" "\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>"
+    using \<open>V \<in> I\<close> exercise_0_35 by blast
+  interpret ring_\<psi>: ring_homomorphism "\<psi> V" "\<FF> V" "+\<^bsub>V\<^esub>" "\<cdot>\<^bsub>V\<^esub>" "\<zero>\<^bsub>V\<^esub>" "\<one>\<^bsub>V\<^esub>" A add mult zero one
+    using \<open>V \<in> I\<close> r_hom by presburger
+
+  show "\<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor>
                                       A add mult zero one \<and>
                   (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
-  proof-
+  proof -
     define u where "u \<equiv> \<lambda>X. let x = (SOME x. x \<in> X) in (\<psi> (fst x)) (snd x)"
       (* The proposition below proves that u is well defined. *)
-    then have "\<And>X x y. X \<in> carrier_direct_lim \<Longrightarrow> x \<in> X \<Longrightarrow> y \<in> X \<Longrightarrow> 
-(\<psi> (fst x)) (snd x) = (\<psi> (fst y)) (snd y)"
-    proof-
-      fix X x y assume "X \<in> carrier_direct_lim" "x \<in> X" "y \<in> X"
-      then obtain W where "W \<in> I" "W \<subseteq> fst x \<inter> fst y" "\<rho> (fst x) W (snd x) = \<rho> (fst y) W (snd y)"
-        sorry
-      then have "\<psi> (fst x) (snd x) = (\<psi> W \<circ> \<rho> (fst x) W) (snd x)" sorry
-      moreover have "\<dots> = \<psi> W (\<rho> (fst x) W (snd x))" sorry
-      moreover have "\<dots> = \<psi> W (\<rho> (fst y) W (snd y))" sorry
-      ultimately show "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)" using assms(3) sorry
-    qed
+    have "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)"
+      if "X \<in> carrier_direct_lim" "x \<in> X" "y \<in> X" "x \<sim> y" for X x y
+      apply (cases x)
+      using that assms(3)
+      apply (simp add: rel_def)
+      by metis
     moreover have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
                                  A add mult zero one"
-    proof-
-      have "\<And>U. U \<in> I \<Longrightarrow> u (\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor>) = zero"
-      proof-
-        fix U assume "U \<in> I"
-        then have "u (\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor>) = \<psi> U \<zero>\<^bsub>U\<^esub>" sorry
-        moreover have "\<dots> = zero" sorry (* since \<psi> U being a ring morphism maps 0 to 0 *)
-        ultimately show " u (\<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor>) = zero" sorry
-      qed
-      moreover have "\<And>U. U \<in> I \<Longrightarrow> u (\<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>) = one" 
-      proof-
-        fix U assume "U \<in> I"
-        then have "u (\<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>) = \<psi> U \<one>\<^bsub>U\<^esub>" sorry
-        moreover have "\<dots> = one" sorry (* since \<psi> U being a ring morphism maps 0 to 0 *)
-        ultimately show " u (\<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>) = one" sorry
-      qed
-      moreover have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
+    proof
+      show "u \<in> carrier_direct_lim \<rightarrow>\<^sub>E A"
+        sorry
+      have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
 u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
       proof-
         fix U V s t assume "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V"
         then obtain W where "W \<in> I" "W \<subseteq> U \<inter> V" 
-"u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
+          "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
         then have "u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = \<psi> W (+\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))" sorry
-        moreover have "\<dots> = add (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))" sorry (* since \<psi> W is a homomorphism *)
+        moreover have "\<dots> = add (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))"
+          sorry (* since \<psi> W is a homomorphism *)
         moreover have "\<dots> = add (\<psi> U s) (\<psi> V t)" sorry (* by assm(3) *)
         ultimately show "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" sorry
       qed
-      moreover have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
+      then show "u (add_rel X Y) = add (u X) (u Y)"
+        if "X \<in> carrier_direct_lim" and "Y \<in> carrier_direct_lim"
+        for X Y
+        using that
+        by (smt (verit, best) direct_lim.rel_carrier_Eps_in(2) direct_lim.rel_carrier_Eps_in(3) direct_lim_axioms mem_Sigma_iff prod.collapse)
+      have "u (\<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>) = \<psi> V \<zero>\<^bsub>V\<^esub>"
+        apply (simp add: u_def Let_def)
+        sorry
+      moreover have "\<dots> = zero"
+        by blast
+      finally show "u \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> = zero" .
+      have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
 u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" 
       proof-
         fix U V s t assume "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V"
         then obtain W where "W \<in> I" "W \<subseteq> U \<inter> V" 
-"u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
+          "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
         then have "u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = \<psi> W (\<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))" sorry
         moreover have "\<dots> = mult (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))" sorry (* since \<psi> W is a homomorphism *)
         moreover have "\<dots> = mult (\<psi> U s) (\<psi> V t)" sorry (* by assm(3) *)
         ultimately show "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" sorry
       qed
-      ultimately show ?thesis sorry
-    qed
+      then show "u (mult_rel X Y) = mult (u X) (u Y)"
+        if "X \<in> carrier_direct_lim" and "Y \<in> carrier_direct_lim"
+        for X Y
+        using that
+        by (smt (verit, best) SigmaD1 SigmaD2 direct_lim.rel_carrier_Eps_in(2) direct_lim.rel_carrier_Eps_in(3) direct_lim_axioms prod.collapse) 
+
+      show "u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = one" 
+      proof -
+        have "u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = \<psi> V \<one>\<^bsub>V\<^esub>" sorry
+        also have "\<dots> = one"
+          using ring_\<psi>.multiplicative.commutes_with_unit by blast
+        finally show " u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = one" .
+      qed
+    qed 
     moreover have "(\<And>U s. U \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> (u \<circ> canonical_fun U) s = \<psi> U s)"
     proof-
       fix U s assume "U \<in> I" "s \<in> \<FF> U" then show "(u \<circ> canonical_fun U) s = \<psi> U s"
