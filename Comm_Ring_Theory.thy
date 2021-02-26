@@ -3434,6 +3434,9 @@ begin
 definition carrier_stalk:: "('a set \<times> 'b) set set"
   where "carrier_stalk \<equiv> lim \<FF> \<rho> (neighborhoods x)"
 
+lemma neighborhoods_eq[simp]:"neighborhoods x = I"
+  unfolding index neighborhoods_def by simp
+
 definition add_stalk:: "('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set \<Rightarrow> ('a set \<times> 'b) set"
   where "add_stalk \<equiv> add_rel"
 
@@ -3454,9 +3457,8 @@ proof -
   interpret equivalence "Sigma I \<FF>" "{(x, y). x \<sim> y}"
     using rel_is_equivalence by blast
   show ?thesis
-    using assms
-    unfolding carrier_stalk_def neighborhoods_def
-    using carrier_direct_lim_def direct_lim.class_of_def direct_lim_axioms index natural.map_closed by fastforce
+    using assms unfolding carrier_stalk_def neighborhoods_def 
+    by (metis (no_types, lifting) carrier_direct_lim_def class_of_def index mem_Sigma_iff natural.map_closed)
 qed
 
 lemma stalk_is_ring:
@@ -3479,9 +3481,16 @@ lemma universal_property_for_stalk:
   shows "\<forall>V\<in>(neighborhoods x). \<exists>!u. ring_homomorphism u  
 carrier_stalk add_stalk mult_stalk (zero_stalk V) (one_stalk V) A add mult zero one 
 \<and> (\<forall>U\<in>(neighborhoods x). \<forall>s\<in>(\<FF> U). (u \<circ> canonical_fun U) s = \<psi> U s)"
-  using direct_lim.universal_property [OF direct_lim_axioms ringA hom eq] 
-  using add_stalk_def carrier_stalk_def index mult_stalk_def neighborhoods_def one_stalk_def zero_stalk_def 
-  by force
+proof -
+  have "\<forall>V\<in>I. \<exists>!u. ring_homomorphism u carrier_direct_lim add_rel mult_rel 
+                      \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> A add mult zero one \<and>
+                          (\<forall>U\<in>I. \<forall>x\<in>\<FF> U. (u \<circ> canonical_fun U) x = \<psi> U x)"
+    apply (rule universal_property[OF ringA hom])
+    using eq by simp_all
+  then show ?thesis 
+    unfolding carrier_stalk_def add_stalk_def mult_stalk_def zero_stalk_def one_stalk_def
+    by simp
+qed
 
 end (* stalk *)
 
@@ -4314,16 +4323,25 @@ next
     have 1: "(key_map U) (zero_sheaf_spec U) = pi.zero_local_ring_at" 
       using assms
       unfolding key_map_def pi.zero_local_ring_at_def
-      using zero_sheaf_spec_def zero_sheaf_spec_in_sheaf_spec by force
+      by (metis (no_types, lifting) restrict_apply' zero_sheaf_spec_def zero_sheaf_spec_in_sheaf_spec)    
     have 2: "\<And>x y. \<lbrakk>x \<in> \<O> U; y \<in> \<O> U\<rbrakk> \<Longrightarrow>
            (key_map U) (add_sheaf_spec U x y) = pi.add_local_ring_at (key_map U x) (key_map U y)"
-      using add_sheaf_spec_in_sheaf_spec key_map_def assms pi.add_local_ring_at_def add_sheaf_spec_def spectrum_def zariski_open_is_subset by fastforce 
+      using add_sheaf_spec_in_sheaf_spec key_map_def assms pi.add_local_ring_at_def 
+        add_sheaf_spec_def spectrum_def zariski_open_is_subset 
+      by fastforce 
     show "monoid_homomorphism_axioms (local.key_map U) (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) pi.add_local_ring_at pi.zero_local_ring_at"
       unfolding monoid_homomorphism_axioms_def
       by (auto simp: 1 2)
   qed
 next 
   have "(key_map U) (one_sheaf_spec U) = pi.one_local_ring_at" 
+    (*
+    by (smt (verit, ccfv_threshold) Comm_Ring_Theory.key_map_def assms(1) assms(2)
+        comm_ring.one_sheaf_spec_in_sheaf_spec key_map.key_map_def key_map_axioms one_sheaf_spec_def 
+        pi.one_local_ring_at_def restrict_apply')
+
+    oops
+  *)
     using one_sheaf_spec_def key_map_def pi.one_local_ring_at_def assms one_sheaf_spec_in_sheaf_spec spectrum_def by fastforce 
   moreover have "\<And>x y. \<lbrakk>x \<in> \<O> U; y \<in> \<O> U\<rbrakk> \<Longrightarrow>
            (key_map U) (mult_sheaf_spec U x y) = pi.mult_local_ring_at (key_map U x) (key_map U y)" 
