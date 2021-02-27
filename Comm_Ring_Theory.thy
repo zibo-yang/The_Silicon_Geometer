@@ -2554,7 +2554,7 @@ qed (auto simp: rel_def Int_commute)
 interpretation rel:equivalence "(Sigma I \<FF>)" "{(x, y). x \<sim> y}"
   using rel_is_equivalence .
 
-definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor> _ , _ \<rfloor>")
+definition class_of:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set" ("\<lfloor>(_,/ _)\<rfloor>")
   where "\<lfloor>U,s\<rfloor> \<equiv> rel.Class (U, s)"
 
 lemma class_of_eqD:
@@ -2581,19 +2581,8 @@ proof -
     unfolding ring_def abelian_group_def Group_Theory.group_def by (meson monoid.unit_closed)
 qed
 
-(*IS THIS GOOD FOR ANYTHING? --CP*)
-(*
-lemma class_of_add_in:
-  assumes "U \<in> I" "x \<in> \<FF> U" "y \<in> \<FF> U"
-  shows "(+\<^bsub>U\<^esub>) x  y \<in> \<FF> U"
-proof -
-  have "ring (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub>" 
-    using assms subset_of_opens is_ring_from_is_homomorphism by blast
-  then show ?thesis
-    unfolding ring_def abelian_group_def Group_Theory.group_def
-    by (meson assms(2) assms(3) monoid.composition_closed)
-qed
-*)
+lemma rel_Class_iff: "x \<sim> y \<longleftrightarrow> y \<in> Sigma I \<FF> \<and> x \<in> rel.Class y"
+  by blast
 
 lemma class_of_0_eq:
   assumes "U \<in> I" "U' \<in> I"
@@ -3285,9 +3274,30 @@ proof unfold_locales
 qed
 
 
-(* The canonical function from \<FF> U into lim \<FF> for U \<in> I: *)
+(* The canonical function from \<FF> U into lim \<FF> for U \<in> I: 
+A BIT WEIRD THOUGH, IT'S THE SAME AS CLASS_OF -- LCP*)
 definition canonical_fun:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set"
   where "canonical_fun U x = \<lfloor>U, x\<rfloor>"
+
+
+lemma rel_I1:
+  assumes "U \<in> I" "s \<in> \<FF> U" "x \<in> \<lfloor>U, s\<rfloor>"
+  shows "(U, s) \<sim> x"
+proof -
+  have Us: "\<lfloor> U , s \<rfloor> \<in> carrier_direct_lim"
+    using assms unfolding carrier_direct_lim_def class_of_def
+    by (simp add: equivalence.Class_in_Partition rel_is_equivalence)
+  then show ?thesis
+    using rel_Class_iff assms
+    by (metis carrier_direct_lim_def class_of_def mem_Sigma_iff rel.Block_self rel.Class_self rel.block_closed) 
+qed
+
+lemma rel_I2:
+  assumes "U \<in> I" "s \<in> \<FF> U" "x \<in> \<lfloor>U, s\<rfloor>"
+  shows "(U, s) \<sim> (SOME x. x \<in> \<lfloor>U, s\<rfloor>)"
+  using carrier_direct_lim_def class_of_def rel_carrier_Eps_in(2) rel_carrier_Eps_in(3) assms
+  by fastforce
+
 
 end (* direct_lim *)
 
@@ -3295,6 +3305,7 @@ abbreviation "lim \<equiv> direct_lim.carrier_direct_lim"
 
 
 subsubsection \<open>Universal property of direct limits\<close>
+
 
 lemma (in direct_lim) universal_property:
   fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)" and add:: "'c \<Rightarrow> 'c \<Rightarrow> 'c"
@@ -3319,51 +3330,64 @@ proof
   proof -
     define u where "u \<equiv> \<lambda>X \<in> carrier_direct_lim. let x = (SOME x. x \<in> X) in (\<psi> (fst x)) (snd x)"
       \<comment>\<open>The proposition below proves that @{term u} is well defined.\<close>
-    have "\<psi> (fst x) (snd x) = \<psi> (fst y) (snd y)"
-      if "X \<in> carrier_direct_lim" "x \<in> X" "y \<in> X" "x \<sim> y" for X x y
-      apply (cases x)
+    have \<psi>_eqI: "\<psi> x1 x2 = \<psi> y1 y2" if "(x1,x2) \<sim> (y1,y2)" 
+      for x1 x2 y1 y2
       using that assms(3)
-      apply (simp add: rel_def)
-      by metis
-    moreover have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
+      by (smt (verit, best) Int_subset_iff comp_apply fst_conv rel_def snd_conv)
+    have "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> \<lfloor> V , \<one>\<^bsub>V\<^esub> \<rfloor> 
                                  A add mult zero one"
     proof
       show "u \<in> carrier_direct_lim \<rightarrow>\<^sub>E A"
       proof
         fix X
         assume X: "X \<in> carrier_direct_lim"
-        then have Xin: "(SOME x. x \<in> X) \<in> X"
-          using rel_carrier_Eps_in(1) by presburger
-        then obtain a b where ab: "(SOME x. x \<in> X) = (a,b)"
-          by (metis surj_pair)
-        then have "a \<in> I"
-          using X Xin unfolding carrier_direct_lim_def
-          by (metis SigmaD1 equivalence.partition partition.block_closed rel_is_equivalence)
+        then obtain a b where ab: "(SOME x. x \<in> X) = (a,b)" and "a \<in> I"
+           using X rel_carrier_Eps_in(1) unfolding carrier_direct_lim_def
+           by (metis SigmaE equivalence.partition partition.block_closed rel_is_equivalence)
         have "\<psi> a b \<in> A"
           using r_hom [OF \<open>a \<in> I\<close>] unfolding ring_homomorphism_def
           by (metis X ab map.map_closed mem_Sigma_iff rel_carrier_Eps_in(2))
         with X show "u X \<in> A"
           by (simp add: u_def Let_def ab)
       qed (auto simp: u_def)
+
       have "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
         if "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V" for U V s t
       proof -
         obtain W where "W \<in> I" and Wsub: "W \<subseteq> U \<inter> V" 
-          using Int_subset_iff assms has_lower_bound
-          by (metis \<open>U \<in> I\<close> \<open>V \<in> I\<close>)
+          using assms has_lower_bound by (metis \<open>U \<in> I\<close> \<open>V \<in> I\<close>)
         interpret ring_\<psi>W: ring_homomorphism "\<psi> W" "\<FF> W" "+\<^bsub>W\<^esub>" "\<cdot>\<^bsub>W\<^esub>" "\<zero>\<^bsub>W\<^esub>" "\<one>\<^bsub>W\<^esub>" A add mult zero one
           using \<open>W \<in> I\<close> r_hom by presburger
+
+        have Us: "\<lfloor> U , s \<rfloor> \<in> carrier_direct_lim" and Vt: "\<lfloor> V , t \<rfloor> \<in> carrier_direct_lim"
+          using that unfolding carrier_direct_lim_def class_of_def
+          by (simp_all add: equivalence.Class_in_Partition rel_is_equivalence)
+        have UVW: "\<lfloor> W , +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t) \<rfloor> \<in> carrier_direct_lim"
+          by (metis Us Vt Wsub \<open>W \<in> I\<close> add_rel_carrier add_rel_class_of inf.boundedE mem_Sigma_iff that)
+        then have UVWin: "(SOME x. x \<in> \<lfloor>W , +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) \<in> \<lfloor> W , +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t) \<rfloor>"
+          using rel_carrier_Eps_in(1) by presburger
+        then obtain a b where ab: "(SOME x. x \<in> \<lfloor>W , +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = (a,b)"
+          by (metis surj_pair)
         have ueq: "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, +\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)"
           using Wsub \<open>W \<in> I\<close> add_rel_class_of that by force
         also have "\<dots> = \<psi> W (+\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))"
-          sorry
+          using ab UVWin that Wsub \<open>W \<in> I\<close>
+          apply (simp add: u_def UVW)
+          by (metis \<psi>_eqI direct_lim.subset_of_opens direct_lim_axioms is_map_from_is_homomorphism
+              map.map_closed rel_I1 ring_\<psi>W.source.additive.composition_closed)
         also have "\<dots> = add (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))"
           using that
           by (meson \<open>W \<in> I\<close> \<open>W \<subseteq> U \<inter> V\<close> inf.bounded_iff is_ring_morphism map.map_closed ring_\<psi>W.additive.commutes_with_composition ring_homomorphism_def subset_of_opens)
         also have "\<dots> = add (\<psi> U s) (\<psi> V t)"
           using \<open>W \<in> I\<close> \<open>W \<subseteq> U \<inter> V\<close> eq that by force
         also have "... = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
-          sorry
+        proof (rule arg_cong2 [of concl: add])
+          have "(U, s) \<sim> (SOME x. x \<in> \<lfloor> U , s \<rfloor>)" "(V,t) \<sim> (SOME x. x \<in> \<lfloor>V, t\<rfloor>)"
+            using Us Vt rel_I2 rel_carrier_Eps_in(1) that by blast+
+          then show "\<psi> U s = u \<lfloor> U , s \<rfloor>"  "\<psi> V t = u \<lfloor> V , t \<rfloor>"
+            using equivalence.Class_self rel_Class_iff rel_is_equivalence 
+            by (fastforce simp add: u_def Us Vt Let_def intro: \<psi>_eqI)+
+        qed
         finally show "u (add_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = add (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)"
           using ueq by simp  
       qed
@@ -3371,23 +3395,31 @@ proof
         if "X \<in> carrier_direct_lim" and "Y \<in> carrier_direct_lim"
         for X Y
         using that
-        by (smt (verit, best) direct_lim.rel_carrier_Eps_in(2) direct_lim.rel_carrier_Eps_in(3) direct_lim_axioms mem_Sigma_iff prod.collapse)
-      have "u (\<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>) = \<psi> V \<zero>\<^bsub>V\<^esub>"
-        apply (simp add: u_def Let_def)
-        sorry
-      moreover have "\<dots> = zero"
+        by (smt (verit, best) mem_Sigma_iff prod.collapse rel_carrier_Eps_in(2) rel_carrier_Eps_in(3))
+      have "(SOME x. x \<in> \<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>) \<sim> (V, \<zero>\<^bsub>V\<^esub>)"
+        by (metis \<open>V \<in> I\<close> class_of_def mem_Sigma_iff rel_Class_iff rel_carrier_Eps_in(1) ring_V.additive.unit_closed ring_\<psi>V.source.additive.unit_closed)
+      then have "u (\<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>) = \<psi> V \<zero>\<^bsub>V\<^esub>"
+        by (simp add: u_def Let_def \<psi>_eqI)
+      also have "\<dots> = zero"
         by blast
       finally show "u \<lfloor> V , \<zero>\<^bsub>V\<^esub> \<rfloor> = zero" .
-      have "\<And>U V s t. U \<in> I \<Longrightarrow> V \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> t \<in> \<FF> V \<Longrightarrow>
-u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" 
-      proof-
-        fix U V s t assume "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V"
-        then obtain W where "W \<in> I" "W \<subseteq> U \<inter> V" 
-          "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)" sorry
-        then have "u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = \<psi> W (\<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))" sorry
-        moreover have "\<dots> = mult (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))" sorry (* since \<psi> W is a homomorphism *)
-        moreover have "\<dots> = mult (\<psi> U s) (\<psi> V t)" sorry (* by assm(3) *)
-        ultimately show "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" sorry
+      have "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" 
+        if "U \<in> I" "V \<in> I" "s \<in> \<FF> U" "t \<in> \<FF> V" for U V s t
+      proof -
+        obtain W where "W \<in> I" and Wsub: "W \<subseteq> U \<inter> V" 
+          using Int_subset_iff assms has_lower_bound
+          by (metis \<open>U \<in> I\<close> \<open>V \<in> I\<close>)
+        interpret ring_\<psi>W: ring_homomorphism "\<psi> W" "\<FF> W" "+\<^bsub>W\<^esub>" "\<cdot>\<^bsub>W\<^esub>" "\<zero>\<^bsub>W\<^esub>" "\<one>\<^bsub>W\<^esub>" A add mult zero one
+          using \<open>W \<in> I\<close> r_hom by presburger
+        have ueq: "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>)"
+          using Wsub \<open>W \<in> I\<close> mult_rel_class_of that by force
+
+        have "u (\<lfloor>W, \<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t)\<rfloor>) = \<psi> W (\<cdot>\<^bsub>W\<^esub> (\<rho> U W s) (\<rho> V W t))" sorry
+        also have "\<dots> = mult (\<psi> W ((\<rho> U W s))) (\<psi> W ((\<rho> V W t)))"
+          by (meson Wsub \<open>W \<in> I\<close> inf.boundedE is_ring_morphism map.map_closed ring_\<psi>W.multiplicative.commutes_with_composition ring_homomorphism_def subset_of_opens that)
+        also have "\<dots> = mult (\<psi> U s) (\<psi> V t)"
+          using Wsub \<open>W \<in> I\<close> eq that by force
+        finally show "u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\<rfloor>) (u \<lfloor>V,t\<rfloor>)" sorry
       qed
       then show "u (mult_rel X Y) = mult (u X) (u Y)"
         if "X \<in> carrier_direct_lim" and "Y \<in> carrier_direct_lim"
@@ -3395,22 +3427,23 @@ u (mult_rel \<lfloor>U,s\<rfloor> \<lfloor>V,t\<rfloor>) = mult (u \<lfloor>U,s\
         using that
         by (smt (verit, best) SigmaD1 SigmaD2 direct_lim.rel_carrier_Eps_in(2) direct_lim.rel_carrier_Eps_in(3) direct_lim_axioms prod.collapse) 
 
-      show "u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = one" 
-      proof -
-        have "u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = \<psi> V \<one>\<^bsub>V\<^esub>" sorry
-        also have "\<dots> = one"
-          using ring_\<psi>.multiplicative.commutes_with_unit by blast
-        finally show " u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = one" .
-      qed
+      have "(SOME x. x \<in> \<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) \<sim> (V, \<one>\<^bsub>V\<^esub>)"
+        by (metis \<open>V \<in> I\<close> class_of_def mem_Sigma_iff rel_Class_iff rel_carrier_Eps_in(1) ring_V.multiplicative.unit_closed ring_\<psi>V.source.multiplicative.unit_closed)
+      then have "u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = \<psi> V \<one>\<^bsub>V\<^esub>"
+        by (simp add: u_def Let_def \<psi>_eqI)
+      also have "\<dots> = one"
+        using ring_\<psi>V.multiplicative.commutes_with_unit by blast
+      finally show " u (\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>) = one" .
     qed 
-    moreover have "(\<And>U s. U \<in> I \<Longrightarrow> s \<in> \<FF> U \<Longrightarrow> (u \<circ> canonical_fun U) s = \<psi> U s)"
-    proof-
-      fix U s assume "U \<in> I" "s \<in> \<FF> U" then show "(u \<circ> canonical_fun U) s = \<psi> U s"
-      proof-
-        have "u (\<lfloor>U, s\<rfloor>) = \<psi> U s" sorry 
-        then have "(u \<circ> canonical_fun U) s = \<psi> U s" sorry
-        thus "(u \<circ> canonical_fun U) s = \<psi> U s" sorry
-      qed
+    moreover have "(u \<circ> canonical_fun U) s = \<psi> U s" if "U \<in> I" "s \<in> \<FF> U" for U s
+    proof -
+        have Us: "\<lfloor> U , s \<rfloor> \<in> carrier_direct_lim"
+          using that unfolding carrier_direct_lim_def class_of_def
+          by (simp add: equivalence.Class_in_Partition rel_is_equivalence)
+      have "u (\<lfloor>U, s\<rfloor>) = \<psi> U s"
+        by (smt (verit, best) Us \<psi>_eqI direct_lim.rel_carrier_Eps_in(1) direct_lim_axioms prod.collapse rel_I1 restrict_apply that u_def)
+      thus "(u \<circ> canonical_fun U) s = \<psi> U s"
+        by (simp add: canonical_fun_def)
     qed
     moreover have "\<And>v. (\<forall>U\<in>I. \<forall>s\<in>\<FF> U. (v \<circ> canonical_fun U) s = \<psi> U s) \<Longrightarrow> u = v"
     proof-
