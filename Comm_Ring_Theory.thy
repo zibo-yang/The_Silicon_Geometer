@@ -4748,7 +4748,7 @@ lemma induced_morphism_is_well_defined:
          stx.class_of (f\<^sup>\<inverse> X (fst r')) (\<phi>\<^sub>f (fst r') (snd r'))"
 proof-
   obtain W where H:"is_open\<^sub>Y W" "f x \<in> W" "W \<subseteq> fst r \<inter> fst r'" 
-"\<rho>\<^sub>Y (fst r) W (snd r) = \<rho>\<^sub>Y (fst r') W (snd r')" using assms(2,3) sorry
+"\<rho>\<^sub>Y (fst r) W (snd r) = \<rho>\<^sub>Y (fst r') W (snd r')" using assms sorry
   moreover have F1:"is_open\<^sub>X (f\<^sup>\<inverse> X W)" sorry
   moreover have F2:"x \<in> f\<^sup>\<inverse> X W" sorry
   moreover have F3:"f\<^sup>\<inverse> X W \<subseteq> f\<^sup>\<inverse> X (fst r) \<inter> f\<^sup>\<inverse> X (fst r')" sorry
