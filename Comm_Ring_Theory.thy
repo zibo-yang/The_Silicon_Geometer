@@ -4742,6 +4742,23 @@ Since induced morphism is defined on a representative of the class C, one should
 is well defined. 
 *)
 
+lemma induced_morphism_is_well_defined:
+  assumes "C \<in> stfx.carrier_stalk" and "r \<in> C" and "r' \<in> C"
+  shows "stx.class_of (f\<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r)) = 
+         stx.class_of (f\<^sup>\<inverse> X (fst r')) (\<phi>\<^sub>f (fst r') (snd r'))"
+proof-
+  obtain W where H:"is_open\<^sub>Y W" "f x \<in> W" "W \<subseteq> fst r \<inter> fst r'" 
+"\<rho>\<^sub>Y (fst r) W (snd r) = \<rho>\<^sub>Y (fst r') W (snd r')" using assms(2,3) sorry
+  moreover have F1:"is_open\<^sub>X (f\<^sup>\<inverse> X W)" sorry
+  moreover have F2:"x \<in> f\<^sup>\<inverse> X W" sorry
+  moreover have F3:"f\<^sup>\<inverse> X W \<subseteq> f\<^sup>\<inverse> X (fst r) \<inter> f\<^sup>\<inverse> X (fst r')" sorry
+  moreover have "\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r)) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r) (snd r)) = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r) W (snd r))"
+    using is_morphism_of_sheaves sorry
+  moreover have "\<dots> = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r') W (snd r'))" using H(4) sorry
+  moreover have "\<dots> = \<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r')) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r') (snd r'))" using H(4) sorry
+  ultimately show ?thesis using F1 F2 F3 sorry
+qed
+
 lemma ring_homomorphism_induced_morphism:
   assumes "is_open\<^sub>Y V" and "f x \<in> V"
   shows "ring_homomorphism induced_morphism
