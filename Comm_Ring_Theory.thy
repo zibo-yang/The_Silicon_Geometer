@@ -4734,43 +4734,71 @@ interpretation stfx: stalk Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_s
 proof qed (auto simp: is_elem)
 
 definition induced_morphism:: "('c set \<times> 'd) set \<Rightarrow> ('a set \<times> 'b) set" where 
-"induced_morphism C \<equiv> let r = (SOME r. r \<in> C) in stx.class_of (f\<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r))"
-(* 
+"induced_morphism \<equiv> \<lambda>C \<in> stfx.carrier_stalk. let r = (SOME r. r \<in> C) in stx.class_of (f\<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r))"
+
+(*
 One should think of fst r as a V in index, and snd r as a d in \<O>\<^sub>Y V. 
 Since induced morphism is defined on a representative of the class C, one should check that it
 is well defined. 
 *)
 
-lemma 
+lemma ring_homomorphism_induced_morphism:
   assumes "is_open\<^sub>Y V" and "f x \<in> V"
   shows "ring_homomorphism induced_morphism
 stfx.carrier_stalk stfx.add_stalk stfx.mult_stalk (stfx.zero_stalk V) (stfx.one_stalk V)
 stx.carrier_stalk stx.add_stalk stx.mult_stalk (stx.zero_stalk (f\<^sup>\<inverse> X V)) (stx.one_stalk (f\<^sup>\<inverse> X V))"
-  proof intro_locales
-    show "Set_Theory.map induced_morphism stfx.carrier_stalk stx.carrier_stalk"
+proof intro_locales
+  interpret V: ring stfx.carrier_direct_lim stfx.add_rel stfx.mult_rel "stfx.class_of V (zero_str\<^sub>Y V)"
+     "stfx.class_of V (one_str\<^sub>Y V)"
+    using assms stfx.exercise_0_35 by force
+  interpret X: ring stx.carrier_direct_lim stx.add_rel stx.mult_rel "stx.class_of X (zero_str\<^sub>X X)"
+     "stx.class_of X (one_str\<^sub>X X)"
+    using stx.exercise_0_35 stx.is_elem by auto
+  have 0: "stfx.zero_stalk V \<in> stfx.carrier_stalk"
+    using stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.zero_stalk_def by auto
+
+  show "Set_Theory.map induced_morphism stfx.carrier_stalk stx.carrier_stalk"
     sorry
   show "Group_Theory.monoid stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V)"
-    sorry
+    by (simp add: V.additive.monoid_axioms stfx.add_stalk_def stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.zero_stalk_def)
   show "Group_Theory.group_axioms stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V)"
-    sorry
+    using Group_Theory.group_def V.additive.group_axioms stfx.add_stalk_def stfx.carrier_stalk_def stfx.zero_stalk_def target.neighborhoods_def by fastforce
   show "commutative_monoid_axioms stfx.carrier_stalk stfx.add_stalk"
-    sorry
+    using V.additive.commutative_monoid_axioms commutative_monoid_def stfx.add_stalk_def stfx.carrier_stalk_def target.neighborhoods_def by fastforce
   show "Group_Theory.monoid stfx.carrier_stalk stfx.mult_stalk (stfx.one_stalk V)"
-    sorry
+    by (simp add: V.multiplicative.monoid_axioms stfx.carrier_stalk_def stfx.mult_stalk_def stfx.neighborhoods_eq stfx.one_stalk_def)
   show "ring_axioms stfx.carrier_stalk stfx.add_stalk stfx.mult_stalk"
-    sorry
+    by (metis (no_types, lifting) V.additive.unit_closed mem_Collect_eq ring_def stfx.carrier_direct_limE stfx.stalk_is_ring)
   show "Group_Theory.monoid stx.carrier_stalk stx.add_stalk (stx.zero_stalk (f \<^sup>\<inverse> X V))"
-    sorry
+    using abelian_group_def assms commutative_monoid_def is_continuous ring_def stx.is_elem stx.stalk_is_ring by fastforce
   show "Group_Theory.group_axioms stx.carrier_stalk stx.add_stalk (stx.zero_stalk (f \<^sup>\<inverse> X V))"
-    sorry
+    using Group_Theory.group_def abelian_group_def assms is_continuous ring_def stx.is_elem stx.stalk_is_ring by fastforce
   show "commutative_monoid_axioms stx.carrier_stalk stx.add_stalk"
-    sorry
+    using X.additive.commutative_monoid_axioms commutative_monoid_def neighborhoods_def stx.add_stalk_def stx.carrier_stalk_def by fastforce
   show "Group_Theory.monoid stx.carrier_stalk stx.mult_stalk (stx.one_stalk (f \<^sup>\<inverse> X V))"
-    sorry
+    using assms is_continuous ring_def stx.is_elem stx.stalk_is_ring by fastforce
   show "ring_axioms stx.carrier_stalk stx.add_stalk stx.mult_stalk"
-    sorry
+    using X.ring_axioms ring_def stx.add_stalk_def stx.carrier_stalk_def stx.mult_stalk_def stx.neighborhoods_eq by fastforce
   show "monoid_homomorphism_axioms induced_morphism stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V) stx.add_stalk (stx.zero_stalk (f \<^sup>\<inverse> X V))"
-    sorry
+  proof
+    show "induced_morphism (stfx.add_stalk u y) = stx.add_stalk (induced_morphism u) (induced_morphism y)"
+      if "u \<in> stfx.carrier_stalk" and "y \<in> stfx.carrier_stalk"
+      for u y
+       sorry
+  next
+    obtain W b where ab: "(SOME r. r \<in> stfx.zero_stalk V) = (W, b)"
+      by fastforce
+    then have "(W, b) \<in> Sigma {C. is_open\<^sub>Y C \<and> f x \<in> C} \<O>\<^sub>Y"
+      using stfx.rel_carrier_Eps_in(2) stfx.zero_stalk_def by force
+    then have "is_open\<^sub>X (f \<^sup>\<inverse> X W)"
+      by (metis (no_types) SigmaD1 is_continuous stfx.subset_of_opens)
+    moreover have "f x \<in> W"
+      using \<open>(W, b) \<in> Sigma {C. is_open\<^sub>Y C \<and> f x \<in> C} \<O>\<^sub>Y\<close> by fastforce
+    ultimately show "induced_morphism (stfx.zero_stalk V) = stx.zero_stalk (f \<^sup>\<inverse> X V)"
+      unfolding induced_morphism_def
+      using stx.is_elem assms ab
+      sorry
+  qed
   show "monoid_homomorphism_axioms induced_morphism stfx.carrier_stalk stfx.mult_stalk (stfx.one_stalk V) stx.mult_stalk (stx.one_stalk (f \<^sup>\<inverse> X V))"
     sorry
 qed
