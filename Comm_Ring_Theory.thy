@@ -3345,8 +3345,7 @@ proof
   have u_PiE: "u \<in> carrier_direct_lim \<rightarrow>\<^sub>E A"
   proof
     fix X
-    assume "X \<in> carrier_direct_lim"
-    then show "u X \<in> A"
+    assume "X \<in> carrier_direct_lim" then show "u X \<in> A"
       by (metis carrier_direct_limE map.map_closed r_hom ring_homomorphism_def u_eval)
   qed (auto simp: u_def)
   have hom_u: "ring_homomorphism u carrier_direct_lim add_rel mult_rel \<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor> \<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>
@@ -3451,9 +3450,8 @@ definition one_stalk:: "'a set \<Rightarrow> ('a set \<times> 'b) set"
   where "one_stalk V \<equiv> class_of V \<one>\<^bsub>V\<^esub>"
 
 lemma class_of_in_stalk:
-  fixes p:: "'a set \<times> 'b"
-  assumes "fst p \<in> (neighborhoods x)" and "snd p \<in> \<FF>(fst p)"
-  shows "class_of (fst p) (snd p) \<in> carrier_stalk"
+  assumes "A \<in> (neighborhoods x)" and "z \<in> \<FF> A"
+  shows "class_of A z \<in> carrier_stalk"
 proof -
   interpret equivalence "Sigma I \<FF>" "{(x, y). x \<sim> y}"
     using rel_is_equivalence by blast
@@ -4742,21 +4740,71 @@ Since induced morphism is defined on a representative of the class C, one should
 is well defined. 
 *)
 
+lemma phi_in_O:
+  assumes "is_open\<^sub>Y V" "q \<in> \<O>\<^sub>Y V"
+  shows "\<phi>\<^sub>f V q \<in> \<O>\<^sub>X (f \<^sup>\<inverse> X (V))"
+  using is_morphism_of_sheaves morphism_presheaves_of_rings.fam_morphisms_are_maps
+  unfolding morphism_sheaves_of_rings_def
+  by (metis assms local.im_sheaf_def map.map_closed)
+
 lemma induced_morphism_is_well_defined:
-  assumes "C \<in> stfx.carrier_stalk" and "r \<in> C" and "r' \<in> C"
+  assumes "C \<in> stfx.carrier_stalk" and "r \<in> C" and "r' \<in> C" and rel: "stfx.rel r r'"
   shows "stx.class_of (f\<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r)) = 
          stx.class_of (f\<^sup>\<inverse> X (fst r')) (\<phi>\<^sub>f (fst r') (snd r'))"
-proof-
-  obtain W where H:"is_open\<^sub>Y W" "f x \<in> W" "W \<subseteq> fst r \<inter> fst r'" 
-"\<rho>\<^sub>Y (fst r) W (snd r) = \<rho>\<^sub>Y (fst r') W (snd r')" using assms sorry
-  moreover have F1:"is_open\<^sub>X (f\<^sup>\<inverse> X W)" sorry
-  moreover have F2:"x \<in> f\<^sup>\<inverse> X W" sorry
-  moreover have F3:"f\<^sup>\<inverse> X W \<subseteq> f\<^sup>\<inverse> X (fst r) \<inter> f\<^sup>\<inverse> X (fst r')" sorry
-  moreover have "\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r)) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r) (snd r)) = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r) W (snd r))"
-    using is_morphism_of_sheaves sorry
-  moreover have "\<dots> = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r') W (snd r'))" using H(4) sorry
-  moreover have "\<dots> = \<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r')) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r') (snd r'))" using H(4) sorry
-  ultimately show ?thesis using F1 F2 F3 sorry
+proof -
+  interpret Y: morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y
+     d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
+     local.im_sheaf im_sheaf_morphisms b
+     add_im_sheaf mult_im_sheaf zero_im_sheaf
+     one_im_sheaf \<phi>\<^sub>f
+    by (rule is_morphism_of_sheaves)
+
+  obtain W where H: "is_open\<^sub>Y W" "f x \<in> W" "W \<subseteq> fst r \<inter> fst r'"
+    and eq: "\<rho>\<^sub>Y (fst r) W (snd r) = \<rho>\<^sub>Y (fst r') W (snd r')"
+    using rel stfx.rel_def by auto 
+  have F1: "is_open\<^sub>X (f\<^sup>\<inverse> X W)"
+    using H(1) is_continuous by presburger
+  then have F2: "x \<in> f\<^sup>\<inverse> X W"
+    by (simp add: H(2) stx.is_elem)
+  then have F3: "f\<^sup>\<inverse> X W \<subseteq> f\<^sup>\<inverse> X (fst r) \<inter> f\<^sup>\<inverse> X (fst r')"
+    using H(3) by blast
+
+  have ringY: "ring_homomorphism (\<phi>\<^sub>f W) (\<O>\<^sub>Y W)
+           (add_str\<^sub>Y W) (mult_str\<^sub>Y W)
+           (zero_str\<^sub>Y W) (one_str\<^sub>Y W)
+           (local.im_sheaf W) (add_im_sheaf W)
+           (mult_im_sheaf W) (zero_im_sheaf W)
+           (one_im_sheaf W)"
+    using H(1) Y.is_ring_morphism by force
+
+  have DD: "f\<^sup>\<inverse> X W \<in> {U. is_open\<^sub>X U \<and> x \<in> U}" 
+    using F1 F2 by simp
+  have EE: "f\<^sup>\<inverse> X W \<in> neighborhoods x"
+    using DD stx.neighborhoods_eq by presburger 
+  then have "\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r)) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r) (snd r)) = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r) W (snd r))"
+    using Y.is_ring_morphism [OF \<open>is_open\<^sub>Y W\<close>] F3 assms
+    sorry
+  also have "\<dots> = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r') W (snd r'))"
+    by (simp add: eq) 
+  also have "\<dots> = \<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r')) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r') (snd r'))" 
+    using eq assms  DD  
+    sorry
+   finally show ?thesis using F1 F2 F3 assms DD
+     apply-
+     apply (rule stx.class_of_eqI [where W="f\<^sup>\<inverse> X W"])
+     by (auto simp: is_continuous stfx.rel_def phi_in_O)
+qed
+
+lemma induced_morphism_eval:
+  assumes "C \<in> stfx.carrier_stalk" and "r \<in> C" 
+  shows "induced_morphism C = stx.class_of (f\<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r))"
+proof -
+have "(SOME r. r \<in> C) \<in> C"
+  by (metis assms(2) ex_in_conv some_in_eq)
+  then show ?thesis
+    using assms induced_morphism_is_well_defined
+    unfolding induced_morphism_def stfx.carrier_stalk_def
+    by (smt (verit, ccfv_threshold) prod.collapse restrict_apply stfx.carrier_direct_limE stfx.neighborhoods_eq stfx.rel_I1 stfx.rel_carrier_Eps_in(1) stfx.rel_carrier_Eps_in(3) stfx.rel_def)
 qed
 
 lemma ring_homomorphism_induced_morphism:
@@ -4771,11 +4819,38 @@ proof intro_locales
   interpret X: ring stx.carrier_direct_lim stx.add_rel stx.mult_rel "stx.class_of X (zero_str\<^sub>X X)"
      "stx.class_of X (one_str\<^sub>X X)"
     using stx.exercise_0_35 stx.is_elem by auto
+
+  interpret dlX: direct_lim X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X
+    mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X "neighborhoods x"
+    using stx.direct_lim_axioms stx.neighborhoods_eq by force
+  interpret dlY: direct_lim Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y
+    mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y "target.neighborhoods (f x)"
+    using stfx.direct_lim_axioms stfx.neighborhoods_eq by force
+
+  interpret eqX: equivalence "Sigma {U. is_open\<^sub>X U \<and> x \<in> U} \<O>\<^sub>X" "{(x, y). stx.rel x y}"
+    using stx.rel_is_equivalence by blast
+  interpret eqY: equivalence "Sigma {U. is_open\<^sub>Y U \<and> f x \<in> U} \<O>\<^sub>Y" "{(x, y). stfx.rel x y}"
+    using stfx.rel_is_equivalence by blast
+
   have 0: "stfx.zero_stalk V \<in> stfx.carrier_stalk"
     using stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.zero_stalk_def by auto
 
   show "Set_Theory.map induced_morphism stfx.carrier_stalk stx.carrier_stalk"
-    sorry
+  proof
+    show "induced_morphism \<in> stfx.carrier_stalk \<rightarrow>\<^sub>E stx.carrier_stalk"
+    proof
+      fix C
+      assume C: "C \<in> stfx.carrier_stalk"
+      then obtain r where "r \<in> C"
+        by (metis stfx.carrier_stalk_def stfx.rel_carrier_Eps_in(1) target.neighborhoods_def)
+      moreover have "is_open\<^sub>X (f \<^sup>\<inverse> X (fst r))"
+        by (metis (no_types, lifting) C SigmaD1 \<open>r \<in> C\<close> eqY.block_closed is_continuous prod.exhaust_sel stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.subset_of_opens)
+      ultimately have "stx.class_of (f \<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r)) \<in> stx.carrier_stalk"
+        by (smt (verit, best) C IntI dlY.carrier_direct_limE mem_Collect_eq phi_in_O stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.rel_I1 stfx.rel_def stx.class_of_in_stalk stx.is_elem stx.neighborhoods_eq vimage_def)
+      then show "induced_morphism C \<in> stx.carrier_stalk"
+        using C \<open>r \<in> C\<close> induced_morphism_eval by presburger
+    qed (simp add: induced_morphism_def)
+  qed
   show "Group_Theory.monoid stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V)"
     by (simp add: V.additive.monoid_axioms stfx.add_stalk_def stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.zero_stalk_def)
   show "Group_Theory.group_axioms stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V)"
@@ -4798,26 +4873,29 @@ proof intro_locales
     using X.ring_axioms ring_def stx.add_stalk_def stx.carrier_stalk_def stx.mult_stalk_def stx.neighborhoods_eq by fastforce
   show "monoid_homomorphism_axioms induced_morphism stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V) stx.add_stalk (stx.zero_stalk (f \<^sup>\<inverse> X V))"
   proof
+    fix u y
+    assume "u \<in> stfx.carrier_stalk" and "y \<in> stfx.carrier_stalk"
     show "induced_morphism (stfx.add_stalk u y) = stx.add_stalk (induced_morphism u) (induced_morphism y)"
-      if "u \<in> stfx.carrier_stalk" and "y \<in> stfx.carrier_stalk"
-      for u y
-       sorry
+      sorry
   next
-    obtain W b where ab: "(SOME r. r \<in> stfx.zero_stalk V) = (W, b)"
-      by fastforce
-    then have "(W, b) \<in> Sigma {C. is_open\<^sub>Y C \<and> f x \<in> C} \<O>\<^sub>Y"
-      using stfx.rel_carrier_Eps_in(2) stfx.zero_stalk_def by force
-    then have "is_open\<^sub>X (f \<^sup>\<inverse> X W)"
-      by (metis (no_types) SigmaD1 is_continuous stfx.subset_of_opens)
-    moreover have "f x \<in> W"
-      using \<open>(W, b) \<in> Sigma {C. is_open\<^sub>Y C \<and> f x \<in> C} \<O>\<^sub>Y\<close> by fastforce
-    ultimately show "induced_morphism (stfx.zero_stalk V) = stx.zero_stalk (f \<^sup>\<inverse> X V)"
-      unfolding induced_morphism_def
-      using stx.is_elem assms ab
+    obtain r where r: "r \<in> stfx.zero_stalk V" "is_open\<^sub>X  (f \<^sup>\<inverse> X (fst r))"
+      by (metis (no_types, lifting) V.additive.unit_closed dlY.carrier_direct_limE eqY.element_exists is_continuous stfx.carrier_direct_lim_def stfx.neighborhoods_eq stfx.rel_I1 stfx.rel_def stfx.subset_of_opens stfx.zero_stalk_def)
+    then show "induced_morphism (stfx.zero_stalk V) = stx.zero_stalk (f \<^sup>\<inverse> X V)"
+      apply (subst induced_morphism_eval)
+      using "0" apply blast
+       apply assumption
+      apply (simp add:  stx.zero_stalk_def)
       sorry
   qed
   show "monoid_homomorphism_axioms induced_morphism stfx.carrier_stalk stfx.mult_stalk (stfx.one_stalk V) stx.mult_stalk (stx.one_stalk (f \<^sup>\<inverse> X V))"
-    sorry
+  proof
+    show "induced_morphism (stfx.mult_stalk u y) = stx.mult_stalk (induced_morphism u) (induced_morphism y)"
+      if "u \<in> stfx.carrier_stalk" and "y \<in> stfx.carrier_stalk"
+      for u y
+      using that sorry
+    show "induced_morphism (stfx.one_stalk V) = stx.one_stalk (f \<^sup>\<inverse> X V)"
+      sorry
+  qed
 qed
 
 definition is_local:: "'c set \<Rightarrow> (('c set \<times> 'd) set \<Rightarrow> ('a set \<times> 'b) set) \<Rightarrow> bool" where
