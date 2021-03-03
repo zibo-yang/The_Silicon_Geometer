@@ -4781,14 +4781,16 @@ proof -
     using F1 F2 by simp
   have EE: "f\<^sup>\<inverse> X W \<in> neighborhoods x"
     using DD stx.neighborhoods_eq by presburger 
-  then have "\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r)) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r) (snd r)) = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r) W (snd r))"
-    using Y.is_ring_morphism [OF \<open>is_open\<^sub>Y W\<close>] F3 assms
-    sorry
+  then have "(\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r)) (f\<^sup>\<inverse> X W) \<circ> \<phi>\<^sub>f (fst r)) (snd r) = (\<phi>\<^sub>f W \<circ> \<rho>\<^sub>Y (fst r) W) (snd r)"
+    using Y.is_ring_morphism [OF \<open>is_open\<^sub>Y W\<close>] F3
+    by (metis (mono_tags, lifting) H(1) H(3) Y.comm_diagrams im_sheaf_morphisms_def inf.boundedE rel 
+stfx.rel_def stfx.subset_of_opens)
   also have "\<dots> = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r') W (snd r'))"
     by (simp add: eq) 
-  also have "\<dots> = \<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r')) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r') (snd r'))" 
-    using eq assms  DD  
-    sorry
+  also have "\<dots> = (\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r')) (f\<^sup>\<inverse> X W) \<circ> \<phi>\<^sub>f (fst r')) (snd r')" 
+    using eq assms DD
+    by (metis (no_types, lifting) H(1) H(3) Y.comm_diagrams comp_apply im_sheaf_morphisms_def 
+inf.boundedE stfx.rel_def stfx.subset_of_opens) 
    finally show ?thesis using F1 F2 F3 assms DD
      apply-
      apply (rule stx.class_of_eqI [where W="f\<^sup>\<inverse> X W"])
