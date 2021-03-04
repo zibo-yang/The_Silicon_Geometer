@@ -4875,19 +4875,58 @@ proof intro_locales
     using X.ring_axioms ring_def stx.add_stalk_def stx.carrier_stalk_def stx.mult_stalk_def stx.neighborhoods_eq by fastforce
   show "monoid_homomorphism_axioms induced_morphism stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V) stx.add_stalk (stx.zero_stalk (f \<^sup>\<inverse> X V))"
   proof
-    fix u y
-    assume "u \<in> stfx.carrier_stalk" and "y \<in> stfx.carrier_stalk"
-    show "induced_morphism (stfx.add_stalk u y) = stx.add_stalk (induced_morphism u) (induced_morphism y)"
-      sorry
+    fix C C'
+    assume "C \<in> stfx.carrier_stalk" and "C' \<in> stfx.carrier_stalk"
+    show "induced_morphism (stfx.add_stalk C C') = stx.add_stalk (induced_morphism C) (induced_morphism C')"
+    proof-
+      obtain x y where "x \<in> C" "y \<in> C'" sorry 
+(* above we just picked representatives of the equivalence classes *)
+      define a where "a \<equiv> add_str\<^sub>Y (fst x \<inter> fst y) 
+                                    (\<rho>\<^sub>Y (fst x) (fst x \<inter> fst y) (snd x)) 
+                                    (\<rho>\<^sub>Y (fst y) (fst x \<inter> fst y) (snd y))"
+      have "stfx.add_stalk C C' = stfx.class_of (fst x \<inter> fst y) a" sorry 
+(* above use the def of addition for classes in stalk *) 
+      then have "induced_morphism (stfx.add_stalk C C') =
+stx.class_of (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst x \<inter> fst y) a)" sorry
+(* above just use the def. of induced_morphism *)
+      moreover have "stx.add_stalk (induced_morphism C) (induced_morphism C') =
+stx.add_stalk (stx.class_of (f\<^sup>\<inverse> X (fst x)) (\<phi>\<^sub>f (fst x) (snd x))) 
+              (stx.class_of (f\<^sup>\<inverse> X (fst y)) (\<phi>\<^sub>f (fst y) (snd y)))" sorry
+(* above just use the def of induced_morphism *)
+      moreover have "\<dots> = stx.class_of (f\<^sup>\<inverse> X (fst x \<inter> fst y)) 
+                                       (add_str\<^sub>X (f\<^sup>\<inverse> X (fst x \<inter> fst y))
+                                                 (\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst x)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst x) (snd x)))
+                                                 (\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst y)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst y) (snd y)))
+                                        )" sorry
+(* above first use preimage_of_inter to prove (f\<^sup>\<inverse> fst x) \<inter> (f\<^sup>\<inverse> fst y) = f\<^sup>\<inverse> (fst x \<inter> fst y) 
+then just use the def of addition for equivalence classes in stalk *)
+      moreover have "\<phi>\<^sub>f (fst x \<inter> fst y) a = 
+add_str\<^sub>X (f\<^sup>\<inverse> X (fst x \<inter> fst y)) 
+(\<phi>\<^sub>f (fst x \<inter> fst y) (\<rho>\<^sub>Y (fst x) (fst x \<inter> fst y) (snd x))) 
+(\<phi>\<^sub>f (fst x \<inter> fst y) (\<rho>\<^sub>Y (fst y) (fst x \<inter> fst y) (snd y)))" sorry
+(* above just use the fact that (\<phi>\<^sub>f (fst x \<inter> fst y)) is a morphism of rings, hence it's compatible 
+with addition, i.e. it maps + to + *)
+      moreover have "\<dots> = add_str\<^sub>X (f\<^sup>\<inverse> X (fst x \<inter> fst y))
+(\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst x)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst x) (snd x)))
+(\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst y)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst y) (snd y)))" sorry
+(* above just use comm_diagrams *)
+      ultimately show ?thesis sorry
+    qed
   next
     obtain r where r: "r \<in> stfx.zero_stalk V" "is_open\<^sub>X  (f \<^sup>\<inverse> X (fst r))"
       by (metis (no_types, lifting) V.additive.unit_closed dlY.carrier_direct_limE eqY.element_exists is_continuous stfx.carrier_direct_lim_def stfx.neighborhoods_eq stfx.rel_I1 stfx.rel_def stfx.subset_of_opens stfx.zero_stalk_def)
     then show "induced_morphism (stfx.zero_stalk V) = stx.zero_stalk (f \<^sup>\<inverse> X V)"
-      apply (subst induced_morphism_eval)
+      (* apply (subst induced_morphism_eval)
       using "0" apply blast
        apply assumption
-      apply (simp add:  stx.zero_stalk_def)
-      sorry
+      apply (simp add:  stx.zero_stalk_def) *)
+    proof-
+      have "induced_morphism (stfx.zero_stalk V) = stx.class_of (f\<^sup>\<inverse> X V) (\<phi>\<^sub>f V (zero_str\<^sub>Y V))" sorry
+(* above just use the defintion of zero_stalk and the def of induced_morphism *)
+      moreover have "\<dots> = stx.class_of (f\<^sup>\<inverse> X V) (zero_str\<^sub>X (f\<^sup>\<inverse> X V))" sorry
+(* above just use the fact that (\<phi>\<^sub>f V) is a morphism of rings, hence it maps 0 to 0 *)
+      ultimately show ?thesis sorry
+    qed
   qed
   show "monoid_homomorphism_axioms induced_morphism stfx.carrier_stalk stfx.mult_stalk (stfx.one_stalk V) stx.mult_stalk (stx.one_stalk (f \<^sup>\<inverse> X V))"
   proof
