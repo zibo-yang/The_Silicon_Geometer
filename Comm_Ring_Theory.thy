@@ -3281,7 +3281,7 @@ definition canonical_fun:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<time
 
 
 lemma rel_I1:
-  assumes "U \<in> I" "s \<in> \<FF> U" "x \<in> \<lfloor>U, s\<rfloor>"
+  assumes "s \<in> \<FF> U" "x \<in> \<lfloor>U, s\<rfloor>" "U \<in> I"
   shows "(U, s) \<sim> x"
 proof -
   have Us: "\<lfloor>U, s\<rfloor> \<in> carrier_direct_lim"
@@ -3293,7 +3293,7 @@ proof -
 qed
 
 lemma rel_I2:
-  assumes "U \<in> I" "s \<in> \<FF> U" "x \<in> \<lfloor>U, s\<rfloor>"
+  assumes "s \<in> \<FF> U" "x \<in> \<lfloor>U, s\<rfloor>" "U \<in> I"
   shows "(U, s) \<sim> (SOME x. x \<in> \<lfloor>U, s\<rfloor>)"
   using carrier_direct_lim_def class_of_def rel_carrier_Eps_in(2) rel_carrier_Eps_in(3) assms
   by fastforce
@@ -4413,8 +4413,8 @@ proof -
   qed
 qed
 
-lemma same_class_from_restrict: (*I ADDED THE ASSUMPTION \<pp> \<in> V -- LCP*)
-  assumes "is_zariski_open U" "is_zariski_open V" "U \<subseteq> V" "s \<in> \<O> V" "\<pp> \<in> V"
+lemma same_class_from_restrict: (*I ADDED THE ASSUMPTION \<pp> \<in> U -- LCP*)
+  assumes "is_zariski_open U" "is_zariski_open V" "U \<subseteq> V" "s \<in> \<O> V" "\<pp> \<in> U"
   shows "st.class_of V s = st.class_of U (sheaf_spec_morphisms V U s)"
 proof -
   interpret eq: equivalence "Sigma {U. is_zariski_open U \<and> \<pp> \<in> U} sheaf_spec" "{(x, y). st.rel x y}"
@@ -4422,12 +4422,12 @@ proof -
   show ?thesis
     unfolding st.class_of_def 
   proof (rule eq.Class_eq)
-     have "sheaf_spec_morphisms V U s \<in> \<O> U"
+     have \<section>:"sheaf_spec_morphisms V U s \<in> \<O> U"
       using assms map.map_closed pr.is_map_from_is_homomorphism by fastforce
-    moreover have "\<exists>W. is_zariski_open W \<and> \<pp> \<in> W \<and> W \<subseteq> V \<and> W \<subseteq> U \<and> sheaf_spec_morphisms V W s = sheaf_spec_morphisms U W (sheaf_spec_morphisms V U s)"
-      sorry(*NO IDEA WHAT TO DO HERE -- LCP*)
-    ultimately show "((V, s), U, sheaf_spec_morphisms V U s) \<in> {(x, y). st.rel x y}"
-      using assms by (auto simp: st.rel_def)
+    then have "\<exists>W. is_zariski_open W \<and> \<pp> \<in> W \<and> W \<subseteq> V \<and> W \<subseteq> U \<and> sheaf_spec_morphisms V W s = sheaf_spec_morphisms U W (sheaf_spec_morphisms V U s)"
+      using assms(1) assms(3) assms(5) by auto
+    then show "((V, s), U, sheaf_spec_morphisms V U s) \<in> {(x, y). st.rel x y}"
+      using \<section> assms by (auto simp: st.rel_def)
   qed
 qed
 
@@ -4449,9 +4449,9 @@ proof -
     show UV: "is_zariski_open (U \<inter> V)" using topological_space.open_inter 
       by (simp add: \<open>is_zariski_open U\<close> \<open>is_zariski_open V\<close>)
     show "s = st.class_of (U \<inter> V) (sheaf_spec_morphisms U (U \<inter> V) s')"
-      by (simp add: HU UV same_class_from_restrict)
+      using HU UV \<open>\<pp> \<in> U \<inter> V\<close> same_class_from_restrict by blast
     show "t = st.class_of (U \<inter> V) (sheaf_spec_morphisms V (U \<inter> V) t')"
-      by (simp add: HV UV same_class_from_restrict)
+      using HV UV \<open>\<pp> \<in> U \<inter> V\<close> same_class_from_restrict by blast
     show "sheaf_spec_morphisms U (U \<inter> V) s' \<in> \<O> (U \<inter> V)"
       using HU(3) UV map.map_closed sheaf_spec_morphisms_are_maps by fastforce
     show "sheaf_spec_morphisms V (U \<inter> V) t' \<in> \<O> (U \<inter> V)"
@@ -4504,9 +4504,9 @@ next
           show "sheaf_spec_morphisms V U t' \<in> \<O> U"
             by (metis (mono_tags, hide_lams) HU(1,2) HV(4) map.map_closed sheaf_spec_morphisms_are_maps)
           show "s = st.class_of U (sheaf_spec_morphisms V U s')"
-            using same_class_from_restrict by (simp add: HU(1,2) HV(1,3,5,6))
+            by (simp add: HU(1-3) HV same_class_from_restrict)
           show "t = st.class_of U (sheaf_spec_morphisms V U t')"
-            using same_class_from_restrict HV(2,4-6) HU(1,2) by blast
+            by (simp add: HU(1-3) HV same_class_from_restrict)
           show "sheaf_spec_morphisms V U s' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> a f)"
             using HV(3)  sheaf_spec_morphisms_def HU(10) by fastforce
           show "sheaf_spec_morphisms V U t' = (\<lambda>\<qq>\<in>U. quotient_ring.frac (R\<setminus>\<qq>) R (+) (\<cdot>) \<zero> b g)"
@@ -4573,7 +4573,8 @@ next
       show "s = t"
       proof-
         have "s = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s')"
-          by (metis (no_types, lifting) FU(1-3) Int_assoc inf_le1 izo s(1) same_class_from_restrict)
+          using \<open>\<pp> \<in> \<D>(f)\<close> \<open>\<pp> \<in> \<D>(g)\<close> \<open>\<pp> \<in> \<D>(h)\<close>
+          by (smt (verit, ccfv_threshold) FU(1-3) IntE IntI izo s(1) same_class_from_restrict subsetI)
         also have "\<dots> = st.class_of (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')" 
         proof (rule local.st.class_of_eqI)
           show "sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) s') = sheaf_spec_morphisms (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) (sheaf_spec_morphisms U (U \<inter> \<D>(f) \<inter> \<D>(g) \<inter> \<D>(h)) t')"
@@ -4587,7 +4588,8 @@ next
           qed (use izo ssm_s' ssm_t' in auto)
         qed (auto simp: izo ssm_s' ssm_t')
         also have "\<dots> = t"
-          by (metis (no_types, lifting) FU(1,2,4) Int_assoc inf_le1 izo s(2) same_class_from_restrict)
+          using \<open>\<pp> \<in> \<D>(f)\<close> \<open>\<pp> \<in> \<D>(g)\<close> \<open>\<pp> \<in> \<D>(h)\<close>
+          by (smt (verit, ccfv_threshold) FU(1-4) IntE IntI izo s(2) same_class_from_restrict subsetI)
         finally show ?thesis .
       qed
     qed 
@@ -4748,51 +4750,40 @@ lemma phi_in_O:
   by (metis assms local.im_sheaf_def map.map_closed)
 
 lemma induced_morphism_is_well_defined:
-  assumes "C \<in> stfx.carrier_stalk" and "r \<in> C" and "r' \<in> C" and rel: "stfx.rel r r'"
+  assumes "C \<in> stfx.carrier_stalk" and rel: "stfx.rel r r'"
   shows "stx.class_of (f\<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r)) = 
          stx.class_of (f\<^sup>\<inverse> X (fst r')) (\<phi>\<^sub>f (fst r') (snd r'))"
 proof -
-  interpret Y: morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y
-     d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
-     local.im_sheaf im_sheaf_morphisms b
-     add_im_sheaf mult_im_sheaf zero_im_sheaf
-     one_im_sheaf \<phi>\<^sub>f
-    by (rule is_morphism_of_sheaves)
-
-  obtain W where H: "is_open\<^sub>Y W" "f x \<in> W" "W \<subseteq> fst r \<inter> fst r'"
+  obtain W where W: "is_open\<^sub>Y W" "f x \<in> W" "W \<subseteq> fst r" "W \<subseteq> fst r'"
     and eq: "\<rho>\<^sub>Y (fst r) W (snd r) = \<rho>\<^sub>Y (fst r') W (snd r')"
     using rel stfx.rel_def by auto 
-  have F1: "is_open\<^sub>X (f\<^sup>\<inverse> X W)"
-    using H(1) is_continuous by presburger
-  then have F2: "x \<in> f\<^sup>\<inverse> X W"
-    by (simp add: H(2) stx.is_elem)
-  then have F3: "f\<^sup>\<inverse> X W \<subseteq> f\<^sup>\<inverse> X (fst r) \<inter> f\<^sup>\<inverse> X (fst r')"
-    using H(3) by blast
-
-  have ringY: "ring_homomorphism (\<phi>\<^sub>f W) (\<O>\<^sub>Y W)
-           (add_str\<^sub>Y W) (mult_str\<^sub>Y W)
-           (zero_str\<^sub>Y W) (one_str\<^sub>Y W)
-           (local.im_sheaf W) (add_im_sheaf W)
-           (mult_im_sheaf W) (zero_im_sheaf W)
-           (one_im_sheaf W)"
-    using H(1) Y.is_ring_morphism by force
-
-  have DD: "f\<^sup>\<inverse> X W \<in> {U. is_open\<^sub>X U \<and> x \<in> U}" 
-    using F1 F2 by simp
-  have EE: "f\<^sup>\<inverse> X W \<in> neighborhoods x"
-    using DD stx.neighborhoods_eq by presburger 
-  then have "\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r)) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r) (snd r)) = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r) W (snd r))"
-    using Y.is_ring_morphism [OF \<open>is_open\<^sub>Y W\<close>] F3 assms
-    sorry
-  also have "\<dots> = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r') W (snd r'))"
-    by (simp add: eq) 
-  also have "\<dots> = \<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r')) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r') (snd r'))" 
-    using eq assms  DD  
-    sorry
-   finally show ?thesis using F1 F2 F3 assms DD
-     apply-
-     apply (rule stx.class_of_eqI [where W="f\<^sup>\<inverse> X W"])
-     by (auto simp: is_continuous stfx.rel_def phi_in_O)
+  show ?thesis
+  proof (rule stx.class_of_eqI)
+    show "(f \<^sup>\<inverse> X (fst r), \<phi>\<^sub>f (fst r) (snd r)) \<in> Sigma {U. is_open\<^sub>X U \<and> x \<in> U} \<O>\<^sub>X"
+      using is_continuous phi_in_O rel stfx.rel_def stx.is_elem by auto
+    show "(f \<^sup>\<inverse> X (fst r'), \<phi>\<^sub>f (fst r') (snd r')) \<in> Sigma {U. is_open\<^sub>X U \<and> x \<in> U} \<O>\<^sub>X"
+      using is_continuous phi_in_O rel stfx.rel_def stx.is_elem by auto
+    show "f \<^sup>\<inverse> X W \<in> {U. is_open\<^sub>X U \<and> x \<in> U}"
+      using W is_continuous stx.is_elem by auto
+    show "f \<^sup>\<inverse> X W \<subseteq> f \<^sup>\<inverse> X (fst r) \<inter> f \<^sup>\<inverse> X (fst r')"
+      using W by blast
+    interpret Y: morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y
+      d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
+      local.im_sheaf im_sheaf_morphisms b
+      add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf \<phi>\<^sub>f
+      by (rule is_morphism_of_sheaves)
+    have "\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r)) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r) (snd r)) = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r) W (snd r))"
+      using assms Y.comm_diagrams W
+      unfolding im_sheaf_morphisms_def o_def
+      by (metis (no_types, lifting) stfx.rel_def stfx.subset_of_opens)
+    also have "\<dots> = \<phi>\<^sub>f W (\<rho>\<^sub>Y (fst r') W (snd r'))"
+      by (simp add: eq) 
+    also have "\<dots> = \<rho>\<^sub>X (f\<^sup>\<inverse> X (fst r')) (f\<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r') (snd r'))" 
+      using assms Y.comm_diagrams W
+      unfolding im_sheaf_morphisms_def o_def
+      by (metis (no_types, lifting) stfx.rel_def stfx.subset_of_opens)
+    finally show "\<rho>\<^sub>X (f \<^sup>\<inverse> X (fst r)) (f \<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r) (snd r)) = \<rho>\<^sub>X (f \<^sup>\<inverse> X (fst r')) (f \<^sup>\<inverse> X W) (\<phi>\<^sub>f (fst r') (snd r'))" .
+  qed
 qed
 
 lemma induced_morphism_eval:
