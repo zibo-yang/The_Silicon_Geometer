@@ -28,6 +28,11 @@ section \<open>Functions\<close>
 abbreviation preimage:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> 'a set" ("_ \<^sup>\<inverse> _ _" [90,90,1000]90)
   where "f\<^sup>\<inverse> X V \<equiv> (vimage f V) \<inter> X"
 
+lemma preimage_of_inter:
+  fixes f::"'a \<Rightarrow> 'b" and X::"'a set" and V::"'b set" and V'::"'b set"
+  shows "f\<^sup>\<inverse> X (V \<inter> V') = (f\<^sup>\<inverse> X V) \<inter> (f\<^sup>\<inverse> X V')"
+  sorry
+
 definition inverse_map:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> ('b \<Rightarrow> 'a)"
   where "inverse_map f S T \<equiv> restrict (inv_into S f) T"
 
