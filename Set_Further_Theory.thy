@@ -33,6 +33,10 @@ lemma preimage_of_inter:
   shows "f\<^sup>\<inverse> X (V \<inter> V') = (f\<^sup>\<inverse> X V) \<inter> (f\<^sup>\<inverse> X V')"
   by blast
 
+text \<open>Simplification actually replaces the RHS by the LHS\<close>
+lemma preimage_vimage_eq: "(f \<^sup>\<inverse> (f -` U') U) \<inter> X = f\<^sup>\<inverse> X (U \<inter> U')"
+  by simp
+
 definition inverse_map:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> ('b \<Rightarrow> 'a)"
   where "inverse_map f S T \<equiv> restrict (inv_into S f) T"
 
