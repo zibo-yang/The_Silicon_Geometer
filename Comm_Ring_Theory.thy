@@ -3472,6 +3472,17 @@ proof -
     using index neighborhoods_def r.ring_axioms by metis
 qed
 
+
+lemma in_zero_stalk [simp]:
+  assumes "V \<in> I"
+  shows "(V, zero_str V) \<in> zero_stalk V"
+  by (simp add: assms zero_stalk_def class_of_def class_of_0_in equivalence.Class_self rel_is_equivalence)
+  
+lemma in_one_stalk [simp]:
+  assumes "V \<in> I"
+  shows "(V, one_str V) \<in> one_stalk V"
+  by (simp add: assms one_stalk_def class_of_def class_of_1_in equivalence.Class_self rel_is_equivalence)
+  
 lemma universal_property_for_stalk:
   fixes A:: "'c set" and \<psi>:: "'a set \<Rightarrow> ('b \<Rightarrow> 'c)"
   assumes ringA: "ring A add mult zero one" 
@@ -4750,18 +4761,18 @@ lemma phi_in_O:
   by (metis assms local.im_sheaf_def map.map_closed)
 
 lemma induced_morphism_is_well_defined:
-  assumes "C \<in> stfx.carrier_stalk" and rel: "stfx.rel (V,q) (V',q')"
+  assumes "stfx.rel (V,q) (V',q')"
   shows "stx.class_of (f\<^sup>\<inverse> X V) (\<phi>\<^sub>f V q) = stx.class_of (f\<^sup>\<inverse> X V') (\<phi>\<^sub>f V' q')"
 proof -
   obtain W where W: "is_open\<^sub>Y W" "f x \<in> W" "W \<subseteq> V" "W \<subseteq> V'"
     and eq: "\<rho>\<^sub>Y V W q = \<rho>\<^sub>Y V' W q'"
-    using rel stfx.rel_def by auto 
+    using assms stfx.rel_def by auto 
   show ?thesis
   proof (rule stx.class_of_eqI)
     show "(f \<^sup>\<inverse> X V, \<phi>\<^sub>f V q) \<in> Sigma {U. is_open\<^sub>X U \<and> x \<in> U} \<O>\<^sub>X"
-      using is_continuous phi_in_O rel stfx.rel_def stx.is_elem by auto
+      using is_continuous phi_in_O assms stfx.rel_def stx.is_elem by auto
     show "(f \<^sup>\<inverse> X V', \<phi>\<^sub>f V' q') \<in> Sigma {U. is_open\<^sub>X U \<and> x \<in> U} \<O>\<^sub>X"
-      using is_continuous phi_in_O rel stfx.rel_def stx.is_elem by auto
+      using is_continuous phi_in_O assms stfx.rel_def stx.is_elem by auto
     show "f \<^sup>\<inverse> X W \<in> {U. is_open\<^sub>X U \<and> x \<in> U}"
       using W is_continuous stx.is_elem by auto
     show "f \<^sup>\<inverse> X W \<subseteq> f \<^sup>\<inverse> X V \<inter> f \<^sup>\<inverse> X V'"
@@ -4827,6 +4838,12 @@ proof intro_locales
   interpret eqY: equivalence "Sigma {U. is_open\<^sub>Y U \<and> f x \<in> U} \<O>\<^sub>Y" "{(x, y). stfx.rel x y}"
     using stfx.rel_is_equivalence by blast
 
+  interpret Y: morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y
+     d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
+     local.im_sheaf im_sheaf_morphisms b
+      add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf \<phi>\<^sub>f
+    by (rule is_morphism_of_sheaves)
+
   have 0 [iff]: "stfx.zero_stalk V \<in> stfx.carrier_stalk"
     using stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.zero_stalk_def by auto
   have 1 [iff]: "stfx.one_stalk V \<in> stfx.carrier_stalk"
@@ -4871,48 +4888,109 @@ proof intro_locales
   show "monoid_homomorphism_axioms induced_morphism stfx.carrier_stalk stfx.add_stalk (stfx.zero_stalk V) stx.add_stalk (stx.zero_stalk (f \<^sup>\<inverse> X V))"
   proof
     fix C C'
-    assume "C \<in> stfx.carrier_stalk" and "C' \<in> stfx.carrier_stalk"
+    assume CC: "C \<in> stfx.carrier_stalk" "C' \<in> stfx.carrier_stalk"
+
+
     show "induced_morphism (stfx.add_stalk C C') = stx.add_stalk (induced_morphism C) (induced_morphism C')"
-    proof-
-      obtain x y where "x \<in> C" "y \<in> C'" sorry 
-(* above we just picked representatives of the equivalence classes *)
-      define a where "a \<equiv> add_str\<^sub>Y (fst x \<inter> fst y) 
-                                    (\<rho>\<^sub>Y (fst x) (fst x \<inter> fst y) (snd x)) 
-                                    (\<rho>\<^sub>Y (fst y) (fst x \<inter> fst y) (snd y))"
-      have "stfx.add_stalk C C' = stfx.class_of (fst x \<inter> fst y) a" sorry 
-(* above use the def of addition for classes in stalk *) 
-      then have "induced_morphism (stfx.add_stalk C C') =
-stx.class_of (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst x \<inter> fst y) a)" sorry
+    proof -
+      obtain c c' where "c \<in> C" "c' \<in> C'"
+        using \<open>C \<in> stfx.carrier_stalk\<close> \<open>C' \<in> stfx.carrier_stalk\<close> dlY.rel_carrier_Eps_in(1) stfx.carrier_stalk_def by blast 
+      then obtain cc: "is_open\<^sub>Y (fst c \<inter> fst c')" "f x \<in> fst c" "f x \<in> fst c'"
+        by (metis (no_types, lifting) SigmaD1 CC eqY.block_closed mem_Collect_eq prod.exhaust_sel stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq target.open_inter)
+      define a where "a \<equiv> add_str\<^sub>Y (fst c \<inter> fst c') 
+                                    (\<rho>\<^sub>Y (fst c) (fst c \<inter> fst c') (snd c)) 
+                                    (\<rho>\<^sub>Y (fst c') (fst c \<inter> fst c') (snd c'))"
+      interpret cc_rh: ring_homomorphism "\<phi>\<^sub>f (fst c \<inter> fst c')" "\<O>\<^sub>Y (fst c \<inter> fst c')"
+        "add_str\<^sub>Y (fst c \<inter> fst c')" "mult_str\<^sub>Y (fst c \<inter> fst c')" "zero_str\<^sub>Y (fst c \<inter> fst c')"
+        "one_str\<^sub>Y (fst c \<inter> fst c')" "local.im_sheaf (fst c \<inter> fst c')"
+        "add_im_sheaf (fst c \<inter> fst c')" "mult_im_sheaf (fst c \<inter> fst c')"
+        "zero_im_sheaf (fst c \<inter> fst c')" "one_im_sheaf (fst c \<inter> fst c')"
+        using cc is_morphism_of_sheaves morphism_presheaves_of_rings.is_ring_morphism morphism_sheaves_of_rings_def
+        by metis
+
+      have C: "(stfx.class_of (fst c \<inter> fst c') a) \<in> stfx.carrier_stalk"
+        apply (simp add: stfx.carrier_stalk_def a_def)
+        by (smt (verit, best) CC IntI Int_commute \<open>c \<in> C\<close> \<open>c' \<in> C'\<close> cc dlY.add_rel_carrier dlY.class_of_def eqY.Block_self eqY.block_closed inf.cobounded1 mem_Collect_eq prod.collapse stfx.add_rel_class_of stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq)
+      have \<section>: "stfx.add_stalk C C' = stfx.class_of (fst c \<inter> fst c') a"
+        apply (simp add: a_def)
+        apply (cases c)
+        apply (cases c')
+        apply (simp add: stfx.add_stalk_def)
+        by (smt (z3) CC IntI Int_commute \<open>c \<in> C\<close> \<open>c' \<in> C'\<close> cc dlY.class_of_def  
+            eqY.Block_self eqY.block_closed fst_conv inf.cobounded1 mem_Collect_eq stfx.add_rel_class_of stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq)
+          (* above use the def of addition for classes in stalk *) 
+      have xx: "stfx.add_stalk C C' \<in> stfx.carrier_stalk"
+        using "\<section>" C by presburger
+
+
+      have uuu: "(f \<^sup>\<inverse> (f -` fst c') (fst c)) \<inter> X = f\<^sup>\<inverse> X (fst c \<inter> fst c')"
+        by simp
+      have ain: "a \<in> \<O>\<^sub>Y (fst c \<inter> fst c')"
+        apply (simp add: a_def)
+        apply (cases c)
+        apply (cases c')
+        apply (rule cc_rh.source.additive.composition_closed)
+        sorry
+      obtain V q where Vq: "(V,q) \<in> stfx.add_stalk C C'"
+           and eq: "induced_morphism (stfx.add_stalk C C') = stx.class_of (f \<^sup>\<inverse> X V) (\<phi>\<^sub>f V q)"
+        using induced_morphism_eq "\<section>" C by auto
+      have 1: "is_open\<^sub>X (f \<^sup>\<inverse> X V)"
+        using "\<section>" C \<open>(V, q) \<in> stfx.add_stalk C C'\<close> eqY.block_closed is_continuous stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq by force
+      have 2: "f x \<in> V"
+        using "\<section>" C \<open>(V, q) \<in> stfx.add_stalk C C'\<close> eqY.block_closed stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq by auto
+      have 3: "is_open\<^sub>X (f\<^sup>\<inverse> X (fst c \<inter> fst c'))"
+        using cc(1) is_continuous by presburger
+      have 4: "\<phi>\<^sub>f V q \<in> \<O>\<^sub>X (f \<^sup>\<inverse> X V)"
+         apply (rule phi_in_O)
+        apply (smt (z3) SigmaD1 Vq dlY.subset_of_opens eqY.block_closed stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq xx)
+        using Vq eqY.block_closed stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq xx by auto
+      have 5: "\<phi>\<^sub>f (fst c \<inter> fst c') a \<in> \<O>\<^sub>X (f\<^sup>\<inverse> X (fst c \<inter> fst c'))"
+        using ain cc(1) phi_in_O by presburger
+      obtain W where W: "is_open\<^sub>X W" "x \<in> W" "W \<subseteq> f \<^sup>\<inverse> X (fst c)" "W \<subseteq> f \<^sup>\<inverse> X (fst c')"
+         "\<rho>\<^sub>X (f \<^sup>\<inverse> X V) W (\<phi>\<^sub>f V q) =
+            \<rho>\<^sub>X (f\<^sup>\<inverse> X (fst c \<inter> fst c')) W (\<phi>\<^sub>f (fst c \<inter> fst c') a)"
+        sorry
+      have "induced_morphism (stfx.add_stalk C C') = stx.class_of (f\<^sup>\<inverse> X (fst c \<inter> fst c')) (\<phi>\<^sub>f (fst c \<inter> fst c') a)"
+        using cc 1 2 3 4 5
+        apply (simp add: eq)
+
+        unfolding stx.class_of_def
+        apply (rule eqX.Class_eq)
+        apply (simp add: stx.rel_def stx.is_elem)
+        using W
+        apply (rule_tac x="W" in exI)
+        sorry
+      also have "\<dots> = stx.class_of (f\<^sup>\<inverse> X (fst c \<inter> fst c')) (\<phi>\<^sub>f (fst c \<inter> fst c') a)" 
+        unfolding stx.class_of_def
+        apply (rule eqX.Class_eq)
+        sorry
 (* above just use the def. of induced_morphism *)
       moreover have "stx.add_stalk (induced_morphism C) (induced_morphism C') =
-stx.add_stalk (stx.class_of (f\<^sup>\<inverse> X (fst x)) (\<phi>\<^sub>f (fst x) (snd x))) 
-              (stx.class_of (f\<^sup>\<inverse> X (fst y)) (\<phi>\<^sub>f (fst y) (snd y)))" sorry
+stx.add_stalk (stx.class_of (f\<^sup>\<inverse> X (fst c)) (\<phi>\<^sub>f (fst c) (snd c))) 
+              (stx.class_of (f\<^sup>\<inverse> X (fst c')) (\<phi>\<^sub>f (fst c') (snd c')))" sorry
 (* above just use the def of induced_morphism *)
-      moreover have "\<dots> = stx.class_of (f\<^sup>\<inverse> X (fst x \<inter> fst y)) 
-                                       (add_str\<^sub>X (f\<^sup>\<inverse> X (fst x \<inter> fst y))
-                                                 (\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst x)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst x) (snd x)))
-                                                 (\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst y)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst y) (snd y)))
+      moreover have "\<dots> = stx.class_of (f\<^sup>\<inverse> X (fst c \<inter> fst c')) 
+                                       (add_str\<^sub>X (f\<^sup>\<inverse> X (fst c \<inter> fst c'))
+                                                 (\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst c)) (f\<^sup>\<inverse> X (fst c \<inter> fst c')) (\<phi>\<^sub>f (fst c) (snd c)))
+                                                 (\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst c')) (f\<^sup>\<inverse> X (fst c \<inter> fst c')) (\<phi>\<^sub>f (fst c') (snd c')))
                                         )" sorry
-(* above first use preimage_of_inter to prove (f\<^sup>\<inverse> fst x) \<inter> (f\<^sup>\<inverse> fst y) = f\<^sup>\<inverse> (fst x \<inter> fst y) 
+(* above first use preimage_of_inter to prove (f\<^sup>\<inverse> fst x) \<inter> (f\<^sup>\<inverse> fst c') = f\<^sup>\<inverse> (fst x \<inter> fst c') 
 then just use the def of addition for equivalence classes in stalk *)
-      moreover have "\<phi>\<^sub>f (fst x \<inter> fst y) a = 
-add_str\<^sub>X (f\<^sup>\<inverse> X (fst x \<inter> fst y)) 
-(\<phi>\<^sub>f (fst x \<inter> fst y) (\<rho>\<^sub>Y (fst x) (fst x \<inter> fst y) (snd x))) 
-(\<phi>\<^sub>f (fst x \<inter> fst y) (\<rho>\<^sub>Y (fst y) (fst x \<inter> fst y) (snd y)))" sorry
-(* above just use the fact that (\<phi>\<^sub>f (fst x \<inter> fst y)) is a morphism of rings, hence it's compatible 
+      moreover have "\<phi>\<^sub>f (fst c \<inter> fst c') a = 
+add_str\<^sub>X (f\<^sup>\<inverse> X (fst c \<inter> fst c')) 
+(\<phi>\<^sub>f (fst c \<inter> fst c') (\<rho>\<^sub>Y (fst c) (fst c \<inter> fst c') (snd c))) 
+(\<phi>\<^sub>f (fst c \<inter> fst c') (\<rho>\<^sub>Y (fst c') (fst c \<inter> fst c') (snd c')))" sorry
+(* above just use the fact that (\<phi>\<^sub>f (fst x \<inter> fst c')) is a morphism of rings, hence it's compatible 
 with addition, i.e. it maps + to + *)
-      moreover have "\<dots> = add_str\<^sub>X (f\<^sup>\<inverse> X (fst x \<inter> fst y))
-(\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst x)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst x) (snd x)))
-(\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst y)) (f\<^sup>\<inverse> X (fst x \<inter> fst y)) (\<phi>\<^sub>f (fst y) (snd y)))" sorry
+      moreover have "\<dots> = add_str\<^sub>X (f\<^sup>\<inverse> X (fst c \<inter> fst c'))
+(\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst c)) (f\<^sup>\<inverse> X (fst c \<inter> fst c')) (\<phi>\<^sub>f (fst c) (snd c)))
+(\<rho>\<^sub>X (f\<^sup>\<inverse> X (fst c')) (f\<^sup>\<inverse> X (fst c \<inter> fst c')) (\<phi>\<^sub>f (fst c') (snd c')))" sorry
 (* above just use comm_diagrams *)
       ultimately show ?thesis sorry
     qed
   next
     have "induced_morphism (stfx.zero_stalk V) = stx.class_of (f\<^sup>\<inverse> X V) (\<phi>\<^sub>f V (zero_str\<^sub>Y V))"
-      using 0 assms
-      apply (simp add: stfx.zero_stalk_def)
-      by (metis (mono_tags, lifting) induced_morphism_eq induced_morphism_is_well_defined mem_Collect_eq 
-          stfx.class_of_0_in stfx.rel_I1)
+      using induced_morphism_eval [OF 0, where r = "(V, zero_str\<^sub>Y V)"] assms by force
     also have "\<dots> = stx.zero_stalk (f \<^sup>\<inverse> X V)"
       by (simp add: phif.additive.commutes_with_unit zero_im_sheaf_def stx.zero_stalk_def)
     finally show "induced_morphism (stfx.zero_stalk V) = stx.zero_stalk (f \<^sup>\<inverse> X V)" .
@@ -4925,10 +5003,7 @@ with addition, i.e. it maps + to + *)
       using that sorry
   next
     have "induced_morphism (stfx.one_stalk V) = stx.class_of (f\<^sup>\<inverse> X V) (\<phi>\<^sub>f V (one_str\<^sub>Y V))"
-      using 1 assms
-      apply (simp add: stfx.one_stalk_def)
-      by (metis (mono_tags, lifting) induced_morphism_eq induced_morphism_is_well_defined mem_Collect_eq 
-          stfx.class_of_1_in stfx.rel_I1)
+      using induced_morphism_eval [OF 1, where r = "(V, one_str\<^sub>Y V)"] assms by force
     also have "\<dots> = stx.one_stalk (f \<^sup>\<inverse> X V)"
       by (simp add: phif.multiplicative.commutes_with_unit one_im_sheaf_def stx.one_stalk_def)
     finally show "induced_morphism (stfx.one_stalk V) = stx.one_stalk (f \<^sup>\<inverse> X V)" .

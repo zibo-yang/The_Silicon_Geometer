@@ -31,7 +31,7 @@ abbreviation preimage:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow
 lemma preimage_of_inter:
   fixes f::"'a \<Rightarrow> 'b" and X::"'a set" and V::"'b set" and V'::"'b set"
   shows "f\<^sup>\<inverse> X (V \<inter> V') = (f\<^sup>\<inverse> X V) \<inter> (f\<^sup>\<inverse> X V')"
-  sorry
+  by blast
 
 definition inverse_map:: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'b set \<Rightarrow> ('b \<Rightarrow> 'a)"
   where "inverse_map f S T \<equiv> restrict (inv_into S f) T"
