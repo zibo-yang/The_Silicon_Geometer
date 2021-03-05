@@ -3538,7 +3538,29 @@ proof
   fix x y
   assume "x \<in> R" "y \<in> R" and dot: "x \<cdot> y \<in> I"
   then show "x \<in> I \<or> y \<in> I"
-    sorry
+  proof-
+    have "False" if "x \<notin> I" "y \<notin> I"
+    proof-
+      define J where "J \<equiv> {a + r\<cdot>x |a r. a \<in> I \<and> r \<in> R}"
+      have "ideal J R (+) (\<cdot>) \<zero> \<one>" sorry
+      moreover have "I \<subset> J" sorry (* since x \<notin> I by assumption *)
+      hence "J = R" sorry (* by maximality of I, i.e. use the previous (nameless) lemma *)
+      hence "\<one> \<in> J" sorry
+      then obtain a r where "a \<in> I" "r \<in> R" "\<one> = a + r\<cdot>x" sorry
+      then have "y = \<one> \<cdot> y" sorry 
+      moreover have "\<dots> = (a + r\<cdot>x) \<cdot> y" sorry
+      moreover have "\<dots> = a \<cdot> y + r\<cdot>x\<cdot>y" sorry
+      moreover have "a \<cdot> y + r\<cdot>x\<cdot>y \<in> I"
+      proof- 
+        have "a \<cdot> y \<in> I" sorry (* since a \<in> I and y \<in> R and I is an ideal *) 
+        moreover have "r\<cdot>x\<cdot>y \<in> I" sorry (* since x\<cdot>y \<in> I by assumption and r \<in> R and I is an ideal *)
+        thus ?thesis sorry
+      qed
+      ultimately have "y \<in> I" sorry
+      thus ?thesis using that(2) by auto
+    qed
+    thus ?thesis by auto 
+  qed
 qed
 
 end (* locale max_ideal *)
