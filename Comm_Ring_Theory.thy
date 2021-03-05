@@ -4807,39 +4807,28 @@ lemma induced_morphism_eval:
           prod.exhaust_sel stfx.carrier_direct_limE stfx.carrier_stalk_def stfx.neighborhoods_eq stfx.rel_I1)
 
 
-lemma ring_homomorphism_induced_morphism:
+proposition ring_homomorphism_induced_morphism:
   assumes "is_open\<^sub>Y V" and "f x \<in> V"
   shows "ring_homomorphism induced_morphism
 stfx.carrier_stalk stfx.add_stalk stfx.mult_stalk (stfx.zero_stalk V) (stfx.one_stalk V)
 stx.carrier_stalk stx.add_stalk stx.mult_stalk (stx.zero_stalk (f\<^sup>\<inverse> X V)) (stx.one_stalk (f\<^sup>\<inverse> X V))"
 proof intro_locales
   interpret phif: ring_homomorphism "\<phi>\<^sub>f V" "\<O>\<^sub>Y V"
-    "add_str\<^sub>Y V" "mult_str\<^sub>Y V" "zero_str\<^sub>Y V"
-    "one_str\<^sub>Y V" "local.im_sheaf V"
-    "add_im_sheaf V" "mult_im_sheaf V"
-    "zero_im_sheaf V" "one_im_sheaf V"
+    "add_str\<^sub>Y V" "mult_str\<^sub>Y V" "zero_str\<^sub>Y V" "one_str\<^sub>Y V" "local.im_sheaf V"
+    "add_im_sheaf V" "mult_im_sheaf V" "zero_im_sheaf V" "one_im_sheaf V"
     by (metis assms(1) is_morphism_of_sheaves morphism_presheaves_of_rings.is_ring_morphism morphism_sheaves_of_rings_def)
-
   interpret V: ring stfx.carrier_direct_lim stfx.add_rel stfx.mult_rel "stfx.class_of V (zero_str\<^sub>Y V)"
     "stfx.class_of V (one_str\<^sub>Y V)"
     using assms stfx.exercise_0_35 by force
   interpret X: ring stx.carrier_direct_lim stx.add_rel stx.mult_rel "stx.class_of X (zero_str\<^sub>X X)"
      "stx.class_of X (one_str\<^sub>X X)"
     using stx.exercise_0_35 stx.is_elem by auto
-
-  interpret dlX: direct_lim X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X
-    mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X "neighborhoods x"
-    using stx.direct_lim_axioms stx.neighborhoods_eq by force
   interpret dlY: direct_lim Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y
     mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y "target.neighborhoods (f x)"
     using stfx.direct_lim_axioms stfx.neighborhoods_eq by force
-
-  interpret eqX: equivalence "Sigma {U. is_open\<^sub>X U \<and> x \<in> U} \<O>\<^sub>X" "{(x, y). stx.rel x y}"
-    using stx.rel_is_equivalence by blast
   interpret eqY: equivalence "Sigma {U. is_open\<^sub>Y U \<and> f x \<in> U} \<O>\<^sub>Y" "{(x, y). stfx.rel x y}"
     using stfx.rel_is_equivalence by blast
-
-  interpret Y: morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y
+  interpret morphY: morphism_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y
      d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y
      local.im_sheaf im_sheaf_morphisms b
       add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf \<phi>\<^sub>f
@@ -4963,7 +4952,7 @@ proof intro_locales
                             (\<rho>\<^sub>X (f\<^sup>\<inverse> X (U)) (f\<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f (U) (q)))
                             (\<rho>\<^sub>X (f\<^sup>\<inverse> X U') (f\<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f (U') (q')))"
         using assms  
-        apply (simp add: stfx.rel_def Y.comm_diagrams [symmetric, unfolded o_def])
+        apply (simp add: stfx.rel_def morphY.comm_diagrams [symmetric, unfolded o_def])
         using im_sheaf_morphisms_def by fastforce
       ultimately show ?thesis
         by simp
@@ -4987,17 +4976,16 @@ proof intro_locales
         by (metis (no_types, lifting) CC induced_morphism_eq)
       then obtain cc [simp]: "is_open\<^sub>Y (U \<inter> U')" "f x \<in> U" "f x \<in> U'"
         using CC eqY.block_closed stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq target.open_inter by force
-      obtain opeU [simp]: "is_open\<^sub>Y U" "is_open\<^sub>Y U'"
-        by (metis (no_types, lifting) CC SigmaD1 Uq dlY.subset_of_opens eqY.block_closed stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq)
-      obtain [simp]: "q \<in> \<O>\<^sub>Y U" "q' \<in> \<O>\<^sub>Y U'"
-        using CC Uq stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq by auto
-
-      interpret cc_rh: ring_homomorphism "\<phi>\<^sub>f (U \<inter> U')" "\<O>\<^sub>Y (U \<inter> U')"
+      then interpret cc_rh: ring_homomorphism "\<phi>\<^sub>f (U \<inter> U')" "\<O>\<^sub>Y (U \<inter> U')"
         "add_str\<^sub>Y (U \<inter> U')" "mult_str\<^sub>Y (U \<inter> U')" "zero_str\<^sub>Y (U \<inter> U')"
         "one_str\<^sub>Y (U \<inter> U')" "local.im_sheaf (U \<inter> U')"
         "add_im_sheaf (U \<inter> U')" "mult_im_sheaf (U \<inter> U')"
         "zero_im_sheaf (U \<inter> U')" "one_im_sheaf (U \<inter> U')"
-        by (metis cc is_morphism_of_sheaves morphism_presheaves_of_rings.is_ring_morphism morphism_sheaves_of_rings_def)        
+        by (metis is_morphism_of_sheaves morphism_presheaves_of_rings.is_ring_morphism morphism_sheaves_of_rings_def)        
+      obtain opeU [simp]: "is_open\<^sub>Y U" "is_open\<^sub>Y U'"
+        by (metis (no_types, lifting) CC SigmaD1 Uq dlY.subset_of_opens eqY.block_closed stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq)
+      obtain [simp]: "q \<in> \<O>\<^sub>Y U" "q' \<in> \<O>\<^sub>Y U'"
+        using CC Uq stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq by auto
 
       define mult where "mult \<equiv> mult_str\<^sub>Y (U \<inter> U') (\<rho>\<^sub>Y U (U \<inter> U') q) (\<rho>\<^sub>Y U' (U \<inter> U') q')"
       have mult_stalk_eq_class: "stfx.mult_stalk C C' = stfx.class_of (U \<inter> U') mult"
@@ -5052,7 +5040,7 @@ proof intro_locales
                             (\<rho>\<^sub>X (f \<^sup>\<inverse> X U) (f \<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f U q))
                             (\<rho>\<^sub>X (f \<^sup>\<inverse> X U') (f \<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f U' q'))"
         using assms im_sheaf_morphisms_def
-        by (fastforce simp: stfx.rel_def Y.comm_diagrams [symmetric, unfolded o_def])
+        by (fastforce simp: stfx.rel_def morphY.comm_diagrams [symmetric, unfolded o_def])
       ultimately show ?thesis
         by simp
     qed
@@ -5067,10 +5055,10 @@ qed
 
 
 definition is_local:: "'c set \<Rightarrow> (('c set \<times> 'd) set \<Rightarrow> ('a set \<times> 'b) set) \<Rightarrow> bool" where
-"is_local V \<phi> \<equiv> 
-local_ring_morphism \<phi> 
-stfx.carrier_stalk stfx.add_stalk stfx.mult_stalk (stfx.zero_stalk V) (stfx.one_stalk V)
-stx.carrier_stalk stx.add_stalk stx.mult_stalk (stx.zero_stalk (f\<^sup>\<inverse> X V)) (stx.one_stalk (f\<^sup>\<inverse> X V))"
+  "is_local V \<phi> \<equiv> 
+      local_ring_morphism \<phi> 
+      stfx.carrier_stalk stfx.add_stalk stfx.mult_stalk (stfx.zero_stalk V) (stfx.one_stalk V)
+      stx.carrier_stalk stx.add_stalk stx.mult_stalk (stx.zero_stalk (f\<^sup>\<inverse> X V)) (stx.one_stalk (f\<^sup>\<inverse> X V))"
 
 end (* ind_mor_btw_stalks *)
 
