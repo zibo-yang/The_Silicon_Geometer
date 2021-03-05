@@ -4902,9 +4902,7 @@ proof intro_locales
       obtain [simp]: "q \<in> \<O>\<^sub>Y U" "q' \<in> \<O>\<^sub>Y U'"
         using CC Uq stfx.carrier_direct_lim_def stfx.carrier_stalk_def stfx.neighborhoods_eq by auto
 
-      define a where "a \<equiv> add_str\<^sub>Y (U \<inter> U')
-                                    (\<rho>\<^sub>Y (U) (U \<inter> U') (q)) 
-                                    (\<rho>\<^sub>Y (U') (U \<inter> U') (q'))"
+      define a where "a \<equiv> add_str\<^sub>Y (U \<inter> U') (\<rho>\<^sub>Y U (U \<inter> U') q) (\<rho>\<^sub>Y U' (U \<inter> U') q')"
       interpret cc_rh: ring_homomorphism "\<phi>\<^sub>f (U \<inter> U')" "\<O>\<^sub>Y (U \<inter> U')"
         "add_str\<^sub>Y (U \<inter> U')" "mult_str\<^sub>Y (U \<inter> U')" "zero_str\<^sub>Y (U \<inter> U')"
         "one_str\<^sub>Y (U \<inter> U')" "local.im_sheaf (U \<inter> U')"
@@ -4943,35 +4941,26 @@ proof intro_locales
         using cc(1) is_continuous by presburger
       have 4: "\<phi>\<^sub>f V r \<in> \<O>\<^sub>X (f \<^sup>\<inverse> X V)"
         using \<open>is_open\<^sub>Y V\<close> \<open>r \<in> \<O>\<^sub>Y V\<close> phi_in_O by presburger
-
       have 5: "\<phi>\<^sub>f (U \<inter> U') a \<in> \<O>\<^sub>X (f\<^sup>\<inverse> X (U \<inter> U'))"
         using ain cc(1) phi_in_O by presburger
-      obtain W where W: "is_open\<^sub>X W" "x \<in> W" "W \<subseteq> f \<^sup>\<inverse> X U" "W \<subseteq> f \<^sup>\<inverse> X (U')" "W \<subseteq> f \<^sup>\<inverse> X V" 
-         "\<rho>\<^sub>X (f \<^sup>\<inverse> X V) W (\<phi>\<^sub>f V r) =
-            \<rho>\<^sub>X (f\<^sup>\<inverse> X (U \<inter> U')) W (\<phi>\<^sub>f (U \<inter> U') a)"
-        sorry
-
-      have "induced_morphism (stfx.add_stalk C C') = stx.class_of (f\<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f (U \<inter> U') a)"
-        using cc 1 2 3 4 5 W
-        apply (simp add: eq)
-        unfolding stx.class_of_def
-        apply (rule eqX.Class_eq)
-        apply (auto simp add: stx.rel_def stx.is_elem)
-        done
+      have "(U \<inter> U', a) \<in> stfx.class_of V r"
+        by (metis (no_types, lifting) IntI Vr add_stalk_eq_class ain cc mem_Collect_eq stfx.class_of_def stfx.rel_Class_iff stfx.rel_I1)
+      then have "stfx.rel (V, r) (U \<inter> U', a)"
+        by (simp add: "2" \<open>is_open\<^sub>Y V\<close> \<open>r \<in> \<O>\<^sub>Y V\<close> stfx.rel_I1)
+      then have "induced_morphism (stfx.add_stalk C C') = stx.class_of (f\<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f (U \<inter> U') a)"
+        using eq induced_morphism_is_well_defined by presburger
       moreover have "stx.add_stalk (induced_morphism C) (induced_morphism C') =
-stx.add_stalk (stx.class_of (f\<^sup>\<inverse> X (U)) (\<phi>\<^sub>f (U) (q))) 
-              (stx.class_of (f\<^sup>\<inverse> X (U')) (\<phi>\<^sub>f (U') (q')))"
+                     stx.add_stalk (stx.class_of (f \<^sup>\<inverse> X U) (\<phi>\<^sub>f U q))
+                                   (stx.class_of (f \<^sup>\<inverse> X U') (\<phi>\<^sub>f U' q'))"
         using CC(1) Uq(1) eq' induced_morphism_eval by auto
-(* above just use the def of induced_morphism *)
       moreover have "\<dots> = stx.class_of (f\<^sup>\<inverse> X (U \<inter> U')) 
                                        (add_str\<^sub>X (f\<^sup>\<inverse> X (U \<inter> U'))
                                                  (\<rho>\<^sub>X (f\<^sup>\<inverse> X (U)) (f\<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f (U) (q)))
                                                  (\<rho>\<^sub>X (f\<^sup>\<inverse> X (U')) (f\<^sup>\<inverse> X (U \<inter> U')) (\<phi>\<^sub>f (U') (q')))
                                         )"
-        
-        sorry
-(* above first use preimage_of_inter to prove (f\<^sup>\<inverse> fst x) \<inter> (f\<^sup>\<inverse> U') = f\<^sup>\<inverse> (fst x \<inter> U') 
-then just use the def of addition for equivalence classes in stalk *)
+        unfolding stx.add_stalk_def  
+        using is_continuous phi_in_O stx.is_elem 3 
+        by (intro stx.add_rel_class_of) auto
       moreover have "\<phi>\<^sub>f (U \<inter> U') a = add_str\<^sub>X (f\<^sup>\<inverse> X (U \<inter> U')) 
                                        (\<phi>\<^sub>f (U \<inter> U') (\<rho>\<^sub>Y (U) (U \<inter> U') (q))) 
                                        (\<phi>\<^sub>f (U \<inter> U') (\<rho>\<^sub>Y (U') (U \<inter> U') (q')))"
