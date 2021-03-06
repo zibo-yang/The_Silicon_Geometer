@@ -286,7 +286,7 @@ ideal, so that we can introduce some syntactic sugar later.
 \<close>
 
 text \<open>remark 0.21\<close>
-lemma not_1:
+lemma not_1 [simp]:
   shows "\<one> \<notin> I"
 proof
   assume "\<one> \<in> I"
@@ -301,13 +301,7 @@ qed
 lemma not_invertible:
   assumes "x \<in> I"
   shows "\<not> comm.multiplicative.invertible x"
-proof
-  assume "comm.multiplicative.invertible x"
-  then have "\<one> \<in> I"
-    using assms ideal by auto
-  then show False
-    using assms not_1 by blast
-qed
+  using assms ideal(2) not_1 by blast
 
 text \<open>ex. 0.22\<close>
 lemma submonoid_notin:
@@ -3631,18 +3625,17 @@ subsubsection \<open>Maximal Left Ideals\<close>
 locale lideal = subgroup_of_additive_group_of_ring +
   assumes lideal: "\<lbrakk> r \<in> R; a \<in> I \<rbrakk> \<Longrightarrow> r \<cdot> a \<in> I"
 
-lemma lideal_zero: "lideal A R add mult zero unit \<Longrightarrow> zero \<in> A"
-  by (simp add: lideal_def subgroup_of_additive_group_of_ring_def subgroup_def submonoid_def submonoid_axioms_def)
+begin
 
-lemma lideal_implies_subset:
-  assumes "lideal A R add mult zero unit"
-  shows "A \<subseteq> R"
-  by (meson assms lideal.axioms(1) subgroup_def subgroup_of_additive_group_of_ring_def submonoid.subset)
+lemma subset: "I \<subseteq> R"
+  by simp
 
-lemma ideal_add:
-  assumes "a \<in> A"  "b \<in> A" "lideal A R add mult zero unit"
-  shows "add a b \<in> A"
-  by (meson Group_Theory.group_def assms lideal_def monoid.composition_closed subgroup_def subgroup_of_additive_group_of_ring_def)
+lemma has_one_imp_equal:
+  assumes "\<one> \<in> I"
+  shows "I = R"
+  by (metis assms lideal subset multiplicative.right_unit subsetI subset_antisym)
+
+end
 
 lemma (in comm_ring) ideal_iff_lideal: 
   "ideal I R (+) (\<cdot>) \<zero> \<one> \<longleftrightarrow> lideal I R (+) (\<cdot>) \<zero> \<one>" (is "?lhs = ?rhs")
@@ -4155,7 +4148,7 @@ proof intro_locales
         by (meson local_ring.is_unique lring)
       thus ?thesis 
         using bij_betw_imp_inj_on [OF \<open>bij_betw f A B\<close>]
-        by (metis I J inj_on_image_eq_iff max_lideal.axioms(1) lideal_implies_subset)
+        by (meson I J inj_on_image_eq_iff lideal.subset max_lideal.axioms(1))
     qed
   next
     show "\<exists>\<ww>. max_lideal \<ww> A addA multA zeroA oneA"
@@ -4334,40 +4327,127 @@ proof-
     by (simp add: Comm_Ring_Theory.quotient_ring_def comm.comm_ring_axioms submonoid_pr_ideal)
   define \<ww> where "\<ww> \<equiv> {quotient_ring.frac (R\<setminus>I) R (+) (\<cdot>) \<zero> r s| r s. r \<in> I \<and> s \<in> (R \<setminus> I)}"
 (* then we prove that every proper ideal of R\I is included in \<ww> and the result follows trivially *)
-  then have F:"\<And>\<aa>. lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
-\<Longrightarrow> \<aa> \<noteq> carrier_local_ring_at \<Longrightarrow> \<aa> \<subseteq> \<ww>"
-  proof-
-    fix \<aa> assume "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-"\<aa> \<noteq> carrier_local_ring_at"
-    show "\<aa> \<subseteq> \<ww>"
+  have F: "\<aa> \<subseteq> \<ww>"
+    if "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+      and ne: "\<aa> \<noteq> carrier_local_ring_at" for \<aa>
+  proof
+    fix x 
+    interpret \<aa>: lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+      using that by blast
+    assume "x \<in> \<aa>"
+    have "False" if "x \<notin> \<ww>"
+    proof -
+      obtain r s where "r \<in> R" "s \<in> R" "s \<notin> I" "r \<notin> I" "x = cq.frac r s"
+        using frac_from_carrier_local \<open>x \<in> \<aa>\<close> \<open>x \<notin> \<ww>\<close> [unfolded \<ww>_def, simplified]
+        by (metis \<aa>.additive.sub)
+      then have sr: "cq.frac s r \<in> carrier_local_ring_at"
+        by (simp add: \<open>r \<in> R\<close> \<open>s \<in> R\<close> carrier_local_ring_at_def)
+      have [simp]: "r \<cdot> s \<notin> I"
+        using \<open>r \<in> R\<close> \<open>r \<notin> I\<close> \<open>s \<in> R\<close> \<open>s \<notin> I\<close> absorbent by blast
+      have "one_local_ring_at = cq.frac \<one> \<one>"
+        by (simp add: one_local_ring_at_def cq.one_rel_def)
+      also have "... = cq.frac (s \<cdot> r) (r \<cdot> s)"
+        using \<open>r \<in> R\<close> \<open>r \<notin> I\<close> \<open>s \<in> R\<close> \<open>s \<notin> I\<close>
+        by (intro cq.frac_eqI [of \<one>]) (auto simp: comm.comm_mult)
+      also have "... = cq.mult_rel (cq.frac s r) (cq.frac r s)"
+        using  \<open>r \<in> R\<close> \<open>r \<notin> I\<close> \<open>s \<in> R\<close> \<open>s \<notin> I\<close> by (simp add: cq.mult_rel_frac)
+      also have "\<dots> = mult_local_ring_at (cq.frac s r) (cq.frac r s)"
+        using mult_local_ring_at_def by force
+      also have "... \<in> \<aa>"
+        using \<aa>.lideal \<open>x = cq.frac r s\<close> \<open>x \<in> \<aa>\<close> sr by blast
+      finally have "one_local_ring_at \<in> \<aa>" .
+      thus ?thesis
+        using ne \<aa>.has_one_imp_equal by force
+    qed
+    thus "x \<in> \<ww>" by auto
+  qed
+  have uminus_closed: "uminus_local_ring_at u \<in> \<ww>" if "u \<in> \<ww>" for u
+    using that by (force simp: \<ww>_def cq.uminus_rel_frac uminus_local_ring_at_def)
+  have add_closed: "add_local_ring_at a b \<in> \<ww>" if "a \<in> \<ww>" "b \<in> \<ww>" for a b
+  proof -
+    obtain ra sa rb sb where ab: "a = cq.frac ra sa" "b = cq.frac rb sb"
+      and "ra \<in> I" "rb \<in> I" "sa \<in> R" "sa \<notin> I" "sb \<in> R" "sb \<notin> I"
+      using \<open>a \<in> \<ww>\<close> \<open>b \<in> \<ww>\<close> by (auto simp: \<ww>_def)
+    then have "add_local_ring_at (cq.frac ra sa) (cq.frac rb sb) = cq.frac (ra \<cdot> sb + rb \<cdot> sa) (sa \<cdot> sb)"
+      by (force simp add: cq.add_rel_frac add_local_ring_at_def)
+    moreover have "ra \<cdot> sb + rb \<cdot> sa \<in> I"
+      by (simp add: \<open>ra \<in> I\<close> \<open>rb \<in> I\<close> \<open>sa \<in> R\<close> \<open>sb \<in> R\<close> ideal(2))
+    ultimately show ?thesis
+      unfolding \<ww>_def
+      using \<open>sa \<in> R\<close> \<open>sa \<notin> I\<close> \<open>sb \<in> R\<close> \<open>sb \<notin> I\<close> ab absorbent by blast
+  qed
+  interpret \<ww>: lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+  proof intro_locales
+    show subm: "submonoid_axioms \<ww> carrier_local_ring_at add_local_ring_at zero_local_ring_at"
     proof
-      fix x assume "x \<in> \<aa>"
-      then have "False" if "x \<notin> \<ww>"
-      proof-
-        obtain r s where "r \<in> R" "s \<in> R" "s \<notin> I" "r \<notin> I" "x = cq.frac r s" sorry (* using that *)
-        then have "cq.frac s r \<in> carrier_local_ring_at" sorry
-        then have "one_local_ring_at \<in> \<aa>"
-        proof-
-          have "mult_local_ring_at (cq.frac s r) (cq.frac r s) = one_local_ring_at" sorry
-          moreover have "mult_local_ring_at (cq.frac s r) (cq.frac r s) \<in> \<aa>" sorry (* since \<aa> is a left ideal *)
-          ultimately show ?thesis sorry
-        qed
-        thus ?thesis sorry (* since it contradicts \<aa> being proper *)
-      qed
-      thus "x \<in> \<ww>" by auto
+      show "\<ww> \<subseteq> carrier_local_ring_at"
+        using \<ww>_def comm.comm_ring_axioms comm.frac_in_carrier_local comm_ring.spectrum_def pr_ideal_axioms by fastforce
+      show "zero_local_ring_at \<in> \<ww>"
+        using \<ww>_def comm.spectrum_def comm.spectrum_imp_cxt_quotient_ring not_1 pr_ideal_axioms quotient_ring.zero_rel_def zero_local_ring_at_def by fastforce
+    qed (auto simp: add_closed)
+    show mon: "Group_Theory.monoid \<ww> add_local_ring_at zero_local_ring_at"
+    proof 
+      show "zero_local_ring_at \<in> \<ww>"
+        by (meson subm submonoid_axioms_def)
+    next
+      fix a b c
+      assume "a \<in> \<ww>" "b \<in> \<ww>" "c \<in> \<ww>"
+      then show "add_local_ring_at (add_local_ring_at a b) c = add_local_ring_at a (add_local_ring_at b c)"
+        by (meson additive.associative in_mono subm submonoid_axioms_def)
+    next
+      fix a assume "a \<in> \<ww>"
+      show "add_local_ring_at zero_local_ring_at a = a"
+        by (meson \<open>a \<in> \<ww>\<close> subm additive.left_unit in_mono submonoid_axioms_def) 
+      show "add_local_ring_at a zero_local_ring_at = a"
+        by (meson \<open>a \<in> \<ww>\<close> additive.right_unit in_mono subm submonoid_axioms_def)
+    qed (auto simp: add_closed)
+    show "Group_Theory.group_axioms \<ww> add_local_ring_at zero_local_ring_at"
+    proof unfold_locales
+      fix u
+      assume "u \<in> \<ww>"
+      show "monoid.invertible \<ww> add_local_ring_at zero_local_ring_at u"
+      proof (rule monoid.invertibleI [OF mon])
+        show "add_local_ring_at u (uminus_local_ring_at u) = zero_local_ring_at"
+          using \<open>u \<in> \<ww>\<close>
+          apply (clarsimp simp add: \<ww>_def add_local_ring_at_def zero_local_ring_at_def uminus_local_ring_at_def)
+          by (metis Diff_iff  additive.submonoid_axioms cq.add_minus_zero_rel cq.valid_frac_def submonoid.sub)
+        then show "add_local_ring_at (uminus_local_ring_at u) u = zero_local_ring_at"
+          using subm unfolding submonoid_axioms_def
+          by (simp add: \<open>u \<in> \<ww>\<close> additive.commutative subset_iff uminus_closed)
+      qed (use \<open>u \<in> \<ww>\<close> uminus_closed in auto)
+    qed
+    show "lideal_axioms \<ww> carrier_local_ring_at mult_local_ring_at"
+    proof
+      fix a b
+      assume a: "a \<in> carrier_local_ring_at" 
+      then obtain ra sa where a: "a = cq.frac ra sa" and "ra \<in> R" and sa: "sa \<in> R" "sa \<notin> I"
+        by (meson frac_from_carrier_local)
+      then have "a \<in> carrier_local_ring_at"
+        by (simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
+      assume "b \<in> \<ww>"
+      then obtain rb sb where b: "b = cq.frac rb sb" and "rb \<in> I" and sb: "sb \<in> R" "sb \<notin> I"
+        using \<ww>_def by blast
+      have "cq.mult_rel (cq.frac ra sa) (cq.frac rb sb) = cq.frac (ra \<cdot> rb) (sa \<cdot> sb)"
+        using \<open>ra \<in> R\<close> sa  \<open>rb \<in> I\<close> sb
+        by (force simp: cq.mult_rel_frac)
+      then show "mult_local_ring_at a b \<in> \<ww>"
+        apply (clarsimp simp add: mult_local_ring_at_def \<ww>_def a b)
+        by (metis Diff_iff \<open>ra \<in> R\<close> \<open>rb \<in> I\<close> cq.sub_composition_closed ideal(1) sa sb)
     qed
   qed
-  then have "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-  proof-
-    have "lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at" sorry
-    moreover have "\<And>\<aa>. lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+  have max: "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+  proof 
+    show "\<ww> \<noteq> carrier_local_ring_at"
+      sorry
+    show "\<And>\<aa>. lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
  \<Longrightarrow> \<aa> \<noteq> carrier_local_ring_at \<Longrightarrow> \<ww> \<subseteq> \<aa> \<Longrightarrow> \<ww> = \<aa>"
-      using F sorry
-    thus ?thesis sorry
+      using F by blast
   qed
-  moreover have "\<And>J. max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
-\<Longrightarrow> J = \<ww>" sorry (* using F and the fact that a max ideal is proper *)
-  ultimately show ?thesis sorry
+  have "\<And>J. max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+\<Longrightarrow> J = \<ww>"
+    by (metis F max max_lideal.axioms(1) max_lideal.is_max max_lideal.neq_ring)
+  with max show ?thesis
+    by (metis local.ring_axioms local_ring_axioms_def local_ring_def)
 qed
 
 definition (in stalk) is_local:: "'a set \<Rightarrow> bool" where
