@@ -5144,7 +5144,7 @@ definition is_local:: "'c set \<Rightarrow> (('c set \<times> 'd) set \<Rightarr
 
 end (* ind_mor_btw_stalks *)
 
-notation ind_mor_btw_stalks.induced_morphism ("\<phi>\<^bsub>_ _ _ _ _ _ _\<^esub>")
+notation ind_mor_btw_stalks.induced_morphism ("\<phi>\<^bsub>_ _ _ _ _ _ _ _ _ _\<^esub>")
 
 (* definition 0.45 *)
 
@@ -5152,7 +5152,7 @@ locale morphism_locally_ringed_spaces = morphism_ringed_spaces +
 assumes are_local_morphisms: "\<And>x V. x \<in> X \<Longrightarrow> is_open\<^sub>Y V \<Longrightarrow> f x \<in> V \<Longrightarrow> 
 ind_mor_btw_stalks.is_local X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X 
                             is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y f
-                            x V \<phi>\<^bsub>X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X f \<phi>\<^sub>f x\<^esub>"
+                            x V \<phi>\<^bsub>X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y f \<phi>\<^sub>f x\<^esub>"
 
 locale iso_locally_ringed_spaces = morphism_locally_ringed_spaces +
   assumes is_homeomorphism: "homeomorphism X is_open\<^sub>X Y is_open\<^sub>Y f" and
