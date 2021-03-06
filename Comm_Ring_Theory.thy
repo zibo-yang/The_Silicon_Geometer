@@ -4165,6 +4165,7 @@ qed
 
 
 (* ex. 0.40 *)
+(*
 lemma (in pr_ideal) local_ring_at_is_local:
   shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
 (zero_local_ring_at) (one_local_ring_at)"
@@ -4302,7 +4303,7 @@ proof
         by (meson "\<section>"(4) "\<section>"(5) absorbent)
       with \<section> show "\<exists>r s. x = cq.frac r s \<and> r \<in> I \<and> s \<in> R \<and> s \<notin> I"
         sorry
-    qed
+    qed    
     with \<open>\<ww> \<subseteq> \<aa>\<close> show "\<ww> = \<aa>"
       by blast
   qed
@@ -4322,6 +4323,51 @@ proof
     then show "J' = J"
       using that \<section> max_\<ww> unfolding max_lideal_def max_lideal_axioms_def by metis
   qed
+qed
+*)
+
+lemma (in pr_ideal) local_ring_at_is_local:
+  shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
+(zero_local_ring_at) (one_local_ring_at)"
+proof- 
+  interpret cq: quotient_ring "R\<setminus>I" R "(+)" "(\<cdot>)" \<zero> \<one>
+    by (simp add: Comm_Ring_Theory.quotient_ring_def comm.comm_ring_axioms submonoid_pr_ideal)
+  define \<ww> where "\<ww> \<equiv> {quotient_ring.frac (R\<setminus>I) R (+) (\<cdot>) \<zero> r s| r s. r \<in> I \<and> s \<in> (R \<setminus> I)}"
+(* then we prove that every proper ideal of R\I is included in \<ww> and the result follows trivially *)
+  then have F:"\<And>\<aa>. lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+\<Longrightarrow> \<aa> \<noteq> carrier_local_ring_at \<Longrightarrow> \<aa> \<subseteq> \<ww>"
+  proof-
+    fix \<aa> assume "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+"\<aa> \<noteq> carrier_local_ring_at"
+    show "\<aa> \<subseteq> \<ww>"
+    proof
+      fix x assume "x \<in> \<aa>"
+      then have "False" if "x \<notin> \<ww>"
+      proof-
+        obtain r s where "r \<in> R" "s \<in> R" "s \<notin> I" "r \<notin> I" "x = cq.frac r s" sorry (* using that *)
+        then have "cq.frac s r \<in> carrier_local_ring_at" sorry
+        then have "one_local_ring_at \<in> \<aa>"
+        proof-
+          have "mult_local_ring_at (cq.frac s r) (cq.frac r s) = one_local_ring_at" sorry
+          moreover have "mult_local_ring_at (cq.frac s r) (cq.frac r s) \<in> \<aa>" sorry (* since \<aa> is a left ideal *)
+          ultimately show ?thesis sorry
+        qed
+        thus ?thesis sorry (* since it contradicts \<aa> being proper *)
+      qed
+      thus "x \<in> \<ww>" by auto
+    qed
+  qed
+  then have "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
+  proof-
+    have "lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at" sorry
+    moreover have "\<And>\<aa>. lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+ \<Longrightarrow> \<aa> \<noteq> carrier_local_ring_at \<Longrightarrow> \<ww> \<subseteq> \<aa> \<Longrightarrow> \<ww> = \<aa>"
+      using F sorry
+    thus ?thesis sorry
+  qed
+  moreover have "\<And>J. max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
+\<Longrightarrow> J = \<ww>" sorry (* using F and the fact that a max ideal is proper *)
+  ultimately show ?thesis sorry
 qed
 
 definition (in stalk) is_local:: "'a set \<Rightarrow> bool" where
