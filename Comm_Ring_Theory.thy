@@ -3524,14 +3524,8 @@ lemma
   shows "\<not> (\<exists>\<aa>. ideal \<aa> R (+) (\<cdot>) \<zero> \<one> \<and> \<aa> \<noteq> R \<and> I \<subset> \<aa>)"
   using is_max by blast
 
-(* A maximal ideal is prime:
-Let A be a maximal ideal. Then R/A contains no proper ideals, by the correspondence theorem.
-Indeed, R/A is a field (assuming that R contains an identity). Hence, A is a prime ideal.
-https://math.stackexchange.com/questions/68489/why-are-maximal-ideals-prime *)
-(*ALTERNATIVE PROOF\<in>
-  An ideal P in A is prime if and only if A/P is an integral domain. 
-  An ideal m in A is maximal if and only if A/m is a field.*)
-lemma is_pr_ideal: "pr_ideal R I (+) (\<cdot>) \<zero> \<one>"
+text \<open>A maximal ideal is prime\<close>
+proposition is_pr_ideal: "pr_ideal R I (+) (\<cdot>) \<zero> \<one>"
 proof
   show "I \<noteq> R"
     using neq_ring by fastforce
@@ -3541,22 +3535,88 @@ proof
   proof-
     have "False" if "x \<notin> I" "y \<notin> I"
     proof-
-      define J where "J \<equiv> {a + r\<cdot>x |a r. a \<in> I \<and> r \<in> R}"
-      have "ideal J R (+) (\<cdot>) \<zero> \<one>" sorry
-      moreover have "I \<subset> J" sorry (* since x \<notin> I by assumption *)
-      hence "J = R" sorry (* by maximality of I, i.e. use the previous (nameless) lemma *)
-      hence "\<one> \<in> J" sorry
-      then obtain a r where "a \<in> I" "r \<in> R" "\<one> = a + r\<cdot>x" sorry
-      then have "y = \<one> \<cdot> y" sorry 
-      moreover have "\<dots> = (a + r\<cdot>x) \<cdot> y" sorry
-      moreover have "\<dots> = a \<cdot> y + r\<cdot>x\<cdot>y" sorry
-      moreover have "a \<cdot> y + r\<cdot>x\<cdot>y \<in> I"
-      proof- 
-        have "a \<cdot> y \<in> I" sorry (* since a \<in> I and y \<in> R and I is an ideal *) 
-        moreover have "r\<cdot>x\<cdot>y \<in> I" sorry (* since x\<cdot>y \<in> I by assumption and r \<in> R and I is an ideal *)
-        thus ?thesis sorry
+      define J where "J \<equiv> {i + r \<cdot> x |i r. i \<in> I \<and> r \<in> R}"
+      have "J \<subseteq> R"
+        using \<open>x \<in> R\<close> by (auto simp: J_def)
+      have "x \<in> J"
+        apply (simp add: J_def)
+        by (metis \<open>x \<in> R\<close> additive.left_unit additive.sub_unit_closed multiplicative.left_unit multiplicative.unit_closed)
+      interpret monJ: monoid J "(+)" \<zero>
+      proof
+        have "\<zero> = \<zero> + \<zero> \<cdot> x"
+          by (simp add: \<open>x \<in> R\<close>)
+        then show "\<zero> \<in> J"
+          by (auto simp: J_def)
+      next
+        fix a b
+        assume "a \<in> J" and "b \<in> J"
+        then obtain ia ra ib rb where a: "a = ia + ra \<cdot> x" "ia \<in> I" "ra \<in> R" 
+                                  and b: "b = ib + rb \<cdot> x" "ib \<in> I" "rb \<in> R"
+          by (auto simp: J_def)
+        then have "ia + ra \<cdot> x + (ib + rb \<cdot> x) = ia + ib + (ra + rb) \<cdot> x"
+          by (smt (z3) \<open>x \<in> R\<close> additive.commutative additive.composition_closed additive.monoid_axioms additive.submonoid_axioms distributive(2) monoid.associative multiplicative.composition_closed submonoid.sub)
+        with a b show "a + b \<in> J"
+          by (auto simp add: J_def)
+      next
+        fix a b c
+        assume "a \<in> J" and "b \<in> J" and "c \<in> J"
+        then show "a + b + c = a + (b + c)"
+          by (meson \<open>J \<subseteq> R\<close> additive.associative subsetD)
+      next
+        fix a 
+        assume "a \<in> J"
+        then show "\<zero> + a = a" "a + \<zero> = a"
+          using \<open>J \<subseteq> R\<close> additive.left_unit additive.right_unit by blast+
       qed
-      ultimately have "y \<in> I" sorry
+      interpret idJ: ideal J R "(+)" "(\<cdot>)" \<zero> \<one>
+      proof 
+        fix u
+        assume "u \<in> J"
+        then obtain i r where "u = i + r \<cdot> x" "i \<in> I" "r \<in> R" 
+          by (auto simp: J_def)
+        then have "-u = -i + (-r) \<cdot> x"
+          by (simp add: \<open>x \<in> R\<close> additive.commutative additive.inverse_composition_commute local.left_minus)
+        with \<open>i \<in> I\<close> \<open>r \<in> R\<close> have "-u \<in> J"
+          by (auto simp: J_def)
+        with \<open>u \<in> J\<close> show "monoid.invertible J (+) \<zero> u"
+          using  monoid.invertibleI [where v = "-u"]
+          by (simp add: \<open>u \<in> J\<close> monJ.monoid_axioms \<open>i \<in> I\<close> \<open>r \<in> R\<close> \<open>u = i + r \<cdot> x\<close> \<open>x \<in> R\<close>)
+      next
+        fix a b
+        assume "a \<in> R" and "b \<in> J"
+        then obtain i r where ir: "b = i + r \<cdot> x" "i \<in> I" "r \<in> R"
+          by (auto simp: J_def)
+        then have "a \<cdot> (i + r \<cdot> x) = a \<cdot> i + a \<cdot> r \<cdot> x"
+          by (simp add: \<open>a \<in> R\<close> \<open>x \<in> R\<close> distributive(1) multiplicative.associative)
+        then show "a \<cdot> b \<in> J"
+          using \<open>a \<in> R\<close> ideal(1) ir by (force simp add: J_def)
+        have "b \<cdot> a = i \<cdot> a + r \<cdot> a \<cdot> x"
+          by (simp add: \<open>a \<in> R\<close> \<open>x \<in> R\<close> comm_mult distributive(1) ir mult_left_assoc)
+        then show "b \<cdot> a \<in> J"
+          by (metis \<open>J \<subseteq> R\<close> \<open>a \<cdot> b \<in> J\<close> \<open>a \<in> R\<close> \<open>b \<in> J\<close> comm_mult subsetD)
+      qed (auto simp: \<open>J \<subseteq> R\<close>)
+      have "I \<subset> J"
+      proof
+        show "I \<subseteq> J"
+          unfolding J_def
+          apply clarify
+          by (metis \<open>x \<in> R\<close> additive.sub.right_unit additive.unit_closed left_zero)
+        show "I \<noteq> J"
+          using \<open>x \<in> J\<close> \<open>x \<notin> I\<close> by blast
+      qed
+      hence "J = R"
+        using idJ.ideal_axioms is_max by auto
+      hence "\<one> \<in> J"
+        by fastforce
+      then obtain a r where "a \<in> I" "r \<in> R" "\<one> = a + r\<cdot>x"
+          unfolding J_def by blast
+      then have "y = (a + r\<cdot>x) \<cdot> y"
+        using \<open>y \<in> R\<close> multiplicative.left_unit by presburger
+      also have "\<dots> = a \<cdot> y + r\<cdot>x\<cdot>y"
+        by (simp add: \<open>a \<in> I\<close> \<open>r \<in> R\<close> \<open>x \<in> R\<close> \<open>y \<in> R\<close> distributive(2))
+      also have "\<dots> \<in> I"
+        by (simp add: \<open>a \<in> I\<close> \<open>r \<in> R\<close> \<open>x \<in> R\<close> \<open>y \<in> R\<close> dot ideal multiplicative.associative)
+      finally have "y \<in> I" .
       thus ?thesis using that(2) by auto
     qed
     thus ?thesis by auto 
