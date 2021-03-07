@@ -20,26 +20,26 @@ locale affine_scheme = locally_ringed_space + comm_ring +
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
 (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
 
-sublocale comp_affine_scheme \<subseteq> affine_scheme sorry
+(* sublocale comp_affine_scheme \<subseteq> affine_scheme *) 
 
 section \<open>Schemes\<close>
 
 (* def. 0.47 *)
 locale scheme = locally_ringed_space + comm_ring +
   assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U. x\<in>U \<and> is_open U \<and> 
-affine_scheme U (ind_topology.ind_is_open X is_open U) (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
-(cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b (cxt_ind_sheaf.ind_add_str add_str U)
-(cxt_ind_sheaf.ind_mult_str mult_str U) (cxt_ind_sheaf.ind_zero_str zero_str U)
-(cxt_ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>)"
+affine_scheme U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
+(ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U)
+(ind_sheaf.ind_mult_str mult_str U) (ind_sheaf.ind_zero_str zero_str U)
+(ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>)"
 
 context comp_affine_scheme
 begin
 
 (* interpretation pr: presheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-  by (simp add: dom.presheaf_of_rings_axioms) *)
+  by (simp add: dom.presheaf_of_rings_axioms)
 
-interpretation cis:cxt_ind_sheaf X is_open "\<O>\<^sub>X" \<rho> b add_str mult_str zero_str one_str X
-  by (simp add: cxt_ind_sheaf_axioms_def cxt_ind_sheaf_def dom.sheaf_of_rings_axioms)
+interpretation cis:ind_sheaf X is_open "\<O>\<^sub>X" \<rho> b add_str mult_str zero_str one_str X
+  by (simp add: ind_sheaf_axioms_def ind_sheaf_def sheaf_of_rings_axioms)
 
 interpretation it: ind_topology X is_open X by simp
 
@@ -48,7 +48,7 @@ cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
   using cis.ind_sheaf_is_presheaf by simp
 
 interpretation sh: sheaf_of_rings X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-  by (simp add: dom.sheaf_of_rings_axioms)
+  by (simp add: sheaf_of_rings_axioms)
 
 interpretation sh': sheaf_of_rings X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b 
 cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
@@ -59,16 +59,16 @@ add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
   using spec_is_ringed_space by simp
 
 interpretation rs: ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-  using dom.ringed_space_axioms by simp
+  by (simp add: ringed_space_def sheaf_of_rings_axioms)
 
 interpretation rs': ringed_space X it.ind_is_open cis.ind_sheaf cis.ind_ring_morphisms b 
 cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
   by (simp add: pr'.topological_space_axioms ringed_space.intro sh'.sheaf_of_rings_axioms)
 
-interpretation dims: cxt_direct_im_sheaf X is_open Spec is_zariski_open f \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-  by (simp add: cxt_direct_im_sheaf_def dom.sheaf_of_rings_axioms is_continuous)
+interpretation dims: im_sheaf X is_open Spec is_zariski_open f \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
+  by (simp add: im_sheaf_def dom.sheaf_of_rings_axioms is_continuous)
 
-interpretation dims': cxt_direct_im_sheaf X it.ind_is_open Spec is_zariski_open f cis.ind_sheaf 
+interpretation dims': im_sheaf X it.ind_is_open Spec is_zariski_open f cis.ind_sheaf 
 cis.ind_ring_morphisms b cis.ind_add_str cis.ind_mult_str cis.ind_zero_str cis.ind_one_str
   by (simp add: continuous_map_axioms_def continuous_map_def cxt_direct_im_sheaf.intro dims.is_continuous dims.map_axioms dom.ind_is_open_iff_open pr'.topological_space_axioms sh'.sheaf_of_rings_axioms)
 
@@ -258,9 +258,11 @@ next
 qed
   thus ?thesis by (meson affine_scheme_axioms_def)
 qed
-      
+*) 
+
 lemma comp_affine_scheme_is_scheme:
-  shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
+  shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>" sorry
+(*
 proof (intro scheme.intro scheme_axioms.intro)
   show "locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" by (simp add: locally_ringed_space_axioms)
 next
@@ -275,6 +277,7 @@ next
               (\<cdot>) \<zero> \<one>"
     by (meson affine_scheme_as_axioms affine_scheme_def dom.open_space local.comm_ring_axioms lrs'.locally_ringed_space_axioms)
 qed
+*)
 
 end (* comp_affine_scheme *)
 
@@ -284,7 +287,7 @@ proof-
   obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
 (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
-    using is_iso_to_spec by auto
+    using is_iso_to_spec by blast
   hence "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f"
     by (simp add: comp_affine_scheme_def local.comm_ring_axioms)
   thus ?thesis using comp_affine_scheme.comp_affine_scheme_is_scheme by fastforce
@@ -306,8 +309,8 @@ next
     have "homeomorphism Spec is_zariski_open Spec is_zariski_open (identity Spec)" sorry
     moreover have "iso_sheaves_of_rings
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-(cxt_direct_im_sheaf.direct_im_sheaf Spec (identity Spec) sheaf_spec)
-(cxt_direct_im_sheaf.direct_im_sheaf_morphisms Spec (identity Spec) sheaf_spec_morphisms)
+(im_sheaf.im_sheaf Spec sheaf_spec (identity Spec))
+(im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec))
 \<O>b
 (\<lambda>V x y. add_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
 (\<lambda>V x y. mult_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
