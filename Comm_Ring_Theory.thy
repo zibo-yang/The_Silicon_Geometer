@@ -4158,176 +4158,14 @@ qed
 
 
 (* ex. 0.40 *)
-(*
 lemma (in pr_ideal) local_ring_at_is_local:
-  shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
-(zero_local_ring_at) (one_local_ring_at)"
-proof
-  define \<ww> where "\<ww> \<equiv> {quotient_ring.frac (R\<setminus>I) R (+) (\<cdot>) \<zero> r s| r s. r \<in> I \<and> s \<in> (R \<setminus> I)}"
-  have \<ww>_sub: "\<ww> \<subseteq> carrier_local_ring_at"
-    unfolding \<ww>_def
-    by (auto simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
-
-  interpret cq: quotient_ring "R\<setminus>I" R "(+)" "(\<cdot>)" \<zero> \<one>
-    by (simp add: Comm_Ring_Theory.quotient_ring_def comm.comm_ring_axioms submonoid_pr_ideal) 
-  have uminus_closed: "uminus_local_ring_at u \<in> \<ww>" if "u \<in> \<ww>" for u
-    using that by (force simp: \<ww>_def cq.uminus_rel_frac uminus_local_ring_at_def)
-  have add_closed: "add_local_ring_at a b \<in> \<ww>" if "a \<in> \<ww>" "b \<in> \<ww>" for a b
-  proof -
-    obtain ra sa rb sb where ab: "a = cq.frac ra sa" "b = cq.frac rb sb"
-      and "ra \<in> I" "rb \<in> I" "sa \<in> R" "sa \<notin> I" "sb \<in> R" "sb \<notin> I"
-      using \<open>a \<in> \<ww>\<close> \<open>b \<in> \<ww>\<close> by (auto simp: \<ww>_def)
-    then have "add_local_ring_at (cq.frac ra sa) (cq.frac rb sb) = cq.frac (ra \<cdot> sb + rb \<cdot> sa) (sa \<cdot> sb)"
-      by (force simp add: cq.add_rel_frac add_local_ring_at_def)
-    moreover have "ra \<cdot> sb + rb \<cdot> sa \<in> I"
-      by (simp add: \<open>ra \<in> I\<close> \<open>rb \<in> I\<close> \<open>sa \<in> R\<close> \<open>sb \<in> R\<close> ideal(2))
-    ultimately show ?thesis
-      unfolding \<ww>_def
-      using \<open>sa \<in> R\<close> \<open>sa \<notin> I\<close> \<open>sb \<in> R\<close> \<open>sb \<notin> I\<close> ab absorbent by blast
-  qed
-  interpret \<ww>: ideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at
-    zero_local_ring_at one_local_ring_at
-  proof intro_locales
-    show subm: "submonoid_axioms \<ww> carrier_local_ring_at add_local_ring_at zero_local_ring_at"
-    proof
-      show "\<ww> \<subseteq> carrier_local_ring_at"
-        using \<ww>_def comm.comm_ring_axioms comm.frac_in_carrier_local comm_ring.spectrum_def pr_ideal_axioms by fastforce
-      show "zero_local_ring_at \<in> \<ww>"
-        using \<ww>_def comm.spectrum_def comm.spectrum_imp_cxt_quotient_ring not_1 pr_ideal_axioms quotient_ring.zero_rel_def zero_local_ring_at_def by fastforce
-    qed (auto simp: add_closed)
-    show mon: "Group_Theory.monoid \<ww> add_local_ring_at zero_local_ring_at"
-    proof 
-      show "zero_local_ring_at \<in> \<ww>"
-        by (meson subm submonoid_axioms_def)
-    next
-      fix a b c
-      assume "a \<in> \<ww>" "b \<in> \<ww>" "c \<in> \<ww>"
-      then show "add_local_ring_at (add_local_ring_at a b) c = add_local_ring_at a (add_local_ring_at b c)"
-        by (meson additive.associative in_mono subm submonoid_axioms_def)
-    next
-      fix a assume "a \<in> \<ww>"
-      show "add_local_ring_at zero_local_ring_at a = a"
-        by (meson \<open>a \<in> \<ww>\<close> subm additive.left_unit in_mono submonoid_axioms_def) 
-      show "add_local_ring_at a zero_local_ring_at = a"
-        by (meson \<open>a \<in> \<ww>\<close> additive.right_unit in_mono subm submonoid_axioms_def)
-    qed (auto simp: add_closed)
-    show "Group_Theory.group_axioms \<ww> add_local_ring_at zero_local_ring_at"
-    proof unfold_locales
-      fix u
-      assume "u \<in> \<ww>"
-      show "monoid.invertible \<ww> add_local_ring_at zero_local_ring_at u"
-      proof (rule monoid.invertibleI [OF mon])
-        show "add_local_ring_at u (uminus_local_ring_at u) = zero_local_ring_at"
-          using \<open>u \<in> \<ww>\<close>
-          apply (clarsimp simp add: \<ww>_def add_local_ring_at_def zero_local_ring_at_def uminus_local_ring_at_def)
-          by (metis Diff_iff  additive.submonoid_axioms cq.add_minus_zero_rel cq.valid_frac_def submonoid.sub)
-        then show "add_local_ring_at (uminus_local_ring_at u) u = zero_local_ring_at"
-          using subm unfolding submonoid_axioms_def
-          by (simp add: \<open>u \<in> \<ww>\<close> additive.commutative subset_iff uminus_closed)
-      qed (use \<open>u \<in> \<ww>\<close> uminus_closed in auto)
-    qed
-    show "ideal_axioms \<ww> carrier_local_ring_at mult_local_ring_at"
-    proof
-      fix a b
-      assume a: "a \<in> carrier_local_ring_at" 
-      then obtain ra sa where a: "a = cq.frac ra sa" and "ra \<in> R" and sa: "sa \<in> R" "sa \<notin> I"
-        by (meson frac_from_carrier_local)
-      then have "a \<in> carrier_local_ring_at"
-        by (simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
-      assume "b \<in> \<ww>"
-      then obtain rb sb where b: "b = cq.frac rb sb" and "rb \<in> I" and sb: "sb \<in> R" "sb \<notin> I"
-        using \<ww>_def by blast
-      have "cq.mult_rel (cq.frac ra sa) (cq.frac rb sb) = cq.frac (ra \<cdot> rb) (sa \<cdot> sb)"
-        using \<open>ra \<in> R\<close> sa  \<open>rb \<in> I\<close> sb
-        by (force simp: cq.mult_rel_frac)
-      then show "mult_local_ring_at a b \<in> \<ww>"
-        apply (clarsimp simp add: mult_local_ring_at_def \<ww>_def a b)
-        by (metis Diff_iff \<open>ra \<in> R\<close> \<open>rb \<in> I\<close> cq.sub_composition_closed ideal(1) sa sb)
-      then show "mult_local_ring_at b a \<in> \<ww>"
-        using \<open>a \<in> carrier_local_ring_at\<close> \<open>b \<in> \<ww>\<close> \<ww>_sub comm_mult by force
-    qed
-  qed
-  have max_\<ww>: "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-  proof
-    fix r a
-    assume "r \<in> carrier_local_ring_at" and "a \<in> \<ww>" 
-    then show "mult_local_ring_at r a \<in> \<ww>"
-      by (simp add: \<ww>.ideal(1))
-  next
-    have "\<ww> \<subseteq> carrier_local_ring_at"
-      unfolding \<ww>_def by (force simp add: comm.frac_in_carrier_local comm.spectrum_def pr_ideal_axioms)
-    have False
-      if s: "s \<notin> I" "s \<in> R" and "r \<in> I" and eq: "cq.frac \<one> \<one> = cq.frac r s"
-      for r s
-    proof -
-      have "s \<in> R\<setminus>I"
-        using s by blast
-      then show False
-        using eq_from_eq_frac [OF eq] \<open>r \<in> I\<close> comm.additive.abelian_group_axioms
-        unfolding abelian_group_def
-        by (metis Diff_iff absorbent additive.sub comm.additive.cancel_imp_equal comm.inverse_distributive(1) comm.multiplicative.composition_closed cq.sub_unit_closed ideal(1))
-    qed
-    then have "cq.frac \<one> \<one> \<notin> \<ww>"
-      using \<ww>_def by blast
-    moreover have "cq.frac \<one> \<one> \<in> carrier_local_ring_at"
-      using carrier_local_ring_at_def cq.multiplicative.unit_closed cq.one_rel_def by force
-    ultimately show "\<ww> \<noteq> carrier_local_ring_at"
-      by blast
-  next
-    fix \<aa> 
-    assume li: "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-      and ne: "\<aa> \<noteq> carrier_local_ring_at"
-      and "\<ww> \<subseteq> \<aa>"
-    then interpret li: lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
-      by force
-    have "\<aa> \<subseteq> carrier_local_ring_at"
-      by blast
-    then obtain u where "u \<in> carrier_local_ring_at" "u \<notin> \<aa>"
-      using ne by blast
-    then have "\<aa> \<subseteq> \<ww>"
-    proof (clarsimp simp: \<ww>_def carrier_local_ring_at_def cq.valid_frac_def)
-      fix x r s
-      assume \<section>: "cq.frac r s \<notin> \<aa>" "x \<in> \<aa>" "r \<in> R" "s \<in> R" "s \<notin> I"
-      have "x \<in> carrier_local_ring_at"
-        using \<open>x \<in> \<aa>\<close> by force
-      then obtain r' s' where "r' \<in> R" and x: "x = cq.frac r' s'" and "s' \<in> R" and "s' \<notin> I"
-        by (auto simp: carrier_local_ring_at_def cq.valid_frac_def)
-      then have "s \<cdot> s' \<notin> I"
-        by (meson "\<section>"(4) "\<section>"(5) absorbent)
-      with \<section> show "\<exists>r s. x = cq.frac r s \<and> r \<in> I \<and> s \<in> R \<and> s \<notin> I"
-        sorry
-    qed    
-    with \<open>\<ww> \<subseteq> \<aa>\<close> show "\<ww> = \<aa>"
-      by blast
-  qed
-  then show "\<exists>\<ww>. max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at" 
-    by metis
-  have \<section>: "J \<subseteq> \<ww>" if "pr_ideal carrier_local_ring_at J add_local_ring_at mult_local_ring_at
-    zero_local_ring_at one_local_ring_at" for J
-    sorry
-  show "J' = J"
-    if "max_lideal J' carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-      "max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-    for J' J
-  proof -
-    have J': "pr_ideal carrier_local_ring_at J' add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-      and J: "pr_ideal carrier_local_ring_at J add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
-      by (simp_all add: max_ideal.is_pr_ideal max_ideal_iff_max_lideal that)
-    then show "J' = J"
-      using that \<section> max_\<ww> unfolding max_lideal_def max_lideal_axioms_def by metis
-  qed
-qed
-*)
-
-lemma (in pr_ideal) local_ring_at_is_local:
-  shows "local_ring (carrier_local_ring_at) (add_local_ring_at) (mult_local_ring_at) 
-(zero_local_ring_at) (one_local_ring_at)"
+  shows "local_ring carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
 proof- 
   interpret cq: quotient_ring "R\<setminus>I" R "(+)" "(\<cdot>)" \<zero> \<one>
     by (simp add: Comm_Ring_Theory.quotient_ring_def comm.comm_ring_axioms submonoid_pr_ideal)
   define \<ww> where "\<ww> \<equiv> {quotient_ring.frac (R\<setminus>I) R (+) (\<cdot>) \<zero> r s| r s. r \<in> I \<and> s \<in> (R \<setminus> I)}"
-(* then we prove that every proper ideal of R\I is included in \<ww> and the result follows trivially *)
-  have F: "\<aa> \<subseteq> \<ww>"
+    \<comment>\<open>Now every proper ideal of @{term "R\<setminus>I"} is included in @{term \<ww>}, and the result follows trivially\<close>
+  have maximal: "\<aa> \<subseteq> \<ww>"
     if "lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
       and ne: "\<aa> \<noteq> carrier_local_ring_at" for \<aa>
   proof
@@ -4373,8 +4211,7 @@ proof-
     moreover have "ra \<cdot> sb + rb \<cdot> sa \<in> I"
       by (simp add: \<open>ra \<in> I\<close> \<open>rb \<in> I\<close> \<open>sa \<in> R\<close> \<open>sb \<in> R\<close> ideal(2))
     ultimately show ?thesis
-      unfolding \<ww>_def
-      using \<open>sa \<in> R\<close> \<open>sa \<notin> I\<close> \<open>sb \<in> R\<close> \<open>sb \<notin> I\<close> ab absorbent by blast
+      unfolding \<ww>_def using \<open>sa \<in> R\<close> \<open>sa \<notin> I\<close> \<open>sb \<in> R\<close> \<open>sb \<notin> I\<close> ab absorbent by blast
   qed
   interpret \<ww>: lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
   proof intro_locales
@@ -4437,15 +4274,21 @@ proof-
   qed
   have max: "max_lideal \<ww> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at"
   proof 
-    show "\<ww> \<noteq> carrier_local_ring_at"
-      sorry
-    show "\<And>\<aa>. lideal \<aa> carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
- \<Longrightarrow> \<aa> \<noteq> carrier_local_ring_at \<Longrightarrow> \<ww> \<subseteq> \<aa> \<Longrightarrow> \<ww> = \<aa>"
-      using F by blast
-  qed
+    have False
+      if "s \<in> R\<setminus>I" "r \<in> I" and eq: "cq.frac \<one> \<one> = cq.frac r s" for r s
+      using that eq_from_eq_frac [OF eq] \<open>r \<in> I\<close> comm.additive.abelian_group_axioms
+      unfolding abelian_group_def
+      by (metis Diff_iff absorbent additive.sub comm.additive.cancel_imp_equal comm.inverse_distributive(1) comm.multiplicative.composition_closed cq.sub_unit_closed ideal(1))
+    then have "cq.frac \<one> \<one> \<notin> \<ww>"
+      using \<ww>_def by blast
+    moreover have "cq.frac \<one> \<one> \<in> carrier_local_ring_at"
+      using carrier_local_ring_at_def cq.multiplicative.unit_closed cq.one_rel_def by force
+    ultimately show "\<ww> \<noteq> carrier_local_ring_at"
+      by blast
+  qed (use maximal in blast)
   have "\<And>J. max_lideal J carrier_local_ring_at add_local_ring_at mult_local_ring_at zero_local_ring_at one_local_ring_at
 \<Longrightarrow> J = \<ww>"
-    by (metis F max max_lideal.axioms(1) max_lideal.is_max max_lideal.neq_ring)
+    by (metis maximal max max_lideal.axioms(1) max_lideal.is_max max_lideal.neq_ring)
   with max show ?thesis
     by (metis local.ring_axioms local_ring_axioms_def local_ring_def)
 qed
