@@ -4135,10 +4135,10 @@ proof intro_locales
     using iso map.graph
     by (simp add: bijective.bijective ring_isomorphism_def bijective_map_def)
   show "local_ring_axioms A addA multA zeroA oneA"
-  proof unfold_locales
+  proof 
     fix I J
     assume I: "max_lideal I A addA multA zeroA oneA" and J: "max_lideal J A addA multA zeroA oneA" 
-    show "(I::'a set) = J"
+    show "I = J"
     proof-
       have "max_lideal (f ` I) B addB multB zeroB oneB"
         by (meson I im_of_max_lideal_is_max iso)

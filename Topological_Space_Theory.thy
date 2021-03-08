@@ -25,6 +25,10 @@ definition neighborhoods:: "'a \<Rightarrow> ('a set) set"
 
 text \<open>Note that by a neighborhood we mean what some authors call an open neighborhood.\<close>
 
+lemma open_union' [intro]: "\<And>F::('a set) set. (\<And>x. x \<in> F \<Longrightarrow> is_open x) \<Longrightarrow> is_open (\<Union>F)"
+  using open_union by auto
+
+
 end (* topological_space *)
 
 
