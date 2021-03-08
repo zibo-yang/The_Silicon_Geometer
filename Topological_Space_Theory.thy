@@ -25,6 +25,13 @@ definition neighborhoods:: "'a \<Rightarrow> ('a set) set"
 
 text \<open>Note that by a neighborhood we mean what some authors call an open neighborhood.\<close>
 
+definition is_connected:: "bool" where 
+"is_connected \<equiv> \<not> (\<exists>U V. is_open U \<and> is_open V \<and> (U \<noteq> {}) \<and> (V \<noteq> {}) \<and> (U \<inter> V = {}) \<and> (U \<union> V = S))"
+
+definition is_hausdorff:: "bool" where
+"is_hausdorff \<equiv> 
+\<forall>x y. (x \<in> S \<and> y \<in> S \<and> x \<noteq> y) \<longrightarrow> (\<exists>U V. U \<in> neighborhoods x \<and> V \<in> neighborhoods y \<and> U \<inter> V = {})"
+
 end (* topological_space *)
 
 
@@ -176,6 +183,7 @@ lemma (in topological_space) ind_topology_is_open_empty [iff]: "ind_topology S i
 lemma (in topological_space) ind_is_open_iff_open:
   shows "ind_topology.ind_is_open S is_open S U \<longleftrightarrow> is_open U \<and> U \<subseteq> S"
   by (metis ind_topology.ind_is_open_def ind_topology_is_open_self inf.absorb_iff2)
+
 
 subsection \<open>Continuous Maps\<close>
 
