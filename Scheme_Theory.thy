@@ -22,7 +22,28 @@ for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
 (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
 
-sublocale comp_affine_scheme \<subseteq> affine_scheme sorry 
+sublocale comp_affine_scheme \<subseteq> affine_scheme
+proof
+  fix x U
+  assume "x \<in> U" "is_open U"
+  then have "x \<in> X"
+      by (meson open_imp_subset subsetD)
+  interpret stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str "neighborhoods x" x
+  proof qed (auto simp add: \<open>x \<in> X\<close> neighborhoods_def)
+  have "local_ring_axioms carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
+  proof
+    fix I J
+    assume "max_lideal I carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
+      and "max_lideal J carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
+    show "I = J"
+      sorry
+  next
+    show "\<exists>\<ww>. max_lideal \<ww> carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
+      sorry
+  qed
+  then show "stalk.is_local is_open \<O>\<^sub>X \<rho> add_str mult_str zero_str one_str (neighborhoods x) x U"
+    by (simp add: is_local_def \<open>is_open U\<close> \<open>x \<in> U\<close> local_ring.intro stalk_is_ring)
+qed (use iso_locally_ringed_spaces_axioms in blast)
 
 section \<open>Schemes\<close>
 
@@ -264,62 +285,64 @@ qed
 qed
 *) 
 
-interpretation locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-proof
-  fix x U
-  assume U: "x \<in> U" "is_open U"
-  then have "x \<in> X"
-      by (meson open_imp_subset subsetD)
-  interpret stalkU: stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str "neighborhoods x" x
-  proof qed (auto simp add: \<open>x \<in> X\<close> neighborhoods_def)
-  have "local_ring_axioms stalkU.carrier_stalk stalkU.add_stalk stalkU.mult_stalk (stalkU.zero_stalk U) (stalkU.one_stalk U)"
-  proof
-    show "I = J"
-      if "max_lideal I stalkU.carrier_stalk stalkU.add_stalk stalkU.mult_stalk (stalkU.zero_stalk U) (stalkU.one_stalk U)"
-        and "max_lideal J stalkU.carrier_stalk stalkU.add_stalk stalkU.mult_stalk (stalkU.zero_stalk U) (stalkU.one_stalk U)"
-      for I J
-      using that sorry
-    show "\<exists>\<ww>. max_lideal \<ww> stalkU.carrier_stalk stalkU.add_stalk stalkU.mult_stalk (stalkU.zero_stalk U) (stalkU.one_stalk U)"
-      sorry
-  qed
-  then show "stalk.is_local is_open \<O>\<^sub>X \<rho> add_str mult_str zero_str one_str (neighborhoods x) x U"
-    by (meson U local_ring.intro stalkU.is_local_def stalkU.stalk_is_ring)
-qed
-
 lemma comp_affine_scheme_is_scheme:
-<<<<<<< HEAD
-  shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>" 
-proof
-  fix x::'b and X \<O>\<^sub>X
-  assume "x \<in> X"
-  show "\<exists>U. x \<in> U \<and> is_open U \<and> affine_scheme U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U) (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U) (ind_sheaf.ind_mult_str mult_str U) (ind_sheaf.ind_zero_str zero_str U) (ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>"
-    sorry
-qed 
-
-(*    
-=======
   shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str"
 proof
-  show "\<And>x. x \<in> X \<Longrightarrow>
-         \<exists>U. x \<in> U \<and>
+  fix x assume "x \<in> X"
+  have "is_open X"
+    by simp
+  show "\<exists>U. x \<in> U \<and>
              is_open U \<and>
              affine_scheme R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U)
               (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U) (ind_sheaf.ind_mult_str mult_str U)
               (ind_sheaf.ind_zero_str zero_str U) (ind_sheaf.ind_one_str one_str U)"
-  proof-
-    fix x assume "x \<in> X"
-    then show "\<exists>U. x \<in> U \<and>
-             is_open U \<and>
-             affine_scheme R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U)
-              (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U) (ind_sheaf.ind_mult_str mult_str U)
-              (ind_sheaf.ind_zero_str zero_str U) (ind_sheaf.ind_one_str one_str U)"
-    proof- 
-      have "is_open X" sorry 
-      moreover have "affine_scheme R (+) (\<cdot>) \<zero> \<one> X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X)
-              (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X)
-              (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X)" sorry
-      ultimately show ?thesis sorry (* using "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f" *)
+  proof - 
+    have \<section>: "stalk.is_local (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X) (ind_sheaf.ind_ring_morphisms \<rho> X) (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X) (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X) (topological_space.neighborhoods (ind_topology.ind_is_open X is_open X) x) x U"
+      if "x \<in> U" and opeU: "ind_topology.ind_is_open X is_open X U"
+      for x U
+    proof -
+      have "x \<in> X"
+        using opeU ind_is_open_iff_open that(1) by blast
+      interpret sheafX: sheaf_of_rings X "ind_topology.ind_is_open X is_open X" "ind_sheaf.ind_sheaf \<O>\<^sub>X X"
+        "ind_sheaf.ind_ring_morphisms \<rho> X" b 
+        "ind_sheaf.ind_add_str add_str X" "ind_sheaf.ind_mult_str mult_str X" 
+        "ind_sheaf.ind_zero_str zero_str X" "ind_sheaf.ind_one_str one_str X"
+        by (simp add: ind_sheaf.ind_sheaf_is_sheaf ind_sheaf_axioms_def ind_sheaf_def sheaf_of_rings_axioms) 
+      interpret stX: stalk X "ind_topology.ind_is_open X is_open X" "ind_sheaf.ind_sheaf \<O>\<^sub>X X"
+        "ind_sheaf.ind_ring_morphisms \<rho> X" b 
+        "ind_sheaf.ind_add_str add_str X" "ind_sheaf.ind_mult_str mult_str X" 
+        "ind_sheaf.ind_zero_str zero_str X" "ind_sheaf.ind_one_str one_str X" 
+        "topological_space.neighborhoods (ind_topology.ind_is_open X is_open X) x" 
+         x
+      proof qed (use \<open>x \<in> X\<close> sheafX.neighborhoods_def in auto)
+      interpret stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str "neighborhoods x" x
+      proof qed (auto simp add: \<open>x \<in> X\<close> neighborhoods_def)
+      have "local_ring_axioms stX.carrier_stalk stX.add_stalk stX.mult_stalk (stX.zero_stalk U) (stX.one_stalk U)"
+      proof
+        fix I J
+        assume "max_lideal I stX.carrier_stalk stX.add_stalk stX.mult_stalk (stX.zero_stalk U) (stX.one_stalk U)"
+          and "max_lideal J stX.carrier_stalk stX.add_stalk stX.mult_stalk (stX.zero_stalk U) (stX.one_stalk U)"
+        show "I = J"
+          sorry
+      next
+        show "\<exists>\<ww>. max_lideal \<ww> stX.carrier_stalk stX.add_stalk stX.mult_stalk (stX.zero_stalk U) (stX.one_stalk U)"
+          sorry
+      qed
+      then show ?thesis
+        unfolding stX.is_local_def
+        by (simp add: local_ring.intro opeU stX.stalk_is_ring that(1))
     qed
+    have "locally_ringed_space X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X) (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X) (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X)"
+      by (simp add: "\<section>" ind_sheaf.ind_sheaf_is_sheaf ind_sheaf_axioms_def ind_sheaf_def locally_ringed_space_axioms.intro locally_ringed_space_def ringed_space_def sheaf_of_rings_axioms)
+    moreover have "affine_scheme_axioms R (+) (\<cdot>) \<zero> \<one> X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X) (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X) (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X)"
+    apply unfold_locales
+      sorry
+    ultimately have "affine_scheme R (+) (\<cdot>) \<zero> \<one> X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X)
+              (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X)
+              (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X)" 
+      by (auto simp: affine_scheme_def local.comm_ring_axioms)
+    with \<open>x \<in> X\<close> show ?thesis
+      by force
   qed
 qed 
 (*
@@ -335,7 +358,6 @@ next
               (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
               (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) R (+)
               (\<cdot>) \<zero> \<one>"
->>>>>>> c35530051806e1ab3490784fbeac55cae902c3e3
     by (meson affine_scheme_as_axioms affine_scheme_def dom.open_space local.comm_ring_axioms lrs'.locally_ringed_space_axioms)
 qed
 *)
