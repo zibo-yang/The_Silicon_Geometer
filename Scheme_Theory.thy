@@ -15,22 +15,26 @@ iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_
 for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f
 
 (* definition 0.46 *)
-locale affine_scheme = locally_ringed_space + comm_ring +
+locale affine_scheme = comm_ring + 
+locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str 
+for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
   assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
 (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
 
-(* sublocale comp_affine_scheme \<subseteq> affine_scheme *) 
+sublocale comp_affine_scheme \<subseteq> affine_scheme sorry 
 
 section \<open>Schemes\<close>
 
 (* def. 0.47 *)
-locale scheme = locally_ringed_space + comm_ring +
+locale scheme = comm_ring + 
+locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str 
+for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
   assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U. x\<in>U \<and> is_open U \<and> 
-affine_scheme U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
+affine_scheme  R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
 (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U)
 (ind_sheaf.ind_mult_str mult_str U) (ind_sheaf.ind_zero_str zero_str U)
-(ind_sheaf.ind_one_str one_str U) R (+) (\<cdot>) \<zero> \<one>)"
+(ind_sheaf.ind_one_str one_str U))"
 
 context comp_affine_scheme
 begin
@@ -283,6 +287,7 @@ proof
 qed
 
 lemma comp_affine_scheme_is_scheme:
+<<<<<<< HEAD
   shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>" 
 proof
   fix x::'b and X \<O>\<^sub>X
@@ -292,6 +297,45 @@ proof
 qed 
 
 (*    
+=======
+  shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str"
+proof
+  show "\<And>x. x \<in> X \<Longrightarrow>
+         \<exists>U. x \<in> U \<and>
+             is_open U \<and>
+             affine_scheme R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U)
+              (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U) (ind_sheaf.ind_mult_str mult_str U)
+              (ind_sheaf.ind_zero_str zero_str U) (ind_sheaf.ind_one_str one_str U)"
+  proof-
+    fix x assume "x \<in> X"
+    then show "\<exists>U. x \<in> U \<and>
+             is_open U \<and>
+             affine_scheme R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U)
+              (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U) (ind_sheaf.ind_mult_str mult_str U)
+              (ind_sheaf.ind_zero_str zero_str U) (ind_sheaf.ind_one_str one_str U)"
+    proof- 
+      have "is_open X" sorry 
+      moreover have "affine_scheme R (+) (\<cdot>) \<zero> \<one> X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X)
+              (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X)
+              (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X)" sorry
+      ultimately show ?thesis sorry (* using "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f" *)
+    qed
+  qed
+qed 
+(*
+proof (intro scheme.intro scheme_axioms.intro)
+  show "locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" by (simp add: locally_ringed_space_axioms)
+next
+  show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
+next
+  show "\<And>x. x \<in> X \<Longrightarrow>
+         \<exists>U. x \<in> U \<and> is_open U \<and>
+             affine_scheme U (ind_topology.ind_is_open X is_open U)
+              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
+              (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
+              (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) R (+)
+              (\<cdot>) \<zero> \<one>"
+>>>>>>> c35530051806e1ab3490784fbeac55cae902c3e3
     by (meson affine_scheme_as_axioms affine_scheme_def dom.open_space local.comm_ring_axioms lrs'.locally_ringed_space_axioms)
 qed
 *)
@@ -299,7 +343,7 @@ qed
 end (* comp_affine_scheme *)
 
 lemma (in affine_scheme) affine_scheme_is_scheme:
-  shows "scheme X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str R (+) (\<cdot>) \<zero> \<one>"
+  shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str"
 proof-
   obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
@@ -345,9 +389,8 @@ Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_s
 qed
 
 lemma (in comm_ring) spec_is_scheme:
-  shows "scheme Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
-(\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
-R (+) (\<cdot>) \<zero> \<one>"
+  shows "scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
+(\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
   using spec_is_comp_affine_scheme affine_scheme.affine_scheme_is_scheme sorry
 
 lemma empty_scheme_is_comp_affine_scheme:
@@ -357,8 +400,7 @@ lemma empty_scheme_is_comp_affine_scheme:
   sorry
 
 lemma empty_scheme_is_scheme:
-  shows "scheme {} (\<lambda>U. True) (\<lambda>U. {0}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
-{0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0"
+  shows "scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 {} (\<lambda>U. True) (\<lambda>U. {0}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
   using affine_scheme.affine_scheme_is_scheme empty_scheme_is_comp_affine_scheme sorry
 
 end
