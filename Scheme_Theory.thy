@@ -9,6 +9,7 @@ text \<open>Computational affine schemes take the isomorphism with Spec as part 
 while in the locale for affine schemes we merely assert the existence of such an isomorphism.\<close> 
 
 locale comp_affine_scheme = comm_ring +
+locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
 iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b "\<lambda>U. add_sheaf_spec U"
 "\<lambda>U. mult_sheaf_spec U" "\<lambda>U. zero_sheaf_spec U" "\<lambda>U. one_sheaf_spec U" f \<phi>\<^sub>f
@@ -24,26 +25,15 @@ Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_shea
 
 sublocale comp_affine_scheme \<subseteq> affine_scheme
 proof
-  fix x U
-  assume "x \<in> U" "is_open U"
-  then have "x \<in> X"
-      by (meson open_imp_subset subsetD)
-  interpret stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str "neighborhoods x" x
-  proof qed (auto simp add: \<open>x \<in> X\<close> neighborhoods_def)
-  have "local_ring_axioms carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-  proof
-    fix I J
-    assume "max_lideal I carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-      and "max_lideal J carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-    show "I = J"
-      sorry
-  next
-    show "\<exists>\<ww>. max_lideal \<ww> carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-      sorry
-  qed
-  then show "stalk.is_local is_open \<O>\<^sub>X \<rho> add_str mult_str zero_str one_str (neighborhoods x) x U"
-    by (simp add: is_local_def \<open>is_open U\<close> \<open>x \<in> U\<close> local_ring.intro stalk_is_ring)
-qed (use iso_locally_ringed_spaces_axioms in blast)
+  obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str Spec is_zariski_open sheaf_spec
+        sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+    using iso_locally_ringed_spaces_axioms by auto
+  show "\<exists>f \<phi>\<^sub>f.
+       iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str Spec is_zariski_open sheaf_spec
+        sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+    using iso_locally_ringed_spaces_axioms by auto
+qed
+
 
 section \<open>Schemes\<close>
 
@@ -365,17 +355,9 @@ qed
 end (* comp_affine_scheme *)
 
 lemma (in affine_scheme) affine_scheme_is_scheme:
-  shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str"
-proof-
-  obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
-(\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
-    using is_iso_to_spec by blast
-  hence "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f"
-    by (simp add: comp_affine_scheme_def local.comm_ring_axioms)
-  thus ?thesis using comp_affine_scheme.comp_affine_scheme_is_scheme by fastforce
-qed
-
+  shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" 
+  using comp_affine_scheme.comp_affine_scheme_is_scheme comp_affine_scheme_def is_iso_to_spec 
+local.comm_ring_axioms locally_ringed_space_axioms by fastforce
 
 lemma (in comm_ring) spec_is_comp_affine_scheme:
   shows "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
@@ -383,6 +365,9 @@ lemma (in comm_ring) spec_is_comp_affine_scheme:
 (identity Spec) (\<lambda>U. identity (\<O> U))"
 proof (intro comp_affine_scheme.intro)
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
+next
+  show "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec
+     zero_sheaf_spec one_sheaf_spec" using spec_is_locally_ringed_space by simp
 next
   show "iso_locally_ringed_spaces Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec Spec is_zariski_open sheaf_spec
