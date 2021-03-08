@@ -384,12 +384,35 @@ lemma (in comm_ring) spec_is_comp_affine_scheme:
 proof (intro comp_affine_scheme.intro)
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
 next
+  have [simp]: "\<And>x A. x \<in> A \<Longrightarrow> inv_into A (identity A) x = x"
+    by (metis bij_betw_def bij_betw_restrict_eq inj_on_id2 inv_into_f_f restrict_apply')
   show "iso_locally_ringed_spaces Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec Spec is_zariski_open sheaf_spec
      sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
      (identity Spec) (\<lambda>U. identity (\<O> U))"
   proof-
-    have "homeomorphism Spec is_zariski_open Spec is_zariski_open (identity Spec)" sorry
+    have "homeomorphism Spec is_zariski_open Spec is_zariski_open (identity Spec)"
+    proof intro_locales
+      show "Set_Theory.map (identity Spec) Spec Spec"
+        by (simp add: Set_Theory.map_def)
+      show "continuous_map_axioms Spec is_zariski_open is_zariski_open (identity Spec)"
+      proof
+        fix U
+        assume "is_zariski_open U"
+        moreover have "identity Spec \<^sup>\<inverse> Spec U = U \<inter> Spec"
+          by fastforce
+        ultimately show "is_zariski_open (identity Spec \<^sup>\<inverse> Spec U)"
+          by simp
+      qed
+      show "bijective (identity Spec) Spec Spec"
+        by (auto simp: bijective_def bij_betw_def)
+      show "Set_Theory.map (inverse_map (identity Spec) Spec Spec) Spec Spec"
+      proof qed (auto simp: inv_into_into inverse_map_def)
+      have [simp]: "(restrict (inv_into Spec (identity Spec)) Spec \<^sup>\<inverse> Spec U) = U \<inter> Spec" for U
+        by force
+      show "continuous_map_axioms Spec is_zariski_open is_zariski_open (inverse_map (identity Spec) Spec Spec)"
+      proof qed (auto simp: inv_into_into inverse_map_def)
+    qed auto
     moreover have "iso_sheaves_of_rings
 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
 (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec))
