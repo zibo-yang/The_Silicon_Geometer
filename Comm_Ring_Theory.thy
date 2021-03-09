@@ -18,13 +18,11 @@ text \<open>The zero ring is a commutative ring.\<close>
 lemma invertible_0: "monoid.invertible {0} (\<lambda>n m. 0) 0 0"
     using Group_Theory.monoid.intro monoid.unit_invertible by force
 
-lemma zero_ring_is_ring:
-  shows "ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
+interpretation ring0: ring "{0::nat}" "\<lambda>n m. 0" "\<lambda>n m. 0" 0 0
   using invertible_0 by unfold_locales auto
 
-lemma zero_ring_is_comm_ring:
-  shows "comm_ring {0::nat} (\<lambda>n m. 0) (\<lambda>n m. 0) 0 0"
-  by (simp add: comm_ring_axioms_def comm_ring_def zero_ring_is_ring)
+interpretation cring0: comm_ring "{0::nat}" "\<lambda>n m. 0" "\<lambda>n m. 0" 0 0
+  by (metis comm_ring_axioms_def comm_ring_def ring0.ring_axioms)
 
 (*Suppresses the built-in plus sign, but why does
  no_notation minus (infixl "-" 65)
@@ -338,6 +336,10 @@ text \<open>Notation 2\<close>
 definition spectrum :: "('a set) set" ("Spec")
   where "Spec \<equiv> {I. pr_ideal R I (+) (\<cdot>) \<zero> \<one>}"
 
+lemma cring0_spectrum_eq [simp]: "cring0.spectrum = {}"
+  unfolding cring0.spectrum_def pr_ideal_def
+  by (metis (no_types, lifting) Collect_empty_eq cring0.ideal_zero pr_ideal.intro pr_ideal.not_1)
+
 text \<open>remark 0.11\<close>
 lemma closed_subsets_R [simp]:
   shows "\<V> R = {}"
@@ -488,7 +490,6 @@ lemma is_zariski_open_Int [simp]:
   "\<lbrakk>is_zariski_open U; is_zariski_open V\<rbrakk> \<Longrightarrow> is_zariski_open (U \<inter> V)"
   using Int is_zariski_open_def by blast
  
-
 lemma zariski_is_topological_space [iff]:
   shows "topological_space Spec is_zariski_open"
   unfolding is_zariski_open_def using generated_topology_is_topology 
@@ -499,6 +500,8 @@ lemma zariski_open_is_subset:
   shows "U \<subseteq> Spec"
   using assms zariski_is_topological_space topological_space.open_imp_subset by auto
 
+lemma cring0_is_zariski_open [simp]: "cring0.is_zariski_open = (\<lambda>U. U={})"
+  using cring0.cring0_spectrum_eq cring0.is_zariski_open_empty cring0.zariski_open_is_subset by blast
 
 subsection \<open>Standard Open Sets\<close>
 
@@ -1395,6 +1398,10 @@ subsection \<open>Spectrum of a Ring\<close>
 context comm_ring
 begin
 
+interpretation zariski_top_space: topological_space Spec is_zariski_open
+  unfolding is_zariski_open_def using generated_topology_is_topology 
+  by blast
+
 lemma spectrum_imp_cxt_quotient_ring:
   "\<pp> \<in> Spec \<Longrightarrow> quotient_ring (R \<setminus> \<pp>) R (+) (\<cdot>) \<zero> \<one>"
   apply (intro_locales)
@@ -1439,6 +1446,10 @@ lemma map_on_empty_is_regular:
   fixes s:: "'a set \<Rightarrow> ('a \<times> 'a) set"
   shows "is_regular s {}"
   by (simp add: is_regular_def)
+
+lemma cring0_is_regular [simp]: "cring0.is_regular x = (\<lambda>U. U={})"
+  unfolding cring0.is_regular_def cring0_is_zariski_open
+  by blast
 
 definition sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _" [90]90)
   where "\<O> U \<equiv> {s\<in>(\<Pi>\<^sub>E \<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)). is_regular s U}"
@@ -2175,13 +2186,12 @@ proof intro_locales
     finally show "sheaf_spec_morphisms U V (one_sheaf_spec U) = one_sheaf_spec V" .
   qed
 qed
- 
+
 lemma sheaf_spec_is_presheaf:
   shows "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
-proof-
-  have "topological_space Spec is_zariski_open" by (simp add: zariski_is_topological_space)
-  moreover have "sheaf_spec {} = {\<O>b}"
+proof intro_locales
+  have "sheaf_spec {} = {\<O>b}"
   proof
     show "{\<O>b} \<subseteq> \<O> {}"
       using undefined_is_map_on_empty map_on_empty_is_regular sheaf_spec_def \<O>_on_emptyset by auto
@@ -2199,8 +2209,10 @@ proof-
     with that show ?thesis
       by (simp add: sheaf_spec_morphisms_def inf_absorb2)
   qed
-  ultimately show ?thesis 
-    unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def using sheaf_spec_morphisms_are_ring_morphisms by blast
+  ultimately show "presheaf_of_rings_axioms is_zariski_open sheaf_spec
+                    sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec" 
+    unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def using sheaf_spec_morphisms_are_ring_morphisms
+    by blast
 qed
 
 (* ex. 0.30 *)
@@ -4317,7 +4329,9 @@ begin
 interpretation pi:pr_ideal R \<pp> "(+)" "(\<cdot>)" \<zero> \<one>
   by (simp add: is_prime spectrum_imp_pr)
 
-interpretation top: topological_space Spec is_zariski_open by simp
+interpretation top: topological_space Spec is_zariski_open
+  
+  by simp
 
 interpretation pr:presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
             \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
