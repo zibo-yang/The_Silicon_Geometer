@@ -9,6 +9,7 @@ text \<open>Computational affine schemes take the isomorphism with Spec as part 
 while in the locale for affine schemes we merely assert the existence of such an isomorphism.\<close> 
 
 locale comp_affine_scheme = comm_ring +
+locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
 iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b "\<lambda>U. add_sheaf_spec U"
 "\<lambda>U. mult_sheaf_spec U" "\<lambda>U. zero_sheaf_spec U" "\<lambda>U. one_sheaf_spec U" f \<phi>\<^sub>f
@@ -24,26 +25,15 @@ Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_shea
 
 sublocale comp_affine_scheme \<subseteq> affine_scheme
 proof
-  fix x U
-  assume "x \<in> U" "is_open U"
-  then have "x \<in> X"
-      by (meson open_imp_subset subsetD)
-  interpret stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str "neighborhoods x" x
-  proof qed (auto simp add: \<open>x \<in> X\<close> neighborhoods_def)
-  have "local_ring_axioms carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-  proof
-    fix I J
-    assume "max_lideal I carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-      and "max_lideal J carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-    show "I = J"
-      sorry
-  next
-    show "\<exists>\<ww>. max_lideal \<ww> carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-      sorry
-  qed
-  then show "stalk.is_local is_open \<O>\<^sub>X \<rho> add_str mult_str zero_str one_str (neighborhoods x) x U"
-    by (simp add: is_local_def \<open>is_open U\<close> \<open>x \<in> U\<close> local_ring.intro stalk_is_ring)
-qed (use iso_locally_ringed_spaces_axioms in blast)
+  obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str Spec is_zariski_open sheaf_spec
+        sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+    using iso_locally_ringed_spaces_axioms by auto
+  show "\<exists>f \<phi>\<^sub>f.
+       iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str Spec is_zariski_open sheaf_spec
+        sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+    using iso_locally_ringed_spaces_axioms by auto
+qed
+
 
 section \<open>Schemes\<close>
 
@@ -365,17 +355,9 @@ qed
 end (* comp_affine_scheme *)
 
 lemma (in affine_scheme) affine_scheme_is_scheme:
-  shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str"
-proof-
-  obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
-(\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
-    using is_iso_to_spec by blast
-  hence "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f"
-    by (simp add: comp_affine_scheme_def local.comm_ring_axioms)
-  thus ?thesis using comp_affine_scheme.comp_affine_scheme_is_scheme by fastforce
-qed
-
+  shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" 
+  using comp_affine_scheme.comp_affine_scheme_is_scheme comp_affine_scheme_def is_iso_to_spec 
+local.comm_ring_axioms locally_ringed_space_axioms by fastforce
 
 lemma (in comm_ring) spec_is_comp_affine_scheme:
   shows "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
@@ -383,6 +365,9 @@ lemma (in comm_ring) spec_is_comp_affine_scheme:
 (identity Spec) (\<lambda>U. identity (\<O> U))"
 proof (intro comp_affine_scheme.intro)
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
+next
+  show "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec
+     zero_sheaf_spec one_sheaf_spec" using spec_is_locally_ringed_space by simp
 next
   have [simp]: "\<And>x A. x \<in> A \<Longrightarrow> inv_into A (identity A) x = x"
     by (metis bij_betw_def bij_betw_restrict_eq inj_on_id2 inv_into_f_f restrict_apply')
@@ -440,12 +425,63 @@ lemma (in comm_ring) spec_is_scheme:
 
 lemma empty_scheme_is_comp_affine_scheme:
   shows "comp_affine_scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 
-{} (\<lambda>U. True) (\<lambda>U. {0}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
+{} (\<lambda>U. U={}) (\<lambda>U. {0}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
 (\<lambda>\<pp>\<in>Spec. undefined) (\<lambda>U.\<lambda>s\<in>(\<O> U). 0)"
-  sorry
+proof (intro_locales)
+  show "Group_Theory.monoid {0::nat} (\<lambda>x y. 0) 0"
+    by (metis ring.axioms(2) zero_ring_is_ring)
+  show "Group_Theory.group_axioms {0::nat} (\<lambda>x y. 0) 0"
+    by (metis Group_Theory.group_def abelian_group_def ring_def zero_ring_is_ring)
+  show "commutative_monoid_axioms {0::nat} (\<lambda>x y. 0)"
+    by (simp add: commutative_monoid_axioms.intro)
+  show "ring_axioms {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0)"
+    using ring_def zero_ring_is_ring by fastforce
+  show "comm_ring_axioms {0::nat} (\<lambda>x y. 0)"
+    by (metis comm_ring_def zero_ring_is_comm_ring)
+  show "topological_space ({}::'a set) (\<lambda>U. U={})"
+    by (auto simp: topological_space_def)
+  show "presheaf_of_rings_axioms (\<lambda>U. U={}) (\<lambda>U. {0::'b}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
+  proof qed (auto simp add: invertible_0)
+  show "sheaf_of_rings_axioms ({}::'a set) (\<lambda>U. U={}) (\<lambda>U. {0::'b}) (\<lambda>U V. identity{0}) (\<lambda>U. 0)"
+    using sheaf_of_rings_axioms_def by fastforce
+  show "locally_ringed_space_axioms (\<lambda>U. U={}) (\<lambda>U. {0::'b}) (\<lambda>U V. identity{0}) (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
+    by (simp add: locally_ringed_space_axioms_def)
+  show "topological_space (comm_ring.spectrum {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.is_zariski_open {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0)"
+    by (simp add: comm_ring.zariski_is_topological_space zero_ring_is_comm_ring)
+  show "Set_Theory.map (\<lambda>\<pp>\<in>Spec. undefined) {} (comm_ring.spectrum {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0)"
+    by (auto simp add: Set_Theory.map_def)
+  show "continuous_map_axioms {} (\<lambda>U. U={}) (comm_ring.is_zariski_open {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (\<lambda>\<pp>\<in>Spec. undefined)"
+    unfolding continuous_map_axioms_def by fastforce
+  show "presheaf_of_rings_axioms (comm_ring.is_zariski_open {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec_morphisms {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) comm_ring.\<O>b (comm_ring.add_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.mult_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.zero_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.one_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0)"
+    unfolding presheaf_of_rings_axioms_def
+    apply safe
+        apply (simp add: comm_ring.sheaf_spec_morphisms_are_ring_morphisms zero_ring_is_comm_ring)
+       apply (simp add: comm_ring.\<O>_on_emptyset zero_ring_is_comm_ring)
+      apply (simp add: comm_ring.\<O>_on_emptyset zero_ring_is_comm_ring)
+     apply (simp add: comm_ring.sheaf_morphisms_sheaf_spec zero_ring_is_comm_ring)
+    by (smt (z3) comm_ring.sheaf_spec_is_presheaf presheaf_of_rings.assoc_comp zero_ring_is_comm_ring)
+  show "sheaf_of_rings_axioms (comm_ring.spectrum {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.is_zariski_open {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec_morphisms {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.zero_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0)"
+    apply unfold_locales
+     apply (metis (mono_tags, lifting) comm_ring.sheaf_spec_is_sheaf sheaf_of_rings.locality zero_ring_is_comm_ring)
+    by (smt (verit,best) comm_ring.sheaf_spec_is_sheaf sheaf_of_rings_axioms_def sheaf_of_rings_def zero_ring_is_comm_ring)
+  show "morphism_ringed_spaces_axioms {} (\<lambda>U. {0::'b}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0) (comm_ring.spectrum {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.is_zariski_open {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec_morphisms {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) comm_ring.\<O>b (comm_ring.add_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.mult_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.zero_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.one_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (\<lambda>\<pp>\<in>Spec. undefined) (\<lambda>U. \<lambda>s\<in>\<O> U. 0)"
+    apply (auto simp: morphism_ringed_spaces_axioms_def morphism_sheaves_of_rings_def
+        morphism_presheaves_of_rings_def)
+      apply (simp add: comm_ring.sheaf_spec_is_presheaf zero_ring_is_comm_ring)
+    apply unfold_locales
+    apply (simp add: comm_ring.is_zariski_open_Spec zero_ring_is_comm_ring)
+    apply (simp add: comm_ring.is_zariski_open_empty zero_ring_is_comm_ring)
+    sorry
+  show "morphism_locally_ringed_spaces_axioms {} (\<lambda>U. U={}) (\<lambda>U. {0::'b}) (\<lambda>U V. identity{0}) (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0) (comm_ring.is_zariski_open {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec_morphisms {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.add_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.mult_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.zero_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.one_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (\<lambda>\<pp>\<in>Spec. undefined) (\<lambda>U. \<lambda>s\<in>\<O> U. 0)"
+    apply unfold_locales
+    sorry
+  show "iso_locally_ringed_spaces_axioms {} (\<lambda>U. U={}) (\<lambda>U. {0::'b}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0) (comm_ring.spectrum {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.is_zariski_open {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.sheaf_spec_morphisms {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) comm_ring.\<O>b (comm_ring.add_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.mult_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0) (comm_ring.zero_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (comm_ring.one_sheaf_spec {0} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0) (\<lambda>\<pp>\<in>Spec. undefined) (\<lambda>U. \<lambda>s\<in>\<O> U. 0)"
+    apply intro_locales
+    sorry
+qed
 
 lemma empty_scheme_is_scheme:
-  shows "scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 {} (\<lambda>U. True) (\<lambda>U. {0}) (\<lambda>U V. id) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
-  using affine_scheme.affine_scheme_is_scheme empty_scheme_is_comp_affine_scheme sorry
+  shows "scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 {} (\<lambda>U. U={}) (\<lambda>U. {0}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
+  by (metis comp_affine_scheme.comp_affine_scheme_is_scheme empty_scheme_is_comp_affine_scheme)
 
 end
