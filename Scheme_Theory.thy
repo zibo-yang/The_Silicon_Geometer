@@ -286,7 +286,14 @@ proof
              affine_scheme R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U)
               (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U) (ind_sheaf.ind_mult_str mult_str U)
               (ind_sheaf.ind_zero_str zero_str U) (ind_sheaf.ind_one_str one_str U)"
-  proof - 
+  proof -
+    have comp1: "\<And>U. ind_topology.ind_is_open X is_open X U = is_open U" sorry
+    have comp2: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_sheaf \<O>\<^sub>X X U =  \<O>\<^sub>X U" sorry
+    have comp3: "\<And>U V. U \<subseteq> X \<and> V \<subseteq> X \<Longrightarrow> ind_sheaf.ind_ring_morphisms \<rho> X U V = \<rho> U V" sorry
+    have comp4: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_add_str add_str X U = add_str U" sorry
+    have comp5: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_mult_str mult_str X U = mult_str U" sorry
+    have comp6: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_zero_str zero_str X U = zero_str U" sorry
+    have comp7: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_one_str one_str X U = one_str U" sorry
     have \<section>: "stalk.is_local (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X) (ind_sheaf.ind_ring_morphisms \<rho> X) (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X) (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X) (topological_space.neighborhoods (ind_topology.ind_is_open X is_open X) x) x U"
       if "x \<in> U" and opeU: "ind_topology.ind_is_open X is_open X U"
       for x U
