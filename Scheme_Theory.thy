@@ -287,13 +287,22 @@ proof
               (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U) (ind_sheaf.ind_mult_str mult_str U)
               (ind_sheaf.ind_zero_str zero_str U) (ind_sheaf.ind_one_str one_str U)"
   proof -
-    have comp1: "\<And>U. ind_topology.ind_is_open X is_open X U = is_open U" sorry
-    have comp2: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_sheaf \<O>\<^sub>X X U =  \<O>\<^sub>X U" sorry
-    have comp3: "\<And>U V. U \<subseteq> X \<and> V \<subseteq> X \<Longrightarrow> ind_sheaf.ind_ring_morphisms \<rho> X U V = \<rho> U V" sorry
-    have comp4: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_add_str add_str X U = add_str U" sorry
-    have comp5: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_mult_str mult_str X U = mult_str U" sorry
-    have comp6: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_zero_str zero_str X U = zero_str U" sorry
-    have comp7: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_one_str one_str X U = one_str U" sorry
+    interpret ind_sheaf X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str X
+      by (simp add: ind_sheaf_axioms_def ind_sheaf_def sheaf_of_rings_axioms)
+    have comp1 [simp]: "\<And>U. ind_topology.ind_is_open X is_open X U = is_open U"
+      by (meson ind_is_open_iff_open open_imp_subset)
+    have comp2 [simp]: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_sheaf \<O>\<^sub>X X U =  \<O>\<^sub>X U"
+      by (simp add: Int_absorb2 Int_commute local.ind_sheaf_def)
+     have comp3 [simp]: "\<And>U V. U \<subseteq> X \<and> V \<subseteq> X \<Longrightarrow> ind_sheaf.ind_ring_morphisms \<rho> X U V = \<rho> U V"
+       by (simp add: ind_ring_morphisms_def inf.absorb_iff2)
+    have comp4 [simp]: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_add_str add_str X U = add_str U"
+      by (simp add: ind_add_str_def inf.absorb_iff2)
+    have comp5 [simp]: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_mult_str mult_str X U = mult_str U"
+      by (simp add: ind_mult_str_def inf.absorb_iff2)
+    have comp6 [simp]: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_zero_str zero_str X U = zero_str U"
+      by (simp add: Int_absorb2 Int_commute ind_zero_str_def)
+    have comp7 [simp]: "\<And>U. U \<subseteq> X \<Longrightarrow> ind_sheaf.ind_one_str one_str X U = one_str U"
+      by (simp add: ind_one_str_def inf.absorb_iff2)
     have \<section>: "stalk.is_local (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X) (ind_sheaf.ind_ring_morphisms \<rho> X) (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X) (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X) (topological_space.neighborhoods (ind_topology.ind_is_open X is_open X) x) x U"
       if "x \<in> U" and opeU: "ind_topology.ind_is_open X is_open X U"
       for x U
@@ -304,7 +313,7 @@ proof
         "ind_sheaf.ind_ring_morphisms \<rho> X" b 
         "ind_sheaf.ind_add_str add_str X" "ind_sheaf.ind_mult_str mult_str X" 
         "ind_sheaf.ind_zero_str zero_str X" "ind_sheaf.ind_one_str one_str X"
-        by (simp add: ind_sheaf.ind_sheaf_is_sheaf ind_sheaf_axioms_def ind_sheaf_def sheaf_of_rings_axioms) 
+        using ind_sheaf_is_sheaf by blast
       interpret stX: stalk X "ind_topology.ind_is_open X is_open X" "ind_sheaf.ind_sheaf \<O>\<^sub>X X"
         "ind_sheaf.ind_ring_morphisms \<rho> X" b 
         "ind_sheaf.ind_add_str add_str X" "ind_sheaf.ind_mult_str mult_str X" 
@@ -327,12 +336,15 @@ proof
       qed
       then show ?thesis
         unfolding stX.is_local_def
-        by (simp add: local_ring.intro opeU stX.stalk_is_ring that(1))
+        by (meson local_ring.intro opeU stX.stalk_is_ring that(1))
     qed
-    have "locally_ringed_space X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X) (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X) (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X)"
-      by (simp add: "\<section>" ind_sheaf.ind_sheaf_is_sheaf ind_sheaf_axioms_def ind_sheaf_def locally_ringed_space_axioms.intro locally_ringed_space_def ringed_space_def sheaf_of_rings_axioms)
-    moreover have "affine_scheme_axioms R (+) (\<cdot>) \<zero> \<one> X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X) (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X) (ind_sheaf.ind_zero_str zero_str X) (ind_sheaf.ind_one_str one_str X)"
-    apply unfold_locales
+    have "locally_ringed_space X (ind_topology.ind_is_open X is_open X)
+     local.ind_sheaf ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str ind_one_str"
+      by (simp add: "\<section>" ind_sheaf_is_sheaf locally_ringed_space_axioms_def locally_ringed_space_def ringed_space_def)
+    moreover 
+    have "affine_scheme_axioms R (+) (\<cdot>) \<zero> \<one> X (ind_topology.ind_is_open X is_open X)
+                   local.ind_sheaf ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str ind_one_str"
+      apply unfold_locales
       sorry
     ultimately have "affine_scheme R (+) (\<cdot>) \<zero> \<one> X (ind_topology.ind_is_open X is_open X) (ind_sheaf.ind_sheaf \<O>\<^sub>X X)
               (ind_sheaf.ind_ring_morphisms \<rho> X) b (ind_sheaf.ind_add_str add_str X) (ind_sheaf.ind_mult_str mult_str X)
@@ -342,22 +354,7 @@ proof
       by force
   qed
 qed 
-(*
-proof (intro scheme.intro scheme_axioms.intro)
-  show "locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" by (simp add: locally_ringed_space_axioms)
-next
-  show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
-next
-  show "\<And>x. x \<in> X \<Longrightarrow>
-         \<exists>U. x \<in> U \<and> is_open U \<and>
-             affine_scheme U (ind_topology.ind_is_open X is_open U)
-              (cxt_ind_sheaf.ind_sheaf \<O>\<^sub>X U) (cxt_ind_sheaf.ind_ring_morphisms \<rho> U) b
-              (cxt_ind_sheaf.ind_add_str add_str U) (cxt_ind_sheaf.ind_mult_str mult_str U)
-              (cxt_ind_sheaf.ind_zero_str zero_str U) (cxt_ind_sheaf.ind_one_str one_str U) R (+)
-              (\<cdot>) \<zero> \<one>"
-    by (meson affine_scheme_as_axioms affine_scheme_def dom.open_space local.comm_ring_axioms lrs'.locally_ringed_space_axioms)
-qed
-*)
+
 
 end (* comp_affine_scheme *)
 
@@ -432,16 +429,13 @@ lemma (in comm_ring) spec_is_scheme:
 
 lemma empty_scheme_is_comp_affine_scheme:
   shows "comp_affine_scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 
-{} (\<lambda>U. U={}) (\<lambda>U. {0}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
+{} (\<lambda>U. U={}) (\<lambda>U. {0::nat}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
 (\<lambda>\<pp>\<in>Spec. undefined) (\<lambda>U. \<lambda>s \<in> cring0.sheaf_spec U. 0)"
 proof -
   interpret im_sheaf "{}" "\<lambda>U. U = {}" "\<lambda>U. {0}" "\<lambda>U V. identity {0}"
     "0" "\<lambda>U x y. 0" "\<lambda>U x y. 0" "\<lambda>U. 0" "\<lambda>U. 0" "{}" "\<lambda>U. U = {}" "\<lambda>\<pp>\<in>Spec. undefined"
   proof qed (use invertible_0 in auto)
-  note ring0.additive.invertible_left_inverse [simp del] ring0.additive.left_unit [simp del]
-  note target.open_space [simp del] ring_of_empty [simp del]
-  note open_space [simp del] ring0.right_zero [simp del]
-
+  note target.open_space [simp del] ring_of_empty [simp del] open_space [simp del] 
   have ring_im: "ring (local.im_sheaf V) (add_im_sheaf V) (mult_im_sheaf V) (zero_im_sheaf V) (one_im_sheaf V)"
     for V :: "nat set set"
   proof intro_locales
@@ -457,9 +451,13 @@ proof -
     show "ring_axioms (local.im_sheaf V) (add_im_sheaf V) (mult_im_sheaf V)"
       unfolding ring_axioms_def add_im_sheaf_def mult_im_sheaf_def by blast
   qed
+  have rh0: "ring_homomorphism (cring0.sheaf_spec_morphisms {} {}) {\<lambda>x. undefined}
+             (cring0.add_sheaf_spec {}) (cring0.mult_sheaf_spec {}) (cring0.zero_sheaf_spec {}) (cring0.one_sheaf_spec {}) {\<lambda>x. undefined}
+             (cring0.add_sheaf_spec {}) (cring0.mult_sheaf_spec {}) (cring0.zero_sheaf_spec {}) (cring0.one_sheaf_spec {})"
+    using cring0.one_sheaf_spec_def cring0.sheaf_spec_morphisms_are_ring_morphisms cring0.sheaf_spec_morphisms_def cring0.zero_sheaf_spec_def by auto
   show ?thesis
   proof intro_locales
-    show "locally_ringed_space_axioms (\<lambda>U. U={}) (\<lambda>U. {0::'b}) (\<lambda>U V. identity{0}) (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
+    show "locally_ringed_space_axioms (\<lambda>U. U={}) (\<lambda>U. {0::nat}) (\<lambda>U V. identity{0}) (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
       by (metis (mono_tags, lifting) empty_iff locally_ringed_space_axioms_def)
     show "topological_space cring0.spectrum cring0.is_zariski_open"
       by blast
@@ -469,34 +467,17 @@ proof -
       unfolding continuous_map_axioms_def by fastforce
     show "presheaf_of_rings_axioms cring0.is_zariski_open cring0.sheaf_spec
             cring0.sheaf_spec_morphisms cring0.\<O>b cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec"
-      unfolding presheaf_of_rings_axioms_def cring0.\<O>_on_emptyset
-      apply safe
-      using cring0.sheaf_spec_morphisms_are_ring_morphisms apply blast
-      using cring0.sheaf_morphisms_sheaf_spec apply blast
-      by (metis (no_types, lifting) presheaf_of_rings.assoc_comp cring0.sheaf_spec_is_presheaf)
+      using cring0.\<O>_on_emptyset cring0.sheaf_morphisms_sheaf_spec
+      by (metis cring0.sheaf_spec_is_presheaf presheaf_of_rings_def) 
     show "sheaf_of_rings_axioms cring0.spectrum cring0.is_zariski_open cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.zero_sheaf_spec"
-      apply unfold_locales
-       apply (metis (mono_tags, lifting) sheaf_of_rings.locality cring0.sheaf_spec_is_sheaf)
-      by (smt (verit) sheaf_of_rings_axioms_def sheaf_of_rings_def cring0.sheaf_spec_is_sheaf)
+      using cring0.sheaf_spec_is_sheaf sheaf_of_rings_def by fastforce
     have im_sheaf_0[simp]: "im_sheaf.im_sheaf {} (\<lambda>U. {0}) (\<lambda>\<pp>\<in>Spec. undefined) U = {0}" for U :: "nat set set"
       using local.im_sheaf_def by blast
     have rh: "ring_homomorphism (im_sheaf_morphisms U V) (local.im_sheaf U) (add_im_sheaf U)
          (mult_im_sheaf U) (zero_im_sheaf U) (one_im_sheaf U) (local.im_sheaf V)
          (add_im_sheaf V) (mult_im_sheaf V) (zero_im_sheaf V) (one_im_sheaf V)"
       if "cring0.is_zariski_open U" "cring0.is_zariski_open V" "V \<subseteq> U" for U V
-    proof -
-      interpret rU: ring "local.im_sheaf U" "add_im_sheaf U" "mult_im_sheaf U" "zero_im_sheaf U" "one_im_sheaf U"
-        using ring_im by blast
-      interpret rV: ring "local.im_sheaf V" "add_im_sheaf V" "mult_im_sheaf V" "zero_im_sheaf V" "one_im_sheaf V"
-        using ring_im by blast
-      show ?thesis
-        apply unfold_locales
-            apply (smt (verit, best) PiE_eq_singleton im_sheaf_morphisms_def local.im_sheaf_def singletonD singletonI)
-           apply (metis add_im_sheaf_def identity_map im_sheaf_morphisms_def singletonI)
-          apply (metis im_sheaf_morphisms_def restrict_apply singletonI zero_im_sheaf_def)
-         apply (metis identity_map im_sheaf_morphisms_def mult_im_sheaf_def singletonI)
-        by (metis im_sheaf_morphisms_def one_im_sheaf_def restrict_apply singletonI)
-    qed
+        by (smt (verit, best) cring0.cring0_is_zariski_open im_sheaf_is_presheaf presheaf_of_rings.is_ring_morphism that)
     show "morphism_ringed_spaces_axioms {} (\<lambda>U. {0})
          (\<lambda>U V. identity {0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0)
          (\<lambda>U. 0) (\<lambda>U. 0) cring0.spectrum cring0.is_zariski_open cring0.sheaf_spec
@@ -538,12 +519,15 @@ proof -
           qed
         qed
         show "(im_sheaf_morphisms U V \<circ> (\<lambda>s\<in>cring0.sheaf_spec U. 0)) x = ((\<lambda>s\<in>cring0.sheaf_spec V. 0) \<circ> cring0.sheaf_spec_morphisms U V) x"
-          if "cring0.is_zariski_open U"
-            and "cring0.is_zariski_open V" and "V \<subseteq> U" and "x \<in> cring0.sheaf_spec U"
+          if "cring0.is_zariski_open U" "cring0.is_zariski_open V" "V \<subseteq> U" "x \<in> cring0.sheaf_spec U"
           for U V x
           using that cring0.sheaf_morphisms_sheaf_spec by (simp add: im_sheaf_morphisms_def)
       qed
     qed
+    interpret monoid0: Group_Theory.monoid "{\<lambda>x. undefined}"
+      "cring0.add_sheaf_spec {}"
+      "(\<lambda>\<pp>\<in>{}. quotient_ring.zero_rel ({0}\<setminus>\<pp>) {0} ring0.subtraction ring0.subtraction 0 0)"
+      by (smt (verit, best) Group_Theory.monoid.intro cring0.add_sheaf_spec_extensional extensional_empty restrict_extensional singletonD)
 
     show "iso_locally_ringed_spaces_axioms {} (\<lambda>U. U = {})
      (\<lambda>U. {0}) (\<lambda>U V. identity {0}) 0 (\<lambda>U x y. 0)
@@ -553,24 +537,41 @@ proof -
      cring0.add_sheaf_spec cring0.mult_sheaf_spec
      cring0.zero_sheaf_spec cring0.one_sheaf_spec
      (\<lambda>\<pp>\<in>Spec. undefined)
-     (\<lambda>U. \<lambda>s\<in>cring0.sheaf_spec U. 0)"
+     (\<lambda>U. \<lambda>s\<in>cring0.sheaf_spec U. 0::nat)"
       unfolding iso_locally_ringed_spaces_axioms_def
     proof (intro conjI)
       show "homeomorphism {} (\<lambda>U. U = {}) cring0.spectrum cring0.is_zariski_open (\<lambda>\<pp>\<in>Spec. undefined)"
-        apply intro_locales
-             apply (simp_all add: target.topological_space_axioms Set_Theory.map_def)
-            apply force
-        using continuous_map_axioms continuous_map_def apply blast
-          apply (simp add: bijective_def bij_betw_def)
-         apply (simp add: Set_Theory.map_def inverse_map_def restrict_def)
-        by (simp add: continuous_map_axioms.intro)
-      show "iso_sheaves_of_rings cring0.spectrum cring0.is_zariski_open cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.\<O>b cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec local.im_sheaf im_sheaf_morphisms (0::'e) add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf (\<lambda>U. \<lambda>s\<in>cring0.sheaf_spec U. 0)"
-        apply intro_locales
-        apply (auto simp: )
-        using target.topological_space_axioms apply blast
-        using \<open>presheaf_of_rings_axioms cring0.is_zariski_open cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.\<O>b cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec\<close> apply force
-          apply (metis im_sheaf_is_presheaf presheaf_of_rings_def)
-        sorry
+      proof intro_locales
+        show "bijective (\<lambda>\<pp>\<in>Spec. undefined) {} cring0.spectrum"
+          by (simp add: bijective_def bij_betw_def)
+        show "Set_Theory.map (inverse_map (\<lambda>\<pp>\<in>Spec. undefined) {} cring0.spectrum) cring0.spectrum {}"
+          by (simp add: Set_Theory.map_def inverse_map_def restrict_def)
+      qed (use map_axioms continuous_map_axioms_def in \<open>force+\<close>)
+      show "iso_sheaves_of_rings cring0.spectrum cring0.is_zariski_open cring0.sheaf_spec
+                 cring0.sheaf_spec_morphisms cring0.\<O>b cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec 
+                 local.im_sheaf im_sheaf_morphisms (0::nat) add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf (\<lambda>U. \<lambda>s\<in>cring0.sheaf_spec U. 0::nat)"
+      proof intro_locales
+        show "topological_space cring0.spectrum cring0.is_zariski_open"
+          by force
+        show "presheaf_of_rings_axioms cring0.is_zariski_open cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.\<O>b cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec"
+          using \<open>presheaf_of_rings_axioms cring0.is_zariski_open cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.\<O>b cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec\<close> by force
+        show "presheaf_of_rings_axioms cring0.is_zariski_open local.im_sheaf im_sheaf_morphisms (0::nat) add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf"
+          using im_sheaf_is_presheaf presheaf_of_rings_def by fastforce
+        show "morphism_presheaves_of_rings_axioms cring0.is_zariski_open cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec local.im_sheaf im_sheaf_morphisms add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf (\<lambda>U. \<lambda>s\<in>cring0.sheaf_spec U. 0::nat)"
+        proof qed (auto simp: cring0.zero_sheaf_spec_def cring0.one_sheaf_spec_def cring0.add_sheaf_spec_def cring0.mult_sheaf_spec_def 
+            zero_im_sheaf_def one_im_sheaf_def add_im_sheaf_def mult_im_sheaf_def
+            im_sheaf_morphisms_def cring0.sheaf_morphisms_sheaf_spec monoid0.invertible_def)
+      have morph_empty: "morphism_presheaves_of_rings {} (\<lambda>U. U = {})
+             local.im_sheaf im_sheaf_morphisms 0 (\<lambda>V. ring0.subtraction) (\<lambda>V. ring0.subtraction)
+             (\<lambda>V. 0) (\<lambda>V. 0) cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.\<O>b
+             cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec
+             (\<lambda>S. \<lambda>n\<in>{0}. \<lambda>x. undefined)"
+      proof qed (auto simp: im_sheaf_morphisms_def cring0.sheaf_spec_morphisms_def 
+            cring0.zero_sheaf_spec_def cring0.one_sheaf_spec_def cring0.add_sheaf_spec_def cring0.mult_sheaf_spec_def 
+            cring0.\<O>b_def monoid0.invertible_def)
+      then show "iso_presheaves_of_rings_axioms cring0.spectrum cring0.is_zariski_open cring0.sheaf_spec cring0.sheaf_spec_morphisms cring0.\<O>b cring0.add_sheaf_spec cring0.mult_sheaf_spec cring0.zero_sheaf_spec cring0.one_sheaf_spec local.im_sheaf im_sheaf_morphisms (0::nat) add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf (\<lambda>U. \<lambda>s\<in>cring0.sheaf_spec U. 0)"
+        by unfold_locales (auto simp add: zero_im_sheaf_def one_im_sheaf_def add_im_sheaf_def mult_im_sheaf_def)
+      qed
     qed
     show "morphism_locally_ringed_spaces_axioms {}
      (\<lambda>U. U = {}) (\<lambda>U. {0}) (\<lambda>U V. identity {0})
@@ -585,7 +586,7 @@ proof -
 qed
 
 lemma empty_scheme_is_scheme:
-  shows "scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 {} (\<lambda>U. U={}) (\<lambda>U. {0}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
+  shows "scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 {} (\<lambda>U. U={}) (\<lambda>U. {0}) (\<lambda>U V. identity{0::nat}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
   by (metis comp_affine_scheme.comp_affine_scheme_is_scheme empty_scheme_is_comp_affine_scheme)
 
 end

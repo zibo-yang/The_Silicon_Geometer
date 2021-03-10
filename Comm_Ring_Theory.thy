@@ -21,6 +21,9 @@ lemma invertible_0: "monoid.invertible {0} (\<lambda>n m. 0) 0 0"
 interpretation ring0: ring "{0::nat}" "\<lambda>n m. 0" "\<lambda>n m. 0" 0 0
   using invertible_0 by unfold_locales auto
 
+declare ring0.additive.left_unit [simp del] ring0.additive.invertible [simp del] 
+declare ring0.additive.invertible_left_inverse [simp del] ring0.right_zero [simp del]
+
 interpretation cring0: comm_ring "{0::nat}" "\<lambda>n m. 0" "\<lambda>n m. 0" 0 0
   by (metis comm_ring_axioms_def comm_ring_def ring0.ring_axioms)
 
@@ -1454,6 +1457,9 @@ lemma cring0_is_regular [simp]: "cring0.is_regular x = (\<lambda>U. U={})"
 definition sheaf_spec:: "'a set set \<Rightarrow> ('a set \<Rightarrow> ('a \<times> 'a) set) set" ("\<O> _" [90]90)
   where "\<O> U \<equiv> {s\<in>(\<Pi>\<^sub>E \<pp>\<in>U. (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)). is_regular s U}"
 
+lemma cring0_sheaf_spec_empty [simp]: "cring0.sheaf_spec {} = {\<lambda>x. undefined}"
+  by (simp add: cring0.sheaf_spec_def)
+
 lemma sec_has_right_codom:
   assumes "s \<in> \<O> U" and "\<pp> \<in> U"
   shows "s \<pp> \<in> (R\<^bsub>\<pp> (+) (\<cdot>) \<zero>\<^esub>)"
@@ -1485,8 +1491,7 @@ lemma \<O>_on_emptyset: "\<O> {} = {\<O>b}"
   
 lemma sheaf_spec_of_empty_is_singleton:
   fixes U:: "'a set set"
-  assumes "U = {}" and "s \<in> {s. s \<in> extensional U}" and 
-"t \<in> {s. s \<in> extensional U}"
+  assumes "U = {}" and "s \<in> extensional U" and "t \<in> extensional U"
   shows "s = t"
   using assms by (simp add: Set_Theory.map_def)
 

@@ -188,7 +188,6 @@ lemma (in topological_space) ind_is_open_iff_open:
   shows "ind_topology.ind_is_open S is_open S U \<longleftrightarrow> is_open U \<and> U \<subseteq> S"
   by (metis ind_topology.ind_is_open_def ind_topology_is_open_self inf.absorb_iff2)
 
-
 subsection \<open>Continuous Maps\<close>
 
 locale continuous_map = source: topological_space S is_open + target: topological_space S' is_open' 
