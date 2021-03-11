@@ -4,6 +4,7 @@ theory Euclidean_Space_Theory
 
 begin
 
+
 section \<open>Real Vector Spaces\<close>
 
 locale real_vector_space = abelian_group V add zero 
@@ -45,15 +46,17 @@ end (* inner_product_space *)
 
 section \<open>Euclidean Vector Spaces\<close>
 
-locale euclidean_vector_space = inner_product_space + 
-  fixes Basis:: "'a set" 
-  assumes is_nonempty_basis [simp]: "Basis \<noteq> {}"
-and is_finite_basis [simp]: "finite Basis"
+locale euclidean_vector_space = inner_product_space +
+  fixes n:: nat and Basis:: "'a set" 
+  assumes is_nonempty [simp]: "n \<ge> 1"
+and dim [simp]: "card Basis = n"
 and inner_basis: "\<lbrakk>u \<in> Basis; v \<in> Basis\<rbrakk> \<Longrightarrow> \<langle>u,v\<rangle> = (if u = v then 1 else 0)"
 and euclidean_all_zero_iff: "(\<forall>u\<in>Basis. \<langle>x,u\<rangle> = 0) \<longleftrightarrow> (x = \<zero>)"
 begin
 
-definition dim:: "nat" where "dim \<equiv> card Basis"
+definition dist:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<d>'(_,_')")
+  where "\<d>(u,v) \<equiv> sqrt (\<langle>u + inverse v, u + inverse v\<rangle>)"
+(* Above the minus notation "-" in abelian groups should probably be introduced *)
 
 end (* euclidean_vector_space *)
 
