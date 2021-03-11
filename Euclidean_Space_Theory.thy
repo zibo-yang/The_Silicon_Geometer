@@ -59,6 +59,14 @@ definition dist:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<d>'(_,_')")
   where "\<d>(u,v) \<equiv> sqrt (\<langle>minus u v , minus u v\<rangle>)"
 (* Why the notation for minus from Group_Further_Theory.thy does not work here ? *)
 
+(* prove that dist is a metric *)
+
+definition norm:: "'a \<Rightarrow> real" ("\<parallel>_\<parallel>")
+  where "norm u \<equiv> sqrt (\<langle>u,u\<rangle>)"
+
+(* prove that norm is a norm *)
+
+
 end (* euclidean_vector_space *)
 
 end
