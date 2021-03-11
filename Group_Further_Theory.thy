@@ -389,4 +389,20 @@ qed (auto simp: generate_into_G generate.unit subgroup_generated_def)
 
 end (* group *)
 
+
+section \<open>Abelian Groups\<close>
+
+context abelian_group
+begin
+
+definition minus:: "'a \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "\<hyphen>" 70)
+  where "x \<hyphen> y \<equiv> x \<cdot> inverse y "
+
+definition finsum:: "'b set \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a"
+  where "finsum I f \<equiv> finprod I f" 
+
+(* A notation "\<Sum>i\<in>I. f i" should be introduced for a sum of a family of elements of an abelian group *)
+
+end (* abelian_group*)
+
 end

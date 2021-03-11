@@ -1,5 +1,5 @@
 theory Euclidean_Space_Theory
-  imports "Jacobson_Basic_Algebra.Group_Theory"
+  imports Group_Further_Theory
           HOL.Real
 
 begin
@@ -52,11 +52,12 @@ locale euclidean_vector_space = inner_product_space +
 and dim [simp]: "card Basis = n"
 and inner_basis: "\<lbrakk>u \<in> Basis; v \<in> Basis\<rbrakk> \<Longrightarrow> \<langle>u,v\<rangle> = (if u = v then 1 else 0)"
 and euclidean_all_zero_iff: "(\<forall>u\<in>Basis. \<langle>x,u\<rangle> = 0) \<longleftrightarrow> (x = \<zero>)"
+(* the two last axioms should be deduced from two axioms asserting that the family Basis is free
+and spans V *)
 begin
 
 definition dist:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<d>'(_,_')")
-  where "\<d>(u,v) \<equiv> sqrt (\<langle>u + inverse v, u + inverse v\<rangle>)"
-(* Above the minus notation "-" in abelian groups should probably be introduced *)
+  where "\<d>(u,v) \<equiv> sqrt (\<langle>u \<hyphen> v , u \<hyphen> v\<rangle>)"
 
 end (* euclidean_vector_space *)
 
