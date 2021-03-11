@@ -1,6 +1,5 @@
 theory Topological_Space_Theory
-  imports Main
-          HOL.Real
+  imports Complex_Main
           "Jacobson_Basic_Algebra.Set_Theory"
           Set_Further_Theory
           Sketch_and_Explore 

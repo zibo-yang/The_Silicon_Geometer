@@ -3318,7 +3318,7 @@ lemma carrier_direct_limE:
 
 end (* direct_lim *)
 
-abbreviation "lim \<equiv> direct_lim.carrier_direct_lim"
+abbreviation "dlim \<equiv> direct_lim.carrier_direct_lim"
 
 
 subsubsection \<open>Universal property of direct limits\<close>
@@ -3443,7 +3443,7 @@ begin
 
 (* definition 0.37 *)
 definition carrier_stalk:: "('a set \<times> 'b) set set"
-  where "carrier_stalk \<equiv> lim \<FF> \<rho> (neighborhoods x)"
+  where "carrier_stalk \<equiv> dlim \<FF> \<rho> (neighborhoods x)"
 
 lemma neighborhoods_eq:"neighborhoods x = I"
   unfolding index neighborhoods_def by simp
