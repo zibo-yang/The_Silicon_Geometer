@@ -4344,6 +4344,11 @@ B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) an
 + assumes preimage_of_max_lideal: 
 "\<And>\<ww>\<^sub>A \<ww>\<^sub>B. max_lideal \<ww>\<^sub>A A (+) (\<cdot>) \<zero> \<one> \<Longrightarrow> max_lideal \<ww>\<^sub>B B (+') (\<cdot>') \<zero>' \<one>' \<Longrightarrow> (f\<^sup>\<inverse> A \<ww>\<^sub>B) = \<ww>\<^sub>A"
 
+lemma id_is_local_ring_morphism:
+  assumes "local_ring A add mult zero one"
+  shows "local_ring_morphism (identity A) A add mult zero one A add mult zero one"
+  sorry
+
 
 subsubsection \<open>Locally Ringed Spaces\<close>
 
@@ -5155,6 +5160,19 @@ end (* ind_mor_btw_stalks *)
 
 notation ind_mor_btw_stalks.induced_morphism ("\<phi>\<^bsub>_ _ _ _ _ _ _ _ _ _\<^esub>")
 
+lemma (in sheaf_of_rings) induced_morphism_with_id_is_id:
+  assumes "x \<in> S"
+  shows "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>
+= (\<lambda>C\<in>(stalk.carrier_stalk is_open \<FF> \<rho> x). C)"
+  sorry (* using induced_morphism_def *)
+
+lemma (in locally_ringed_space) induced_morphism_with_id_is_local:
+  assumes "x \<in> S" and "is_open V"
+  shows "ind_mor_btw_stalks.is_local 
+S is_open \<FF> \<rho> add_str mult_str zero_str one_str is_open \<FF> \<rho> add_str mult_str zero_str one_str
+(identity S) x V (\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>)"
+  sorry (* using induced_morphism_with_id_is_id id_is_local_ring_morphism *)
+
 (* definition 0.45 *)
 
 locale morphism_locally_ringed_spaces = morphism_ringed_spaces +
@@ -5169,7 +5187,7 @@ S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
 S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
 (identity S)
 (\<lambda>U. identity (\<FF> U))"
-  sorry
+  sorry (* using induced_morphism_with_id_is_local *)
 
 locale iso_locally_ringed_spaces = morphism_locally_ringed_spaces +
   assumes is_homeomorphism: "homeomorphism X is_open\<^sub>X Y is_open\<^sub>Y f" and
@@ -5183,6 +5201,6 @@ S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
 S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
 (identity S)
 (\<lambda>U. identity (\<FF> U))"
-  sorry (* using id_to_mor_locally_ringed_spaces id_is_homeomorphism id_to id_to_iso_of_sheaves *)
+  sorry (* using id_to_mor_locally_ringed_spaces id_is_homeomorphism id_to_iso_of_sheaves *)
 
 end
