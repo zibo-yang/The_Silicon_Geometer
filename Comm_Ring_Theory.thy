@@ -855,6 +855,27 @@ qed
 
 end (* im_sheaf *)
 
+lemma (in sheaf_of_rings) id_to_iso_of_sheaves:
+  shows "iso_sheaves_of_rings
+S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
+(im_sheaf.im_sheaf S \<FF> (identity S))
+(im_sheaf.im_sheaf_morphisms S \<rho> (identity S))
+b
+(\<lambda>V x y. add_str ((identity S)\<^sup>\<inverse> S V) x y) 
+(\<lambda>V x y. mult_str ((identity S)\<^sup>\<inverse> S V) x y) 
+(\<lambda>V. zero_str ((identity S)\<^sup>\<inverse> S V)) 
+(\<lambda>V. one_str ((identity S)\<^sup>\<inverse> S V))
+(\<lambda>U. identity (\<FF> U))"
+proof-
+  have "\<And>V. im_sheaf.im_sheaf S \<FF> (identity S) V = \<FF> V" sorry (* you may have to add the assumption V\<subseteq>S *)
+  have "\<And>U V. im_sheaf.im_sheaf_morphisms S \<rho> (identity S) U V \<equiv> \<rho> U V" sorry (* idem *)
+  have "(\<lambda>V x y. add_str ((identity S)\<^sup>\<inverse> S V) x y) = add_str" sorry
+  have "(\<lambda>V x y. mult_str ((identity S)\<^sup>\<inverse> S V) x y) = mult_str" sorry
+  have "(\<lambda>V. zero_str ((identity S)\<^sup>\<inverse> S V)) = zero_str" sorry
+  have "(\<lambda>V. one_str ((identity S)\<^sup>\<inverse> S V)) = one_str" sorry
+  show ?thesis sorry
+qed
+
 
 subsection \<open>Quotient Ring\<close>
 
