@@ -3,19 +3,6 @@ theory Set_Further_Theory
 
 begin
 
-text \<open>DELETE AFTER THE ISABELLE 2021 RELEASE\<close>
-lemma bij_betw_iff_bijections:
-  "bij_betw f A B \<longleftrightarrow> (\<exists>g. (\<forall>x \<in> A. f x \<in> B \<and> g(f x) = x) \<and> (\<forall>y \<in> B. g y \<in> A \<and> f(g y) = y))"
-  (is "?lhs = ?rhs")
-proof
-  assume L: ?lhs
-  then show ?rhs
-    apply (rule_tac x="the_inv_into A f" in exI)
-    apply (auto simp: bij_betw_def f_the_inv_into_f the_inv_into_f_f the_inv_into_into)
-    done
-qed (force intro: bij_betw_byWitness)
-
-
 text \<open>Some new notation for built-in primitives\<close>
 
 section \<open>Sets\<close>
