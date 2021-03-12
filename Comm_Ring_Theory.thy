@@ -5163,10 +5163,26 @@ ind_mor_btw_stalks.is_local X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X add_st
                             is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y f
                             x V \<phi>\<^bsub>X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y f \<phi>\<^sub>f x\<^esub>"
 
+lemma (in locally_ringed_space) id_to_mor_locally_ringed_spaces:
+  shows "morphism_locally_ringed_spaces
+S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
+S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
+(identity S)
+(\<lambda>U. identity (\<FF> U))"
+  sorry
+
 locale iso_locally_ringed_spaces = morphism_locally_ringed_spaces +
   assumes is_homeomorphism: "homeomorphism X is_open\<^sub>X Y is_open\<^sub>Y f" and
 is_iso_of_sheaves: "iso_sheaves_of_rings Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y 
 im_sheaf im_sheaf_morphisms b add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf
 \<phi>\<^sub>f"
+
+lemma (in locally_ringed_space) id_to_iso_locally_ringed_spaces:
+  shows "iso_locally_ringed_spaces
+S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
+S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
+(identity S)
+(\<lambda>U. identity (\<FF> U))"
+  sorry (* using id_to_mor_locally_ringed_spaces id_is_homeomorphism id_to id_to_iso_of_sheaves *)
 
 end
