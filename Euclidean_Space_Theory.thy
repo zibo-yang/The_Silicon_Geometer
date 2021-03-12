@@ -9,15 +9,15 @@ section \<open>Real Vector Spaces\<close>
 
 locale real_vector_space = abelian_group V add zero 
   for V and add (infixl "+" 70) and zero ("\<zero>") + 
-  fixes scale:: "real \<Rightarrow> 'a \<Rightarrow> 'a" (infixr "\<cdot>\<^sub>R" 75)
-  assumes scale_add: "r \<cdot>\<^sub>R (x + y) = r \<cdot>\<^sub>R x + r \<cdot>\<^sub>R y"
-  and add_scale: "(r + s) \<cdot>\<^sub>R x = r \<cdot>\<^sub>R x + s \<cdot>\<^sub>R x"
-  and scale_scale: "r \<cdot>\<^sub>R s \<cdot>\<^sub>R x = (r * s) \<cdot>\<^sub>R x"
-  and one_scale: "1 \<cdot>\<^sub>R x = x"
+  fixes scale:: "real \<Rightarrow> 'a \<Rightarrow> 'a" (infixr "\<cdot>\<^sub>\<real>" 75)
+  assumes scale_add: "r \<cdot>\<^sub>\<real> (x + y) = r \<cdot>\<^sub>\<real> x + r \<cdot>\<^sub>\<real> y"
+  and add_scale: "(r + s) \<cdot>\<^sub>\<real> x = r \<cdot>\<^sub>\<real> x + s \<cdot>\<^sub>\<real> x"
+  and scale_scale: "r \<cdot>\<^sub>\<real> s \<cdot>\<^sub>\<real> x = (r * s) \<cdot>\<^sub>\<real> x"
+  and one_scale: "1 \<cdot>\<^sub>\<real> x = x"
 begin
 
-abbreviation divide:: "'a \<Rightarrow> real \<Rightarrow> 'a"  (infixl "'/\<^sub>R" 70)
-  where "x /\<^sub>R r \<equiv> Fields.inverse r \<cdot>\<^sub>R x"
+abbreviation divide:: "'a \<Rightarrow> real \<Rightarrow> 'a"  (infixl "'/\<^sub>\<real>" 70)
+  where "x /\<^sub>\<real> r \<equiv> Fields.inverse r \<cdot>\<^sub>\<real> x"
 
 end (* real_vector_space *)
 
@@ -26,7 +26,7 @@ section \<open>Inner Product Spaces\<close>
 
 locale inner_product_space = real_vector_space +
   fixes inner_prod:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<langle>_,_\<rangle>")
-  assumes scale_is_linear: "\<langle>r \<cdot>\<^sub>R x, y\<rangle> = r * \<langle>x, y\<rangle>"
+  assumes scale_is_linear: "\<langle>r \<cdot>\<^sub>\<real> x, y\<rangle> = r * \<langle>x, y\<rangle>"
 and add_is_linear: "\<langle>x + y, z\<rangle> = \<langle>x,z\<rangle> + \<langle>y,z\<rangle>"
 and is_symmetric: "\<langle>x,y\<rangle> = \<langle>y,x\<rangle>"
 and is_positive_definite: "x \<noteq> \<zero> \<Longrightarrow> \<langle>x,x\<rangle> > 0"
