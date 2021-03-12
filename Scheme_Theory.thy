@@ -285,8 +285,8 @@ proof -
     by (rule ext) (meson ind_is_open_iff_open open_imp_subset)
 
   interpret sheaf_of_rings X is_open local.ind_sheaf ind_ring_morphisms b ind_add_str 
-            ind_mult_str ind_zero_str ind_one_str
-      using ind_sheaf_is_sheaf by force
+    ind_mult_str ind_zero_str ind_one_str
+    using ind_sheaf_is_sheaf by force
 
   have "affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open local.ind_sheaf ind_ring_morphisms b
           ind_add_str ind_mult_str ind_zero_str ind_one_str"
@@ -299,14 +299,14 @@ proof -
                 (neighborhoods u) u U"
         if "u \<in> U" and opeU: "is_open U" for u U
       proof -
-        have UX:"U \<subseteq> X" by (simp add: opeU open_imp_subset)
+        have UX: "U \<subseteq> X" by (simp add: opeU open_imp_subset)
 
         interpret stX: stalk X is_open local.ind_sheaf ind_ring_morphisms b ind_add_str 
-            ind_mult_str ind_zero_str ind_one_str "neighborhoods u" u
+          ind_mult_str ind_zero_str ind_one_str "neighborhoods u" u
           apply (unfold_locales)
           unfolding neighborhoods_def using \<open>U \<subseteq> X\<close> \<open>u\<in>U\<close> by auto
         interpret stX_r:ring stX.carrier_stalk stX.add_stalk stX.mult_stalk 
-              "stX.zero_stalk U" "stX.one_stalk U"
+          "stX.zero_stalk U" "stX.one_stalk U"
           using that stX.stalk_is_ring by simp_all
 
         have eq_\<O>\<^sub>X: "local.ind_sheaf U = \<O>\<^sub>X U" if "U \<subseteq> X" for U
@@ -321,12 +321,11 @@ proof -
           by (simp add: Int_absorb2 Int_commute ind_zero_str_def)
         have eq_one_str : "\<And>U. U \<subseteq> X \<Longrightarrow> ind_one_str U = one_str U"
           by (simp add: ind_one_str_def inf.absorb_iff2)
-              
+
         interpret stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str "neighborhoods u" u
           by (meson direct_lim_def ind_sheaf.axioms(1) ind_sheaf_axioms stX.stalk_axioms stalk_def)
         interpret r:ring carrier_stalk add_stalk mult_stalk "zero_stalk U" "one_stalk U"
           using stalk_is_ring that by simp_all
-
         have "ring stX.carrier_stalk stX.add_stalk stX.mult_stalk (stX.zero_stalk U) (stX.one_stalk U)"
           by (simp add: opeU stX.stalk_is_ring that(1))
         moreover have "local_ring carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
@@ -384,7 +383,7 @@ proof -
           qed
 
           show "?id (stX.add_stalk X' Y') = add_stalk (?id X') (?id Y')" 
-               "?id (stX.mult_stalk X' Y') = mult_stalk (?id X') (?id Y')" 
+            "?id (stX.mult_stalk X' Y') = mult_stalk (?id X') (?id Y')" 
             if "X' \<in> stX.carrier_stalk" "Y' \<in> stX.carrier_stalk" for X' Y'
           proof -
             define x where "x=(SOME x. x \<in> X')"
@@ -448,7 +447,7 @@ proof -
             unfolding stX_carrier carrier_stalk_def carrier_direct_lim_def
             using AB(1) by simp
           then show "?id \<in> stX.carrier_stalk \<rightarrow>\<^sub>E carrier_stalk"
-              "bij_betw ?id stX.carrier_stalk carrier_stalk"
+            "bij_betw ?id stX.carrier_stalk carrier_stalk"
             by auto
         qed 
         ultimately show ?thesis unfolding stX.is_local_def

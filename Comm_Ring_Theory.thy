@@ -810,7 +810,9 @@ proof (intro presheaf_of_rings.intro presheaf_of_rings_axioms.intro)
   show "im_sheaf {} = {b}" using im_sheaf_def by simp
   show "\<And>U. is_open' U \<Longrightarrow> (\<And>x. x \<in> (im_sheaf U) \<Longrightarrow> im_sheaf_morphisms U U x = x)" 
     using im_sheaf_morphisms_def by (simp add: im_sheaf_def is_continuous) 
-  show "\<And>U V W. is_open' U \<Longrightarrow> is_open' V \<Longrightarrow> is_open' W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> (\<And>x. x \<in> (im_sheaf U) \<Longrightarrow> im_sheaf_morphisms U W x = (im_sheaf_morphisms V W \<circ> im_sheaf_morphisms U V) x)"
+  show "\<And>U V W.
+       \<lbrakk>is_open' U; is_open' V; is_open' W; V \<subseteq> U; W \<subseteq> V\<rbrakk> 
+       \<Longrightarrow> (\<And>x. x \<in> (im_sheaf U) \<Longrightarrow> im_sheaf_morphisms U W x = (im_sheaf_morphisms V W \<circ> im_sheaf_morphisms U V) x)"
     by (metis Int_mono assoc_comp im_sheaf_def im_sheaf_morphisms_def ind_topology.is_subset is_continuous ind_topology_is_open_self vimage_mono)
 qed
 
@@ -856,24 +858,47 @@ qed
 end (* im_sheaf *)
 
 lemma (in sheaf_of_rings) id_to_iso_of_sheaves:
-  shows "iso_sheaves_of_rings
-S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
-(im_sheaf.im_sheaf S \<FF> (identity S))
-(im_sheaf.im_sheaf_morphisms S \<rho> (identity S))
-b
-(\<lambda>V x y. add_str ((identity S)\<^sup>\<inverse> S V) x y) 
-(\<lambda>V x y. mult_str ((identity S)\<^sup>\<inverse> S V) x y) 
-(\<lambda>V. zero_str ((identity S)\<^sup>\<inverse> S V)) 
-(\<lambda>V. one_str ((identity S)\<^sup>\<inverse> S V))
-(\<lambda>U. identity (\<FF> U))"
+  shows "iso_sheaves_of_rings S is_open \<FF> \<rho> b add_str mult_str zero_str one_str
+            (im_sheaf.im_sheaf S \<FF> (identity S))
+            (im_sheaf.im_sheaf_morphisms S \<rho> (identity S))
+            b
+            (\<lambda>V. +\<^bsub>identity S \<^sup>\<inverse> S V\<^esub>) (\<lambda>V. \<cdot>\<^bsub>identity S \<^sup>\<inverse> S V\<^esub>) (\<lambda>V. \<zero>\<^bsub>identity S \<^sup>\<inverse> S V\<^esub>) (\<lambda>V. \<one>\<^bsub>identity S \<^sup>\<inverse> S V\<^esub>) (\<lambda>U. identity (\<FF> U))"
+    (is "iso_sheaves_of_rings S is_open \<FF> \<rho> b _ _ _ _ _ _ b  ?add ?mult ?zero ?one ?F")
 proof-
-  have "\<And>V. im_sheaf.im_sheaf S \<FF> (identity S) V = \<FF> V" sorry (* you may have to add the assumption V\<subseteq>S *)
-  have "\<And>U V. im_sheaf.im_sheaf_morphisms S \<rho> (identity S) U V \<equiv> \<rho> U V" sorry (* idem *)
-  have "(\<lambda>V x y. add_str ((identity S)\<^sup>\<inverse> S V) x y) = add_str" sorry
-  have "(\<lambda>V x y. mult_str ((identity S)\<^sup>\<inverse> S V) x y) = mult_str" sorry
-  have "(\<lambda>V. zero_str ((identity S)\<^sup>\<inverse> S V)) = zero_str" sorry
-  have "(\<lambda>V. one_str ((identity S)\<^sup>\<inverse> S V)) = one_str" sorry
-  show ?thesis sorry
+  have preq[simp]: "\<And>V. V \<subseteq> S \<Longrightarrow> (identity S \<^sup>\<inverse> S V) = V"
+    by auto
+  interpret id: im_sheaf S is_open \<FF> \<rho> b add_str mult_str zero_str one_str S is_open "identity S"
+    by intro_locales (auto simp add: Set_Theory.map_def continuous_map_axioms_def open_imp_subset)
+  have 1[simp]: "\<And>V. V \<subseteq> S \<Longrightarrow> im_sheaf.im_sheaf S \<FF> (identity S) V = \<FF> V"
+    by (simp add: id.im_sheaf_def)
+  have 2[simp]: "\<And>U V. \<lbrakk>U \<subseteq> S; V \<subseteq> S\<rbrakk> \<Longrightarrow> im_sheaf.im_sheaf_morphisms S \<rho> (identity S) U V \<equiv> \<rho> U V"
+    using id.im_sheaf_morphisms_def by auto
+  show ?thesis
+  proof intro_locales
+    have rh: "\<And>U. is_open U \<Longrightarrow>
+         ring_homomorphism (identity (\<FF> U)) (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub>"
+      using id_is_mor_pr_rngs morphism_presheaves_of_rings.is_ring_morphism by fastforce
+    show "morphism_presheaves_of_rings_axioms is_open \<FF> \<rho> add_str mult_str zero_str one_str 
+           id.im_sheaf id.im_sheaf_morphisms ?add ?mult ?zero ?one ?F"
+      unfolding morphism_presheaves_of_rings_axioms_def
+      by (auto simp: rh open_imp_subset intro: is_map_from_is_homomorphism map.map_closed)
+    have \<rho>: "\<And>U V W x. \<lbrakk>is_open U; is_open V; is_open W; V \<subseteq> U; W \<subseteq> V; x \<in> \<FF> U\<rbrakk> \<Longrightarrow> \<rho> V W (\<rho> U V x) = \<rho> U W x"
+      by (metis assoc_comp comp_def)
+    show "presheaf_of_rings_axioms is_open id.im_sheaf id.im_sheaf_morphisms b ?add ?mult ?zero ?one"
+      by (auto simp: \<rho> presheaf_of_rings_axioms_def is_ring_morphism open_imp_subset)
+    then have "presheaf_of_rings S is_open id.im_sheaf id.im_sheaf_morphisms b ?add ?mult ?zero ?one"
+      by (metis id.im_sheaf_is_presheaf presheaf_of_rings_def)
+    moreover
+    have "morphism_presheaves_of_rings_axioms is_open
+          id.im_sheaf id.im_sheaf_morphisms ?add ?mult ?zero ?one \<FF> \<rho> add_str
+          mult_str zero_str one_str (\<lambda>U. \<lambda>x\<in>\<FF> U. x)"
+      unfolding morphism_presheaves_of_rings_axioms_def
+      by (auto simp: rh open_imp_subset intro: is_map_from_is_homomorphism map.map_closed)
+    ultimately
+    show "iso_presheaves_of_rings_axioms S is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
+            id.im_sheaf id.im_sheaf_morphisms b ?add ?mult ?zero ?one ?F"
+      by (auto simp: presheaf_of_rings_axioms iso_presheaves_of_rings_axioms_def morphism_presheaves_of_rings_def open_imp_subset)
+  qed
 qed
 
 
@@ -4347,7 +4372,28 @@ B and addition' (infixl "+''" 65) and multiplication' (infixl "\<cdot>''" 70) an
 lemma id_is_local_ring_morphism:
   assumes "local_ring A add mult zero one"
   shows "local_ring_morphism (identity A) A add mult zero one A add mult zero one"
-  sorry
+proof -
+  interpret local_ring A add mult zero one
+    by (simp add: assms)
+  show ?thesis
+  proof intro_locales
+    show "Set_Theory.map (identity A) A A"
+      by (simp add: Set_Theory.map_def)
+    show "monoid_homomorphism_axioms (identity A) A add zero add zero"
+      by (simp add: monoid_homomorphism_axioms_def)
+    show "monoid_homomorphism_axioms (identity A) A mult one mult one"
+      by (simp add: monoid_homomorphism_axioms_def)
+    show "local_ring_morphism_axioms (identity A) A add mult zero one A add mult zero one"
+    proof
+      fix \<ww>\<^sub>A \<ww>\<^sub>B 
+      assume "max_lideal \<ww>\<^sub>A A add mult zero one" "max_lideal \<ww>\<^sub>B A add mult zero one"
+      then have "\<ww>\<^sub>B \<inter> A = \<ww>\<^sub>A"
+        by (metis Int_absorb2 is_unique lideal.subset max_lideal.axioms(1))
+      then show "identity A \<^sup>\<inverse> A \<ww>\<^sub>B = \<ww>\<^sub>A"
+        by (simp add: preimage_identity_self)
+    qed
+  qed
+qed
 
 
 subsubsection \<open>Locally Ringed Spaces\<close>
@@ -5162,7 +5208,7 @@ notation ind_mor_btw_stalks.induced_morphism ("\<phi>\<^bsub>_ _ _ _ _ _ _ _ _ _
 
 lemma (in sheaf_of_rings) induced_morphism_with_id_is_id:
   assumes "x \<in> S"
-  shows "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>
+  shows "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) ?F x\<^esub>
 = (\<lambda>C\<in>(stalk.carrier_stalk is_open \<FF> \<rho> x). C)"
   sorry (* using induced_morphism_def *)
 
@@ -5170,7 +5216,7 @@ lemma (in locally_ringed_space) induced_morphism_with_id_is_local:
   assumes "x \<in> S" and "is_open V"
   shows "ind_mor_btw_stalks.is_local 
 S is_open \<FF> \<rho> add_str mult_str zero_str one_str is_open \<FF> \<rho> add_str mult_str zero_str one_str
-(identity S) x V (\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>)"
+(identity S) x V (\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) ?F x\<^esub>)"
   sorry (* using induced_morphism_with_id_is_id id_is_local_ring_morphism *)
 
 (* definition 0.45 *)

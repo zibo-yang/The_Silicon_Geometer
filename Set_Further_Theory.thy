@@ -20,6 +20,9 @@ lemma preimage_of_inter:
   shows "f\<^sup>\<inverse> X (V \<inter> V') = (f\<^sup>\<inverse> X V) \<inter> (f\<^sup>\<inverse> X V')"
   by blast
 
+lemma preimage_identity_self: "identity A \<^sup>\<inverse> A B = B \<inter> A"
+  by (simp add: vimage_inter_cong)
+
 text \<open>Simplification actually replaces the RHS by the LHS\<close>
 lemma preimage_vimage_eq: "(f \<^sup>\<inverse> (f -` U') U) \<inter> X = f\<^sup>\<inverse> X (U \<inter> U')"
   by simp
