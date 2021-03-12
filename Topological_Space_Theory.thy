@@ -222,4 +222,9 @@ locale homeomorphism =
   continuous_map + bijective_map f S S' + 
   continuous_map S' is_open' S is_open "inverse_map f S S'"
 
+lemma id_is_homeomorphism:
+  assumes "topological_space S is_open" 
+  shows "homeomorphism S is_open S is_open (identity S)"
+  sorry
+
 end
