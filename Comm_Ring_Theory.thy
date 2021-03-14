@@ -5320,7 +5320,7 @@ proof -
         fix V x
         assume "is_open V" and "V \<subseteq> U" and "x \<in> local.im_sheaf U"
         then show "(\<rho> U V \<circ> identity (\<FF> U)) x = (identity (\<FF> V) \<circ> im_sheaf_morphisms U V) x"
-          by (smt (verit, best) \<open>is_open U\<close> comp_apply im_sheaf_morphisms_def is_map_from_is_homomorphism local.im_sheaf_def map.map_closed open_preimage_identity restrict_apply')
+          by (simp add: im_sheaf_morphisms_def local.im_sheaf_def map.map_closed [OF is_map_from_is_homomorphism] \<open>is_open U\<close>)
       qed
       then show "\<exists>\<psi>. morphism_presheaves_of_rings S is_open (im_sheaf.im_sheaf S \<FF> (identity S)) (im_sheaf.im_sheaf_morphisms S \<rho> (identity S)) b 
               (im_sheaf.add_im_sheaf S add_str (identity S)) (im_sheaf.mult_im_sheaf S mult_str (identity S)) (im_sheaf.zero_im_sheaf S zero_str (identity S)) (im_sheaf.one_im_sheaf S one_str (identity S)) \<FF> \<rho> b add_str mult_str zero_str one_str \<psi> \<and> (\<forall>U. is_open U \<longrightarrow> (\<forall>x\<in>im_sheaf.im_sheaf S \<FF> (identity S) U. (identity (\<FF> U) \<circ> \<psi> U) x = x) \<and> (\<forall>x\<in>\<FF> U. (\<psi> U \<circ> identity (\<FF> U)) x = x))"

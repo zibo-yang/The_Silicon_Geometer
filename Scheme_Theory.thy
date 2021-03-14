@@ -547,6 +547,7 @@ lemma (in affine_scheme) affine_scheme_is_scheme:
   using comp_affine_scheme.comp_affine_scheme_is_scheme comp_affine_scheme_def is_iso_to_spec 
 local.comm_ring_axioms locally_ringed_space_axioms by fastforce
 
+
 lemma (in comm_ring) spec_is_comp_affine_scheme:
   shows "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
@@ -559,54 +560,77 @@ next
 next
   have [simp]: "\<And>x A. x \<in> A \<Longrightarrow> inv_into A (identity A) x = x"
     by (metis bij_betw_def bij_betw_restrict_eq inj_on_id2 inv_into_f_f restrict_apply')
+  interpret zar: topological_space Spec is_zariski_open
+    by blast
+  interpret homeomorphism Spec is_zariski_open Spec is_zariski_open "identity Spec"
+  proof intro_locales
+    show "Set_Theory.map (identity Spec) Spec Spec"
+      by (simp add: Set_Theory.map_def)
+    show "continuous_map_axioms Spec is_zariski_open is_zariski_open (identity Spec)"
+    proof
+      fix U
+      assume "is_zariski_open U"
+      moreover have "identity Spec \<^sup>\<inverse> Spec U = U \<inter> Spec"
+        by fastforce
+      ultimately show "is_zariski_open (identity Spec \<^sup>\<inverse> Spec U)"
+        by simp
+    qed
+    show "bijective (identity Spec) Spec Spec"
+      by (auto simp: bijective_def bij_betw_def)
+    show "Set_Theory.map (inverse_map (identity Spec) Spec Spec) Spec Spec"
+    proof qed (auto simp: inv_into_into inverse_map_def)
+    have [simp]: "(restrict (inv_into Spec (identity Spec)) Spec \<^sup>\<inverse> Spec U) = U \<inter> Spec" for U
+      by force
+    show "continuous_map_axioms Spec is_zariski_open is_zariski_open (inverse_map (identity Spec) Spec Spec)"
+    proof qed (auto simp: inv_into_into inverse_map_def)
+  qed 
+  interpret im_sheaf Spec is_zariski_open sheaf_spec
+    sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec Spec
+    is_zariski_open "identity Spec"
+    by (metis continuous_map_axioms im_sheaf_def inverse_map_identity sheaf_spec_is_sheaf)
   show "iso_locally_ringed_spaces Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec Spec is_zariski_open sheaf_spec
      sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
      (identity Spec) (\<lambda>U. identity (\<O> U))"
-  proof-
-    have "homeomorphism Spec is_zariski_open Spec is_zariski_open (identity Spec)"
+  proof -
+    have "iso_sheaves_of_rings
+            Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+            (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec))
+            (im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec))
+            \<O>b
+            (\<lambda>V x y. add_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
+            (\<lambda>V x y. mult_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
+            (\<lambda>V. zero_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V)) 
+            (\<lambda>V. one_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V))
+            (\<lambda>U. identity (\<O> U))"
     proof intro_locales
-      show "Set_Theory.map (identity Spec) Spec Spec"
-        by (simp add: Set_Theory.map_def)
-      show "continuous_map_axioms Spec is_zariski_open is_zariski_open (identity Spec)"
-      proof
-        fix U
-        assume "is_zariski_open U"
-        moreover have "identity Spec \<^sup>\<inverse> Spec U = U \<inter> Spec"
-          by fastforce
-        ultimately show "is_zariski_open (identity Spec \<^sup>\<inverse> Spec U)"
-          by simp
-      qed
-      show "bijective (identity Spec) Spec Spec"
-        by (auto simp: bijective_def bij_betw_def)
-      show "Set_Theory.map (inverse_map (identity Spec) Spec Spec) Spec Spec"
-      proof qed (auto simp: inv_into_into inverse_map_def)
-      have [simp]: "(restrict (inv_into Spec (identity Spec)) Spec \<^sup>\<inverse> Spec U) = U \<inter> Spec" for U
-        by force
-      show "continuous_map_axioms Spec is_zariski_open is_zariski_open (inverse_map (identity Spec) Spec Spec)"
-      proof qed (auto simp: inv_into_into inverse_map_def)
-    qed auto
-    moreover have "iso_sheaves_of_rings
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-(im_sheaf.im_sheaf Spec sheaf_spec (identity Spec))
-(im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec))
-\<O>b
-(\<lambda>V x y. add_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
-(\<lambda>V x y. mult_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V) x y) 
-(\<lambda>V. zero_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V)) 
-(\<lambda>V. one_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V))
-(\<lambda>U. identity (\<O> U))"
-      apply intro_locales
-      apply blast
-         apply (meson presheaf_of_rings.axioms(2) sheaf_spec_is_presheaf)
-      defer
-      sorry
+      show "presheaf_of_rings_axioms is_zariski_open (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec)) (im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec)) \<O>b (\<lambda>V. add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V))"
+        unfolding presheaf_of_rings_axioms_def
+        apply (intro conjI strip)
+           apply (simp add: )
+           apply (simp add: ring_homomorphism_def)
+           apply (intro conjI strip)
+        using im_sheaf_is_presheaf presheaf_of_rings.is_map_from_is_homomorphism apply fastforce
+        apply (simp add: is_ring_from_is_homomorphism local.im_sheaf_def)
+        apply (simp add: is_ring_from_is_homomorphism local.im_sheaf_def)
+        apply (metis im_sheaf_morphisms_def local.im_sheaf_def ring_homomorphism_def sheaf_spec_morphisms_are_ring_morphisms zar.open_preimage_identity)
+           apply (metis im_sheaf_morphisms_def local.im_sheaf_def ring_homomorphism_def sheaf_spec_morphisms_are_ring_morphisms zar.open_preimage_identity)
+        using im_sheaf_is_presheaf presheaf_of_rings.ring_of_empty apply fastforce
+        apply (simp add: im_sheaf_morphisms_def local.im_sheaf_def)
+        by (smt (z3) im_sheaf_is_presheaf presheaf_of_rings.assoc_comp)
+      show "morphism_presheaves_of_rings_axioms is_zariski_open sheaf_spec sheaf_spec_morphisms add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec)) (im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec)) (\<lambda>V. add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>U. identity (\<O> U))"
+        sorry
+      show "iso_presheaves_of_rings_axioms Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec)) (im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec)) \<O>b (\<lambda>V. add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>U. identity (\<O> U))"
+        sorry
+    qed
     moreover have "morphism_locally_ringed_spaces
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
-(identity Spec)
-(\<lambda>U. identity (\<O> U))" sorry
-    ultimately show ?thesis using iso_locally_ringed_spaces_def sorry
+                    Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+                    Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
+                    (identity Spec)
+                    (\<lambda>U. identity (\<O> U))"
+      by (simp add: locally_ringed_space.id_to_mor_locally_ringed_spaces spec_is_locally_ringed_space) 
+    ultimately show ?thesis 
+      by (metis locally_ringed_space.id_to_iso_locally_ringed_spaces spec_is_locally_ringed_space)
   qed
 qed
 
