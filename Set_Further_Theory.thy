@@ -40,6 +40,10 @@ proof
     using assms by (simp add: bij_betw_inv_into bijective_def bijective_map_def inverse_map_def)
 qed
 
+lemma inverse_map_identity [simp]:
+  "inverse_map (identity S) S S = identity S"
+  by (metis Id_compose compose_id_inv_into image_ident image_restrict_eq inv_into_funcset inverse_map_def restrict_extensional)
+
 abbreviation composing ("_ \<circ> _ \<down> _" [60,0,60]59) 
   where "g \<circ> f \<down> D \<equiv> compose D g f"
 

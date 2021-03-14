@@ -27,6 +27,9 @@ text \<open>Note that by a neighborhood we mean what some authors call an open n
 lemma open_union' [intro]: "\<And>F::('a set) set. (\<And>x. x \<in> F \<Longrightarrow> is_open x) \<Longrightarrow> is_open (\<Union>F)"
   using open_union by auto
 
+lemma open_preimage_identity [simp]: "is_open B \<Longrightarrow> identity S \<^sup>\<inverse> S B = B"
+  by (metis inf.orderE open_imp_subset preimage_identity_self)
+
 
 definition is_connected:: "bool" where 
 "is_connected \<equiv> \<not> (\<exists>U V. is_open U \<and> is_open V \<and> (U \<noteq> {}) \<and> (V \<noteq> {}) \<and> (U \<inter> V = {}) \<and> (U \<union> V = S))"
@@ -222,9 +225,11 @@ locale homeomorphism =
   continuous_map + bijective_map f S S' + 
   continuous_map S' is_open' S is_open "inverse_map f S S'"
 
-lemma id_is_homeomorphism:
-  assumes "topological_space S is_open" 
+lemma (in topological_space) id_is_homeomorphism:
   shows "homeomorphism S is_open S is_open (identity S)"
-  sorry
+proof
+  show "inverse_map (identity S) S S \<in> S \<rightarrow>\<^sub>E S"
+    by (simp add: inv_into_into inverse_map_def)
+qed (auto simp: open_inter bij_betwI')
 
 end
