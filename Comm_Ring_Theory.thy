@@ -855,6 +855,10 @@ next
     using im_sheaf_def im_sheaf_morphisms_def by auto
 qed
 
+sublocale sheaf_of_rings S' is_open' im_sheaf im_sheaf_morphisms b
+    add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf
+  using im_sheaf_is_sheaf .
+
 end (* im_sheaf *)
 
 lemma (in sheaf_of_rings) id_to_iso_of_sheaves:
@@ -5213,7 +5217,7 @@ lemma (in sheaf_of_rings) induced_morphism_with_id_is_id:
   assumes "x \<in> S"
   shows "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>
        = (\<lambda>C\<in>(stalk.carrier_stalk is_open \<FF> \<rho> x). C)"
-  sorry (* using induced_morphism_def *)
+  sorry
 
 lemma (in locally_ringed_space) induced_morphism_with_id_is_local:
   assumes "x \<in> S" and "is_open V"
@@ -5297,7 +5301,7 @@ proof -
     proof (intro conjI)
       show "homeomorphism S is_open S is_open (identity S)"
         using id_is_homeomorphism by blast
-      show "morphism_presheaves_of_rings S is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
+      show mor:"morphism_presheaves_of_rings S is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
             local.im_sheaf im_sheaf_morphisms b add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf
             (\<lambda>U. identity (\<FF> U))"
         by (simp add: is_morphism_of_sheaves morphism_sheaves_of_rings.axioms)
@@ -5309,18 +5313,21 @@ proof -
         show "presheaf_of_rings S is_open local.im_sheaf im_sheaf_morphisms b add_im_sheaf mult_im_sheaf zero_im_sheaf one_im_sheaf"
           using im_sheaf_is_presheaf by blast
         show "presheaf_of_rings S is_open \<FF> \<rho> b add_str mult_str zero_str one_str"
-          by (simp add: presheaf_of_rings_axioms)
+          by (metis mor morphism_presheaves_of_rings_def)
       next
         fix U assume "is_open U"
         then have "ring_homomorphism (identity (\<FF> U)) (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub>"
-          using id_is_mor_pr_rngs morphism_presheaves_of_rings.is_ring_morphism by fastforce
+          by (smt (z3) im_sheaf.add_im_sheaf_def im_sheaf.mult_im_sheaf_def im_sheaf_axioms 
+              local.im_sheaf_def mor morphism_presheaves_of_rings.is_ring_morphism one_im_sheaf_def 
+              open_preimage_identity zero_im_sheaf_def)
         then show "ring_homomorphism (identity (\<FF> U)) (local.im_sheaf U) (add_im_sheaf U) (mult_im_sheaf U) (zero_im_sheaf U) (one_im_sheaf U) (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub>"
           using \<open>is_open U \<close> im_sheaf.add_im_sheaf_def im_sheaf_axioms local.im_sheaf_def mult_im_sheaf_def one_im_sheaf_def zero_im_sheaf_def
           by fastforce
         fix V x
         assume "is_open V" and "V \<subseteq> U" and "x \<in> local.im_sheaf U"
         then show "(\<rho> U V \<circ> identity (\<FF> U)) x = (identity (\<FF> V) \<circ> im_sheaf_morphisms U V) x"
-          by (simp add: im_sheaf_morphisms_def local.im_sheaf_def map.map_closed [OF is_map_from_is_homomorphism] \<open>is_open U\<close>)
+          using map.map_closed [OF is_map_from_is_homomorphism] \<open>is_open U\<close>
+          by (simp add: im_sheaf_morphisms_def local.im_sheaf_def)
       qed
       then show "\<exists>\<psi>. morphism_presheaves_of_rings S is_open (im_sheaf.im_sheaf S \<FF> (identity S)) (im_sheaf.im_sheaf_morphisms S \<rho> (identity S)) b 
               (im_sheaf.add_im_sheaf S add_str (identity S)) (im_sheaf.mult_im_sheaf S mult_str (identity S)) (im_sheaf.zero_im_sheaf S zero_str (identity S)) (im_sheaf.one_im_sheaf S one_str (identity S)) \<FF> \<rho> b add_str mult_str zero_str one_str \<psi> \<and> (\<forall>U. is_open U \<longrightarrow> (\<forall>x\<in>im_sheaf.im_sheaf S \<FF> (identity S) U. (identity (\<FF> U) \<circ> \<psi> U) x = x) \<and> (\<forall>x\<in>\<FF> U. (\<psi> U \<circ> identity (\<FF> U)) x = x))"
