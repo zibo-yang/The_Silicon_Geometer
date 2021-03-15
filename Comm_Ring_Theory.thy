@@ -546,7 +546,7 @@ assumes is_ring_morphism:
   "\<And>U V. is_open U \<Longrightarrow> is_open V \<Longrightarrow> V \<subseteq> U \<Longrightarrow> ring_homomorphism (\<rho> U V) 
                                                   (\<FF> U) (+\<^bsub>U\<^esub>) (\<cdot>\<^bsub>U\<^esub>) \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> 
                                                   (\<FF> V) (+\<^bsub>V\<^esub>) (\<cdot>\<^bsub>V\<^esub>) \<zero>\<^bsub>V\<^esub> \<one>\<^bsub>V\<^esub>"
-  and ring_of_empty [simp]: "\<FF> {} = {b}"
+  and ring_of_empty: "\<FF> {} = {b}"
   and identity_map [simp]: "\<And>U. is_open U \<Longrightarrow> (\<And>x. x \<in> \<FF> U \<Longrightarrow> \<rho> U U x = x)"
   and assoc_comp: 
   "\<And>U V W. is_open U \<Longrightarrow> is_open V \<Longrightarrow> is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V \<Longrightarrow> 
@@ -691,7 +691,7 @@ lemma ind_is_open_imp_ring:
 lemma ind_sheaf_is_presheaf:
   shows "presheaf_of_rings U (it.ind_is_open) ind_sheaf ind_ring_morphisms b
 ind_add_str ind_mult_str ind_zero_str ind_one_str"
-proof-
+proof -
   have "topological_space U it.ind_is_open" by (simp add: it.ind_space_is_top_space)
   moreover have "ring_homomorphism (ind_ring_morphisms W V) 
                      (ind_sheaf W) (ind_add_str W) (ind_mult_str W) (ind_zero_str W) (ind_one_str W) 
@@ -709,7 +709,7 @@ proof-
       using o by (metis ind_mult_str_def ind_one_str_def ind_ring_morphisms_def ind_sheaf_def is_ring_morphism ring_homomorphism_def) 
   qed (use that in auto)
   moreover have "ind_sheaf {} = {b}"
-    by (simp add: ind_sheaf_def)     
+    by (simp add: ring_of_empty ind_sheaf_def)     
   moreover have "\<And>U. it.ind_is_open U \<Longrightarrow> (\<And>x. x \<in> (ind_sheaf U) \<Longrightarrow> ind_ring_morphisms U U x = x)"
     by (simp add: Int_absorb1 it.ind_is_open_def ind_ring_morphisms_def ind_sheaf_def it.is_open_from_ind_is_open is_open_subset)
   moreover have "\<And>U V W. it.ind_is_open U \<Longrightarrow> it.ind_is_open V \<Longrightarrow> it.ind_is_open W \<Longrightarrow> V \<subseteq> U \<Longrightarrow> W \<subseteq> V 
@@ -807,7 +807,7 @@ proof (intro presheaf_of_rings.intro presheaf_of_rings_axioms.intro)
 (im_sheaf V) (add_im_sheaf V) (mult_im_sheaf V) (zero_im_sheaf V) (one_im_sheaf V)"
     unfolding add_im_sheaf_def mult_im_sheaf_def zero_im_sheaf_def one_im_sheaf_def
     by (metis Int_commute Int_mono im_sheaf_def im_sheaf_morphisms_def is_continuous is_ring_morphism subset_refl vimage_mono)
-  show "im_sheaf {} = {b}" using im_sheaf_def by simp
+  show "im_sheaf {} = {b}" using im_sheaf_def ring_of_empty by simp
   show "\<And>U. is_open' U \<Longrightarrow> (\<And>x. x \<in> (im_sheaf U) \<Longrightarrow> im_sheaf_morphisms U U x = x)" 
     using im_sheaf_morphisms_def by (simp add: im_sheaf_def is_continuous) 
   show "\<And>U V W.
@@ -889,7 +889,7 @@ proof-
     have \<rho>: "\<And>U V W x. \<lbrakk>is_open U; is_open V; is_open W; V \<subseteq> U; W \<subseteq> V; x \<in> \<FF> U\<rbrakk> \<Longrightarrow> \<rho> V W (\<rho> U V x) = \<rho> U W x"
       by (metis assoc_comp comp_def)
     show "presheaf_of_rings_axioms is_open id.im_sheaf id.im_sheaf_morphisms b ?add ?mult ?zero ?one"
-      by (auto simp: \<rho> presheaf_of_rings_axioms_def is_ring_morphism open_imp_subset)
+      by (auto simp: \<rho> presheaf_of_rings_axioms_def is_ring_morphism open_imp_subset ring_of_empty)
     then have "presheaf_of_rings S is_open id.im_sheaf id.im_sheaf_morphisms b ?add ?mult ?zero ?one"
       by (metis id.im_sheaf_is_presheaf presheaf_of_rings_def)
     moreover
