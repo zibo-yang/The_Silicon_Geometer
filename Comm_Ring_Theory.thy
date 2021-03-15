@@ -5212,12 +5212,72 @@ end (* ind_mor_btw_stalks *)
 notation ind_mor_btw_stalks.induced_morphism ("\<phi>\<^bsub>(3_ _ _ _/ _ _ _/ _ _ _)\<^esub>"
     [1000,1000,1000,1000,1000,1000,1000,1000,1000,1000]1000)
 
-
 lemma (in sheaf_of_rings) induced_morphism_with_id_is_id:
   assumes "x \<in> S"
   shows "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>
        = (\<lambda>C\<in>(stalk.carrier_stalk is_open \<FF> \<rho> x). C)"
-  sorry
+proof -
+  interpret im_sheaf S is_open \<FF> \<rho> b add_str mult_str zero_str one_str S is_open "identity S"
+    by (metis homeomorphism.axioms(3) id_is_homeomorphism im_sheaf_def inverse_map_identity 
+        sheaf_of_rings_axioms)
+  interpret codom: ringed_space S is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
+    by (meson im_sheaf.axioms(1) im_sheaf_axioms ringed_space_def)
+  
+  interpret ind_mor_btw_stalks S is_open \<FF> \<rho> b add_str mult_str zero_str one_str S 
+       is_open \<FF> \<rho> b add_str mult_str zero_str one_str "identity S" "\<lambda>U. identity (\<FF> U)" x
+    apply intro_locales
+    subgoal 
+    proof -
+      have "ring_homomorphism (identity (\<FF> U)) (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> (local.im_sheaf U) (add_im_sheaf U)
+          (mult_im_sheaf U) (zero_im_sheaf U) (one_im_sheaf U)" if "is_open U" for U 
+        by (smt (z3) id_is_mor_pr_rngs im_sheaf.add_im_sheaf_def im_sheaf.im_sheaf_def 
+            im_sheaf.mult_im_sheaf_def im_sheaf_axioms local.topological_space_axioms 
+            morphism_presheaves_of_rings.is_ring_morphism one_im_sheaf_def that 
+            topological_space.open_preimage_identity zero_im_sheaf_def)  
+      moreover have "\<forall>U V. is_open U \<longrightarrow>
+           is_open V \<longrightarrow>
+           V \<subseteq> U \<longrightarrow> (\<forall>x. x \<in> \<FF> U \<longrightarrow> (im_sheaf_morphisms U V \<circ> identity (\<FF> U)) x = (identity (\<FF> V) \<circ> \<rho> U V) x)"
+        by (smt (verit, best) comp_apply im_sheaf_morphisms_def is_map_from_is_homomorphism 
+            local.im_sheaf_def map.map_closed open_preimage_identity restrict_apply')
+      ultimately have "morphism_presheaves_of_rings_axioms is_open \<FF> \<rho> add_str mult_str 
+          zero_str one_str local.im_sheaf im_sheaf_morphisms add_im_sheaf mult_im_sheaf 
+          zero_im_sheaf one_im_sheaf (\<lambda>U. identity (\<FF> U))"
+        unfolding morphism_presheaves_of_rings_axioms_def by auto
+      then show ?thesis
+        unfolding morphism_ringed_spaces_axioms_def 
+        by intro_locales
+    
+    qed
+    subgoal by (meson assms ind_mor_btw_stalks_axioms.intro)
+    done
+
+  have "(let r = SOME r. r \<in> C
+        in direct_lim.class_of \<FF> \<rho> (neighborhoods x) (identity S \<^sup>\<inverse> S (fst r))
+            (identity (\<FF> (fst r)) (snd r))) = C" 
+    (is "?L= _")
+    if "C\<in>stalk.carrier_stalk is_open \<FF> \<rho> x" for C
+  proof -
+    interpret stk:stalk S is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
+                      "neighborhoods x" x
+      apply unfold_locales
+      using is_elem neighborhoods_def by auto
+    define r where "r=(SOME x. x \<in> C)"
+    have r:"r \<in> C" "r \<in> Sigma (neighborhoods x) \<FF>" and "C = stk.class_of (fst r) (snd r)"
+      using stk.rel_carrier_Eps_in[OF that[unfolded stk.carrier_stalk_def]] unfolding r_def by auto
+
+    have "?L = stk.class_of (identity S \<^sup>\<inverse> S (fst r)) (identity (\<FF> (fst r)) (snd r))"
+      unfolding r_def Let_def by simp
+    also have "... =  stk.class_of (fst r) (snd r)"
+      by (metis open_preimage_identity r(1) restrict_apply stk.carrier_direct_limE 
+          stk.carrier_stalk_def stk.rel_I1 stk.rel_def stk.subset_of_opens that)
+    also have "... = C"
+      using \<open>C = stk.class_of (fst r) (snd r)\<close> by simp
+    finally show ?thesis .
+  qed
+  then show ?thesis
+    unfolding induced_morphism_def 
+    using is_elem neighborhoods_def by fastforce
+qed
 
 lemma (in locally_ringed_space) induced_morphism_with_id_is_local:
   assumes "x \<in> S" and "is_open V"
