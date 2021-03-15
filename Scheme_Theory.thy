@@ -588,6 +588,35 @@ next
     sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec Spec
     is_zariski_open "identity Spec"
     by (metis continuous_map_axioms im_sheaf_def inverse_map_identity sheaf_spec_is_sheaf)
+  have rh: "\<And>U V. \<lbrakk>is_zariski_open U; is_zariski_open V; V \<subseteq> U\<rbrakk>
+             \<Longrightarrow> ring_homomorphism
+                  (im_sheaf_morphisms U V)
+                  (local.im_sheaf U) (add_sheaf_spec U)
+                  (mult_sheaf_spec U) (zero_sheaf_spec U)
+                  (one_sheaf_spec U) (local.im_sheaf V)
+                  (add_sheaf_spec V) (mult_sheaf_spec V)
+                  (zero_sheaf_spec V) (one_sheaf_spec V)"
+           apply (simp add: ring_homomorphism_def)
+           apply (intro conjI strip)
+        using im_sheaf_is_presheaf presheaf_of_rings.is_map_from_is_homomorphism apply fastforce
+        apply (simp add: is_ring_from_is_homomorphism local.im_sheaf_def)
+        apply (simp add: is_ring_from_is_homomorphism local.im_sheaf_def)
+        apply (metis im_sheaf_morphisms_def local.im_sheaf_def ring_homomorphism_def sheaf_spec_morphisms_are_ring_morphisms zar.open_preimage_identity)
+        apply (metis im_sheaf_morphisms_def local.im_sheaf_def ring_homomorphism_def sheaf_spec_morphisms_are_ring_morphisms zar.open_preimage_identity)
+        done
+      interpret F: presheaf_of_rings Spec is_zariski_open 
+        "im_sheaf.im_sheaf Spec sheaf_spec (identity Spec)"
+        "im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec)" \<O>b 
+        "\<lambda>V. add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)" "\<lambda>V. mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)" 
+        "\<lambda>V. zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)"  "\<lambda>V. one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)"
+
+        unfolding presheaf_of_rings_def presheaf_of_rings_axioms_def
+        apply (intro conjI strip)
+            apply (simp add: rh)
+           apply (simp add: rh)
+        using im_sheaf_is_presheaf presheaf_of_rings.ring_of_empty apply fastforce
+         apply (simp add: im_sheaf_morphisms_def local.im_sheaf_def)
+        by (smt (z3) im_sheaf_is_presheaf presheaf_of_rings.assoc_comp)
   show "iso_locally_ringed_spaces Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
      add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec Spec is_zariski_open sheaf_spec
      sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
@@ -604,24 +633,28 @@ next
             (\<lambda>V. one_sheaf_spec ((identity Spec)\<^sup>\<inverse> Spec V))
             (\<lambda>U. identity (\<O> U))"
     proof intro_locales
-      show "presheaf_of_rings_axioms is_zariski_open (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec)) (im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec)) \<O>b (\<lambda>V. add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V))"
-        unfolding presheaf_of_rings_axioms_def
-        apply (intro conjI strip)
-           apply (simp add: )
-           apply (simp add: ring_homomorphism_def)
-           apply (intro conjI strip)
-        using im_sheaf_is_presheaf presheaf_of_rings.is_map_from_is_homomorphism apply fastforce
-        apply (simp add: is_ring_from_is_homomorphism local.im_sheaf_def)
-        apply (simp add: is_ring_from_is_homomorphism local.im_sheaf_def)
-        apply (metis im_sheaf_morphisms_def local.im_sheaf_def ring_homomorphism_def sheaf_spec_morphisms_are_ring_morphisms zar.open_preimage_identity)
-           apply (metis im_sheaf_morphisms_def local.im_sheaf_def ring_homomorphism_def sheaf_spec_morphisms_are_ring_morphisms zar.open_preimage_identity)
-        using im_sheaf_is_presheaf presheaf_of_rings.ring_of_empty apply fastforce
-        apply (simp add: im_sheaf_morphisms_def local.im_sheaf_def)
-        by (smt (z3) im_sheaf_is_presheaf presheaf_of_rings.assoc_comp)
       show "morphism_presheaves_of_rings_axioms is_zariski_open sheaf_spec sheaf_spec_morphisms add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec)) (im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec)) (\<lambda>V. add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>U. identity (\<O> U))"
-        sorry
+        unfolding morphism_presheaves_of_rings_axioms_def
+      proof (intro conjI strip)
+        fix U assume "is_zariski_open U"
+        show "ring_homomorphism (identity (\<O> U)) (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U) (local.im_sheaf U) (add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec U)) (mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec U)) (zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec U)) (one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec U))"
+          using \<open>is_zariski_open U\<close> id_is_mor_pr_rngs local.im_sheaf_def morphism_presheaves_of_rings.is_ring_morphism by fastforce
+        fix V x
+        assume "is_zariski_open V" and "V \<subseteq> U" and "x \<in> \<O> U"
+        with \<open>is_zariski_open U\<close>
+        show "(im_sheaf_morphisms U V \<circ> identity (\<O> U)) x = (identity (\<O> V) \<circ> sheaf_spec_morphisms U V) x"
+          by (simp add: im_sheaf_morphisms_def map.map_closed [OF is_map_from_is_homomorphism])
+      qed
       show "iso_presheaves_of_rings_axioms Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec (im_sheaf.im_sheaf Spec sheaf_spec (identity Spec)) (im_sheaf.im_sheaf_morphisms Spec sheaf_spec_morphisms (identity Spec)) \<O>b (\<lambda>V. add_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. mult_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. zero_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>V. one_sheaf_spec (identity Spec \<^sup>\<inverse> Spec V)) (\<lambda>U. identity (\<O> U))"
-        sorry
+        unfolding iso_presheaves_of_rings_axioms_def morphism_presheaves_of_rings_def
+        apply (rule_tac x="(\<lambda>U. identity (\<O> U))" in exI)
+          apply (intro conjI strip, simp_all add: local.im_sheaf_def)
+        using F.presheaf_of_rings_axioms apply blast
+        using sheaf_spec_is_presheaf apply fastforce
+        unfolding morphism_presheaves_of_rings_axioms_def
+        apply(intro conjI strip)
+        using id_is_mor_pr_rngs local.im_sheaf_def morphism_presheaves_of_rings.is_ring_morphism apply fastforce
+        by (smt (verit, ccfv_threshold) id_is_mor_pr_rngs im_sheaf_morphisms_def local.im_sheaf_def morphism_presheaves_of_rings.comm_diagrams zar.open_preimage_identity)
     qed
     moreover have "morphism_locally_ringed_spaces
                     Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec
