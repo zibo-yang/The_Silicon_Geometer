@@ -5280,7 +5280,7 @@ proof -
 qed
 
 lemma (in locally_ringed_space) induced_morphism_with_id_is_local:
-  assumes "x \<in> S" and "is_open V"
+  assumes "x \<in> S" and "is_open V" and "x \<in> V"
   shows "ind_mor_btw_stalks.is_local 
 S is_open \<FF> \<rho> add_str mult_str zero_str one_str is_open \<FF> \<rho> add_str mult_str zero_str one_str
 (identity S) x V (\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>)"
