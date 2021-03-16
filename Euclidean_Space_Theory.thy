@@ -1,9 +1,10 @@
 theory Euclidean_Space_Theory
-  imports Group_Further_Theory
-          Complex_Main
+  imports Complex_Main 
+          Group_Further_Theory
 
 begin
 
+no_notation Groups.plus_class.plus (infixl "+" 70)
 
 section \<open>Real Vector Spaces\<close>
 
@@ -21,6 +22,13 @@ abbreviation divide:: "'a \<Rightarrow> real \<Rightarrow> 'a"  (infixl "'/\<^su
 
 end (* real_vector_space *)
 
+locale linear_map = 
+dom: real_vector_space V "(+)" \<zero> scale + codom: real_vector_space V' "(+')" "\<zero>'" scale' + map f V V'
+for V and add (infixl "+" 70) and zero ("\<zero>") and scale (infixr "\<cdot>\<^sub>\<real>" 75) and V' and 
+add' (infixl "+''" 70) and zero' ("\<zero>''") and scale' (infixr "\<cdot>\<^sub>\<real>''" 75) and f +
+assumes additivity: "\<lbrakk>x \<in> V; y \<in> V\<rbrakk> \<Longrightarrow> f (x + y) = f x +' f y"
+and homogeneity: "x \<in> V \<Longrightarrow> f (r \<cdot>\<^sub>\<real> x) = r \<cdot>\<^sub>\<real>' f x"
+
 
 section \<open>Real Normed Vector Spaces\<close>
 
@@ -30,6 +38,13 @@ locale real_normed_vector_space = real_vector_space +
 and is_pos_on_nonzero: "x \<in> V \<Longrightarrow> (\<parallel>x\<parallel> = 0 \<longleftrightarrow> x = \<zero>)"
 and is_linear_with_abs: "x \<in> V \<Longrightarrow> \<parallel>r \<cdot>\<^sub>\<real> x\<parallel> = \<bar>r\<bar> * \<parallel>x\<parallel>"
 and triangle_eq_holds: "\<lbrakk>x \<in> V; y \<in> V\<rbrakk> \<Longrightarrow> \<parallel>x + y\<parallel> \<le> \<parallel>x\<parallel> + \<parallel>y\<parallel>"
+
+locale bounded_linear_map = 
+dom: real_normed_vector_space V add zero scale norm + 
+codom: real_normed_vector_space V' add' zero' scale' norm' +
+linear_map V add zero scale V' add' zero' scale' f
+for V add zero scale norm V' add' zero' scale' norm' f +
+assumes bounded: "\<exists>K. \<forall>x. norm' (f x) \<le> norm x * K"
 
 
 section \<open>Inner Product Spaces\<close>
@@ -83,5 +98,12 @@ end (* euclidean_vector_space *)
 sublocale euclidean_vector_space \<subseteq> topological_space sorry
 
 sublocale euclidean_vector_space \<subseteq> real_normed_vector_space sorry
+
+
+term "is_filter"
+term "bounded_linear"
+term "Vector_Spaces.linear"
+term "module_hom"
+term "Lim"
 
 end

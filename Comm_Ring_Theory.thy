@@ -4884,7 +4884,7 @@ locale ind_mor_btw_stalks = morphism_ringed_spaces +
 begin
 
 interpretation stx:stalk X is_open\<^sub>X \<O>\<^sub>X \<rho>\<^sub>X b add_str\<^sub>X mult_str\<^sub>X zero_str\<^sub>X one_str\<^sub>X 
-  "{U. is_open\<^sub>X U \<and> x \<in> U}" 
+  "{U. is_open\<^sub>X U \<and> x \<in> U}" "x"
 proof qed (auto simp: is_elem)
 
 interpretation stfx: stalk Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y 
@@ -5280,32 +5280,29 @@ proof -
 qed
 
 lemma (in locally_ringed_space) induced_morphism_with_id_is_local:
+  assumes "x \<in> S" and "is_open V" and "x \<in> V"
   assumes "x \<in> S" and "x \<in> V" "is_open V"
   shows "ind_mor_btw_stalks.is_local 
 S is_open \<FF> \<rho> add_str mult_str zero_str one_str is_open \<FF> \<rho> add_str mult_str zero_str one_str
 (identity S) x V (\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>)"
-proof -
-  interpret imS: im_sheaf S is_open \<FF> \<rho> b add_str mult_str zero_str one_str S is_open "identity S"
-    by (metis homeomorphism.axioms(3) id_is_homeomorphism im_sheaf_def inverse_map_identity 
-        sheaf_of_rings_axioms)
-  interpret ind_mor_btw_stalks S is_open \<FF> \<rho> b add_str mult_str zero_str one_str S 
-    is_open \<FF> \<rho> b add_str mult_str zero_str one_str "identity S" "\<lambda>U. identity (\<FF> U)" x
-  proof intro_locales
-    show "morphism_ringed_spaces_axioms S \<FF> \<rho> b add_str mult_str zero_str one_str S is_open \<FF> \<rho> b add_str mult_str zero_str one_str (identity S) (\<lambda>U. identity (\<FF> U))"
-      unfolding morphism_ringed_spaces_axioms_def morphism_sheaves_of_rings_def
-        morphism_presheaves_of_rings_def morphism_presheaves_of_rings_axioms_def
-      apply (intro conjI strip)
-         apply (simp_all add: map.map_closed [OF is_map_from_is_homomorphism] imS.im_sheaf_morphisms_def)
-      using presheaf_of_rings_axioms  apply presburger
-      using imS.presheaf_of_rings_axioms apply blast
-      using id_is_mor_pr_rngs imS.add_im_sheaf_def imS.im_sheaf_def imS.mult_im_sheaf_def imS.one_im_sheaf_def imS.zero_im_sheaf_def morphism_presheaves_of_rings.is_ring_morphism by fastforce
-    show "ind_mor_btw_stalks_axioms S x"
-      by (simp add: assms(1) ind_mor_btw_stalks_axioms_def)
+ (* sorry using induced_morphism_with_id_is_id id_is_local_ring_morphism *)
+proof-
+  interpret stfx: stalk S is_open \<FF> \<rho> b add_str mult_str zero_str one_str "{U. is_open U \<and> (identity S x) \<in> U}" "identity S x"
+    sorry
+  have "local_ring stfx.carrier_stalk stfx.add_stalk stfx.mult_stalk (stfx.zero_stalk V) (stfx.one_stalk V)"
+    using assms stalks_are_local sorry
+  interpret stx: stalk S is_open \<FF> \<rho> b add_str mult_str zero_str one_str "{U. is_open U \<and> x \<in> U}" "x"
+    sorry
+  have "local_ring stx.carrier_stalk stx.add_stalk stx.mult_stalk (stx.zero_stalk ((identity S)\<^sup>\<inverse> S V)) (stx.one_stalk ((identity S)\<^sup>\<inverse> S V))" 
+  proof- 
+    have "((identity S)\<^sup>\<inverse> S V) = V" using assms(2) sorry
+    thus ?thesis sorry
   qed
-  show ?thesis
-    using assms
-    unfolding is_local_def
-  sorry (* using induced_morphism_with_id_is_id id_is_local_ring_morphism *)
+  moreover have "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub> = identity stx.carrier_stalk"
+    using induced_morphism_with_id_is_id stx.is_elem by simp
+  ultimately show ?thesis 
+    using assms id_is_local_ring_morphism Comm_Ring_Theory.ind_mor_btw_stalks.is_local_def 
+    sorry
 qed
 
 (* definition 0.45 *)
