@@ -2,7 +2,8 @@ theory Topological_Space_Theory
   imports Complex_Main
           "Jacobson_Basic_Algebra.Set_Theory"
           Set_Further_Theory
-          Sketch_and_Explore 
+          Sketch_and_Explore
+          HOL.Filter
 
 begin
 
@@ -39,6 +40,11 @@ definition is_hausdorff:: "bool" where
 \<forall>x y. (x \<in> S \<and> y \<in> S \<and> x \<noteq> y) \<longrightarrow> (\<exists>U V. U \<in> neighborhoods x \<and> V \<in> neighborhoods y \<and> U \<inter> V = {})"
 
 end (* topological_space *)
+
+text \<open>T2 spaces are also known as Hausdorff spaces.\<close>
+
+locale t2_space = topological_space +
+  assumes hausdorff: "is_hausdorff"
 
 
 subsection \<open>Topological Basis\<close>
@@ -231,5 +237,18 @@ proof
   show "inverse_map (identity S) S S \<in> S \<rightarrow>\<^sub>E S"
     by (simp add: inv_into_into inverse_map_def)
 qed (auto simp: open_inter bij_betwI')
+
+
+subsection \<open>Topological Filters\<close> (* Imported from HOL.Topological_Spaces *)
+
+definition (in topological_space) nhds :: "'a \<Rightarrow> 'a filter"
+  where "nhds a = (INF S\<in>{S. is_open S \<and> a \<in> S}. principal S)"
+
+abbreviation (in topological_space)
+  tendsto :: "('b \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'b filter \<Rightarrow> bool"  (infixr "\<longlongrightarrow>" 55)
+  where "(f \<longlongrightarrow> l) F \<equiv> filterlim f (nhds l) F"
+
+definition (in t2_space) Lim :: "'f filter \<Rightarrow> ('f \<Rightarrow> 'a) \<Rightarrow> 'a"
+  where "Lim A f = (THE l. (f \<longlongrightarrow> l) A)"
 
 end
