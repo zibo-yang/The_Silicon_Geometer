@@ -1,6 +1,7 @@
 theory Euclidean_Space_Theory
   imports Complex_Main 
           Group_Further_Theory
+          HOL.Filter
 
 begin
 
@@ -38,6 +39,17 @@ locale real_normed_vector_space = real_vector_space +
 and is_pos_on_nonzero: "x \<in> V \<Longrightarrow> (\<parallel>x\<parallel> = 0 \<longleftrightarrow> x = \<zero>)"
 and is_linear_with_abs: "x \<in> V \<Longrightarrow> \<parallel>r \<cdot>\<^sub>\<real> x\<parallel> = \<bar>r\<bar> * \<parallel>x\<parallel>"
 and triangle_eq_holds: "\<lbrakk>x \<in> V; y \<in> V\<rbrakk> \<Longrightarrow> \<parallel>x + y\<parallel> \<le> \<parallel>x\<parallel> + \<parallel>y\<parallel>"
+begin
+
+definition dist:: "'a \<Rightarrow> 'a \<Rightarrow> real"
+  where "dist x y \<equiv> \<parallel>minus y x\<parallel>" 
+(* Why the notation for minus from Group_Further_Theory.thy does not work here ? *)
+
+(* prove that dist is a metric, hence prove that an euclidean space is a topological space *)
+
+end (* real_normed_vector_space *)
+
+sublocale real_normed_vector_space \<subseteq> topological_space sorry
 
 locale bounded_linear_map = 
 dom: real_normed_vector_space V add zero scale norm + 
@@ -82,7 +94,7 @@ and euclidean_all_zero_iff: "(\<forall>u\<in>Basis. \<langle>x,u\<rangle> = 0) \
 (* the two last axioms should be deduced from two axioms asserting that Basis is free and spans V *)
 begin
 
-definition dist:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<d>'(_,_')")
+definition distance:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<d>'(_,_')")
   where "\<d>(u,v) \<equiv> sqrt (\<langle>minus u v , minus u v\<rangle>)"
 (* Why the notation for minus from Group_Further_Theory.thy does not work here ? *)
 
@@ -99,11 +111,44 @@ sublocale euclidean_vector_space \<subseteq> topological_space sorry
 
 sublocale euclidean_vector_space \<subseteq> real_normed_vector_space sorry
 
+(*
+definition has_derivative :: "('a::real_normed_vector \<Rightarrow> 'b::real_normed_vector) \<Rightarrow>
+    ('a \<Rightarrow> 'b) \<Rightarrow> 'a filter \<Rightarrow> bool"  (infix "(has'_derivative)" 50)
+  where "(f has_derivative f') F \<longleftrightarrow>
+    bounded_linear f' \<and>
+    ((\<lambda>y. ((f y - f (Lim F (\<lambda>x. x))) - f' (y - Lim F (\<lambda>x. x))) /\<^sub>R norm (y - Lim F (\<lambda>x. x))) \<longlongrightarrow> 0) F"
+*)
+
+locale has_derivative = 
+dom: real_normed_vector_space V add zero scale norm +
+codom: real_normed_vector_space V' add' zero' scale' norm' +
+map f V V' + map f' V V'
+for V add zero scale norm V' add' zero' scale' norm' f f' +
+fixes F:: "'a filter"
+assumes is_bounded_linear: "bounded_linear_map V add zero scale norm V' add' zero' scale' norm' f'"
+(* unfinished *)
+
+(* To introduce abbreviation (f has_derivative f') F *)
+
+text \<open>
+  Usually the filter \<^term>\<open>F\<close> is \<^term>\<open>at x within s\<close>.  \<^term>\<open>(f has_derivative D)
+  (at x within s)\<close> means: \<^term>\<open>D\<close> is the derivative of function \<^term>\<open>f\<close> at point \<^term>\<open>x\<close>
+  within the set \<^term>\<open>s\<close>. Where \<^term>\<open>s\<close> is used to express left or right sided derivatives. In
+  most cases \<^term>\<open>s\<close> is either a variable or \<^term>\<open>UNIV\<close>.
+\<close>
+
 
 term "is_filter"
 term "bounded_linear"
 term "Vector_Spaces.linear"
 term "module_hom"
 term "Lim"
+term "filterlim"
+term "filtermap"
+term "Abs_filter"
+term "eventually"
+term "nhds"
+term "principal"
+print_locale "t2_space"
 
 end
