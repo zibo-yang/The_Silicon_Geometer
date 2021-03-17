@@ -5280,29 +5280,49 @@ proof -
 qed
 
 lemma (in locally_ringed_space) induced_morphism_with_id_is_local:
-  assumes "x \<in> S" and "is_open V" and "x \<in> V"
-  assumes "x \<in> S" and "x \<in> V" "is_open V"
+  assumes "x \<in> S" and V: "x \<in> V" "is_open V"
   shows "ind_mor_btw_stalks.is_local 
 S is_open \<FF> \<rho> add_str mult_str zero_str one_str is_open \<FF> \<rho> add_str mult_str zero_str one_str
 (identity S) x V (\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub>)"
- (* sorry using induced_morphism_with_id_is_id id_is_local_ring_morphism *)
 proof-
-  interpret stfx: stalk S is_open \<FF> \<rho> b add_str mult_str zero_str one_str "{U. is_open U \<and> (identity S x) \<in> U}" "identity S x"
-    sorry
+  have [simp]: "(identity S)\<^sup>\<inverse> S V = V" 
+    using assms by auto
+  interpret stfx: stalk S is_open \<FF> \<rho> b add_str mult_str zero_str one_str 
+                    "{U. is_open U \<and> (identity S x) \<in> U}" "identity S x"
+  proof qed (use assms in auto)
   have "local_ring stfx.carrier_stalk stfx.add_stalk stfx.mult_stalk (stfx.zero_stalk V) (stfx.one_stalk V)"
-    using assms stalks_are_local sorry
+    by (smt (verit, best) assms restrict_apply' stalks_are_local stfx.is_local_def stfx.neighborhoods_eq)
   interpret stx: stalk S is_open \<FF> \<rho> b add_str mult_str zero_str one_str "{U. is_open U \<and> x \<in> U}" "x"
-    sorry
-  have "local_ring stx.carrier_stalk stx.add_stalk stx.mult_stalk (stx.zero_stalk ((identity S)\<^sup>\<inverse> S V)) (stx.one_stalk ((identity S)\<^sup>\<inverse> S V))" 
-  proof- 
-    have "((identity S)\<^sup>\<inverse> S V) = V" using assms(2) sorry
-    thus ?thesis sorry
+    using \<open>x \<in> S\<close> stfx.stalk_axioms by fastforce
+  interpret local_ring stx.carrier_stalk stx.add_stalk stx.mult_stalk 
+              "stx.zero_stalk ((identity S)\<^sup>\<inverse> S V)" "stx.one_stalk ((identity S)\<^sup>\<inverse> S V)"
+    using V stalks_are_local stx.is_local_def stx.neighborhoods_eq by fastforce 
+  interpret imS: im_sheaf S is_open \<FF> \<rho> b add_str mult_str zero_str one_str S is_open "identity S"
+    by (metis homeomorphism.axioms(3) id_is_homeomorphism im_sheaf_def inverse_map_identity 
+        sheaf_of_rings_axioms)
+  have rh: "\<And>U. is_open U \<Longrightarrow>
+             ring_homomorphism (identity (\<FF> U)) (\<FF> U) +\<^bsub>U\<^esub> \<cdot>\<^bsub>U\<^esub> \<zero>\<^bsub>U\<^esub> \<one>\<^bsub>U\<^esub> (imS.im_sheaf U)
+              (imS.add_im_sheaf U) (imS.mult_im_sheaf U) (imS.zero_im_sheaf U) (imS.one_im_sheaf U)"
+    unfolding imS.add_im_sheaf_def imS.mult_im_sheaf_def imS.one_im_sheaf_def 
+              imS.zero_im_sheaf_def imS.im_sheaf_def
+    using id_is_mor_pr_rngs morphism_presheaves_of_rings.is_ring_morphism by fastforce
+  interpret ind_mor_btw_stalks S is_open \<FF> \<rho> b add_str mult_str zero_str one_str S 
+    is_open \<FF> \<rho> b add_str mult_str zero_str one_str "identity S" "\<lambda>U. identity (\<FF> U)" x
+  proof intro_locales
+    show "morphism_ringed_spaces_axioms S \<FF> \<rho> b add_str mult_str zero_str one_str
+              S is_open \<FF> \<rho> b add_str mult_str zero_str one_str (identity S) (\<lambda>U. identity (\<FF> U))"
+      unfolding morphism_ringed_spaces_axioms_def morphism_sheaves_of_rings_def
+        morphism_presheaves_of_rings_def morphism_presheaves_of_rings_axioms_def
+      using rh
+      by (auto simp add: presheaf_of_rings_axioms imS.presheaf_of_rings_axioms 
+             map.map_closed [OF is_map_from_is_homomorphism] imS.im_sheaf_morphisms_def)
+    show "ind_mor_btw_stalks_axioms S x"
+      by (simp add: assms(1) ind_mor_btw_stalks_axioms_def)
   qed
-  moreover have "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub> = identity stx.carrier_stalk"
+  have "\<phi>\<^bsub>S is_open \<FF> \<rho> is_open \<FF> \<rho> (identity S) (\<lambda>U. identity (\<FF> U)) x\<^esub> = identity stx.carrier_stalk"
     using induced_morphism_with_id_is_id stx.is_elem by simp
-  ultimately show ?thesis 
-    using assms id_is_local_ring_morphism Comm_Ring_Theory.ind_mor_btw_stalks.is_local_def 
-    sorry
+  then show ?thesis
+    using id_is_local_ring_morphism is_local_def local_ring_axioms stx.is_elem by fastforce 
 qed
 
 (* definition 0.45 *)
