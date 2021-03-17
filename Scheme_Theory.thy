@@ -394,12 +394,9 @@ proof -
             have y:"y\<in>Y'" "y\<in>?A" and y_alt:"Y' = stX.class_of (fst y) (snd y)"
               using stX.rel_carrier_Eps_in[OF that(2)[unfolded stX.carrier_stalk_def]] 
               unfolding y_def by auto
-            have "fst x \<subseteq> X" "fst y \<subseteq> X" 
-              subgoal by (metis SigmaE open_imp_subset prod.sel(1) subset_of_opens x(2))
-              by (metis SigmaE open_imp_subset prod.sel(1) subset_of_opens y(2))
-
-
-            obtain w where w:"w\<in>neighborhoods u" "w \<subseteq> fst x" "w \<subseteq> fst y"
+            obtain "fst x \<subseteq> X" "fst y \<subseteq> X"
+              using open_imp_subset subset_of_opens x(2) y(2) by force
+            obtain w where w: "w\<in>neighborhoods u" "w \<subseteq> fst x" "w \<subseteq> fst y"
               using stX.has_lower_bound x(2) y(2) by force
             have "w \<subseteq> X" 
               by (simp add: open_imp_subset subset_of_opens w(1))
@@ -432,9 +429,8 @@ proof -
               unfolding class_of_eq  eq_mult_str[OF \<open>w \<subseteq> X\<close>]
               using eq_\<rho> \<open>fst x \<subseteq> X\<close> \<open>fst y \<subseteq> X\<close> \<open>w \<subseteq> X\<close> by simp
             also have "... = mult_stalk X' Y'"
-              unfolding mult_stalk_def x_alt y_alt class_of_eq   
-              apply (subst mult_rel_class_of[where W=w])
-              using x y w S_eq by auto
+              using mult_rel_class_of[where W=w]
+              using S_eq class_of_eq mult_stalk_def w x(2) x_alt y(2) y_alt by auto
             finally have "stX.mult_stalk X' Y' = mult_stalk X' Y'" .
             moreover have "stX.mult_stalk X' Y' \<in> stX.carrier_stalk"
               unfolding stX.mult_stalk_def using that 
@@ -627,8 +623,8 @@ qed
 lemma (in comm_ring) spec_is_scheme:
   shows "scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
-  using spec_is_comp_affine_scheme affine_scheme.affine_scheme_is_scheme sorry
-
+  by (metis spec_is_comp_affine_scheme comp_affine_scheme.comp_affine_scheme_is_scheme)
+ 
 lemma empty_scheme_is_comp_affine_scheme:
   shows "comp_affine_scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 
 {} (\<lambda>U. U={}) (\<lambda>U. {0::nat}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
