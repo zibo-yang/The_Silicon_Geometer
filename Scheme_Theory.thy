@@ -453,8 +453,18 @@ proof -
       then show ?thesis using locally_ringed_space_axioms_def by force
     qed
     show "affine_scheme_axioms R (+) (\<cdot>) \<zero> \<one> X is_open local.ind_sheaf ind_ring_morphisms b 
-            ind_add_str ind_mult_str ind_zero_str ind_one_str"
-      sorry
+            ind_add_str ind_mult_str ind_zero_str ind_one_str" 
+    proof-
+      obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
+Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
+(\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
+        using iso_locally_ringed_spaces_axioms by simp
+      then have "iso_locally_ringed_spaces X is_open local.ind_sheaf ind_ring_morphisms b ind_add_str
+        ind_mult_str ind_zero_str ind_one_str Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
+        \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+        (* using eq_\<O>\<^sub>X eq_\<rho> eq_add_str eq_mult_str eq_zero_str eq_one_str *) sorry 
+      thus ?thesis by (meson affine_scheme_axioms_def)
+    qed
   qed
   moreover have "is_open X" by simp
   ultimately show ?thesis
