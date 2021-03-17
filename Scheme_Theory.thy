@@ -455,14 +455,72 @@ proof -
     show "affine_scheme_axioms R (+) (\<cdot>) \<zero> \<one> X is_open local.ind_sheaf ind_ring_morphisms b 
             ind_add_str ind_mult_str ind_zero_str ind_one_str" 
     proof-
-      obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
-(\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
+      obtain f \<phi>\<^sub>f where f: "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b 
+              add_str mult_str zero_str one_str
+              Spec is_zariski_open sheaf_spec sheaf_spec_morphisms 
+              \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
         using iso_locally_ringed_spaces_axioms by simp
-      then have "iso_locally_ringed_spaces X is_open local.ind_sheaf ind_ring_morphisms b ind_add_str
-        ind_mult_str ind_zero_str ind_one_str Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
-        \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
-        (* using eq_\<O>\<^sub>X eq_\<rho> eq_add_str eq_mult_str eq_zero_str eq_one_str *) sorry 
+      interpret contf: continuous_map X is_open Spec is_zariski_open f
+        by (meson f homeomorphism_def iso_locally_ringed_spaces.is_homeomorphism)
+      have "iso_locally_ringed_spaces X is_open local.ind_sheaf ind_ring_morphisms b 
+              ind_add_str ind_mult_str ind_zero_str ind_one_str 
+              Spec is_zariski_open sheaf_spec sheaf_spec_morphisms
+              \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+      proof intro_locales
+        have mlrs: "morphism_locally_ringed_spaces_axioms X is_open \<O>\<^sub>X
+                      \<rho> add_str mult_str zero_str one_str is_zariski_open
+                      sheaf_spec sheaf_spec_morphisms add_sheaf_spec
+                      mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+          by (meson f iso_locally_ringed_spaces_def morphism_locally_ringed_spaces_def)
+
+        show "morphism_ringed_spaces_axioms X local.ind_sheaf ind_ring_morphisms b 
+                ind_add_str ind_mult_str ind_zero_str ind_one_str 
+                Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b 
+                add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+          unfolding morphism_ringed_spaces_axioms_def morphism_sheaves_of_rings_def
+            morphism_presheaves_of_rings_def morphism_presheaves_of_rings_axioms_def
+        proof (intro conjI strip)
+          show "presheaf_of_rings Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec"
+            using codom.presheaf_of_rings_axioms by blast
+          show pre2: "presheaf_of_rings Spec is_zariski_open (im_sheaf.im_sheaf X local.ind_sheaf f) (im_sheaf.im_sheaf_morphisms X ind_ring_morphisms f) b (im_sheaf.add_im_sheaf X ind_add_str f) (im_sheaf.mult_im_sheaf X ind_mult_str f) (im_sheaf.zero_im_sheaf X ind_zero_str f) (im_sheaf.one_im_sheaf X ind_one_str f)"
+            by (meson contf.continuous_map_axioms im_sheaf.im_sheaf_is_presheaf im_sheaf.intro sheaf_of_rings_axioms)
+          fix U
+          assume "is_zariski_open U"
+          then interpret ringU: ring "\<O> U" "add_sheaf_spec U" "mult_sheaf_spec U"
+                                  "zero_sheaf_spec U" "one_sheaf_spec U"
+            using codom.is_ring_from_is_homomorphism by force
+          interpret ringU':
+             ring "im_sheaf.im_sheaf X local.ind_sheaf f U"
+                     "im_sheaf.add_im_sheaf X ind_add_str f U" "im_sheaf.mult_im_sheaf X ind_mult_str f U"
+                     "im_sheaf.zero_im_sheaf X ind_zero_str f U" "im_sheaf.one_im_sheaf X ind_one_str f U"
+            by (meson \<open>is_zariski_open U\<close> pre2 presheaf_of_rings.is_ring_from_is_homomorphism)
+          show "ring_homomorphism (\<phi>\<^sub>f U) (\<O> U) (add_sheaf_spec U) (mult_sheaf_spec U) (zero_sheaf_spec U) (one_sheaf_spec U) (im_sheaf.im_sheaf X local.ind_sheaf f U) (im_sheaf.add_im_sheaf X ind_add_str f U) (im_sheaf.mult_im_sheaf X ind_mult_str f U) (im_sheaf.zero_im_sheaf X ind_zero_str f U) (im_sheaf.one_im_sheaf X ind_one_str f U)"
+          proof intro_locales
+            show "Set_Theory.map (\<phi>\<^sub>f U) (\<O> U) (im_sheaf.im_sheaf X local.ind_sheaf f U)"
+              sorry
+            show "monoid_homomorphism_axioms (\<phi>\<^sub>f U) (\<O> U) (add_sheaf_spec U) (zero_sheaf_spec U) (im_sheaf.add_im_sheaf X ind_add_str f U) (im_sheaf.zero_im_sheaf X ind_zero_str f U)"
+              using codom.is_ring_from_is_homomorphism
+              sorry
+            show "monoid_homomorphism_axioms (\<phi>\<^sub>f U) (\<O> U) (mult_sheaf_spec U) (one_sheaf_spec U) (im_sheaf.mult_im_sheaf X ind_mult_str f U) (im_sheaf.one_im_sheaf X ind_one_str f U)"
+              sorry
+          qed
+          fix V x
+          assume "is_zariski_open V" and "V \<subseteq> U" and "x \<in> \<O> U"
+          show "(im_sheaf.im_sheaf_morphisms X ind_ring_morphisms f U V \<circ> \<phi>\<^sub>f U) x = (\<phi>\<^sub>f V \<circ> sheaf_spec_morphisms U V) x"
+              sorry
+        qed
+        show "morphism_locally_ringed_spaces_axioms X is_open local.ind_sheaf ind_ring_morphisms 
+                ind_add_str ind_mult_str ind_zero_str ind_one_str is_zariski_open sheaf_spec 
+                sheaf_spec_morphisms add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+
+          sorry
+        show "iso_locally_ringed_spaces_axioms X is_open local.ind_sheaf ind_ring_morphisms b 
+                 ind_add_str ind_mult_str ind_zero_str ind_one_str 
+                 Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b 
+                 add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
+          sorry
+      qed
+        (* using eq_\<O>\<^sub>X eq_\<rho> eq_add_str eq_mult_str eq_zero_str eq_one_str *) 
       thus ?thesis by (meson affine_scheme_axioms_def)
     qed
   qed
