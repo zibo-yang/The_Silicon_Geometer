@@ -521,8 +521,13 @@ proof -
 
             have "is_local U induced_morphism"
               using are_local_morphisms[of x U] using that by auto
-
-            then show ?thesis sorry
+            then show ?thesis 
+              txt \<open>
+                We know \<^term>\<open>is_local\<close> and \<^term>\<open>ind_btw.is_local\<close> are almost equivalent because
+                  components in the interpreted @{term ind_mor_btw_stalks}s are almost the same.
+                  For example, @{term ind_sheaf} and @{term \<O>\<^sub>X} can be related by @{thm eq_\<O>\<^sub>X}. 
+                  However, it does not seem trivial to fill the gap here.\<close>
+              sorry
           qed
           then show ?thesis by (simp add: morphism_locally_ringed_spaces_axioms_def)
         qed
@@ -540,6 +545,11 @@ proof -
                   im_sheafXS.mult_im_sheaf im_sheafXS.zero_im_sheaf im_sheafXS.one_im_sheaf
                   im_sheaf im_sheaf_morphisms b add_im_sheaf
                   mult_im_sheaf zero_im_sheaf one_im_sheaf (\<lambda>U. identity (im_sheafXS.im_sheaf U))"
+            txt \<open>
+            Here, I attempted to shows that the morphism from @{term ind_sheaf} to @{term \<O>\<^sub>X} 
+              (as presheaves_of_rings) is an identity. Our proved auxiliary lemmas like 
+              @{thm id_to_iso_locally_ringed_spaces} does not appear useful.
+            \<close>
             sorry
           from comp_of_presheaves[OF this \<psi>_morph]
           have "morphism_presheaves_of_rings Spec is_zariski_open im_sheafXS.im_sheaf 
