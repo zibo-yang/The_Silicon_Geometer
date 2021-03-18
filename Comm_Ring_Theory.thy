@@ -4400,6 +4400,23 @@ proof -
   qed
 qed
 
+lemma iso_is_local_ring_morphism:
+  assumes "local_ring A addA multA zeroA oneA" and "ring B addB multB zeroB oneB"
+and "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+shows "local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  sorry
+(* Use isomorphic_to_local_is_local to prove that B is a local ring, then use 
+preim_of_max_ideal_is_max to prove that f is a local ring (to achieve this either assume that the rings
+involved are commutative or create a lideal version of preim_of_max_ideal_is_max) *)
+
+lemma comp_of_local_ring_morphisms:
+  assumes "local_ring A addA multA zeroA oneA" and "local_ring B addB multB zeroB oneB"
+and "local_ring C addC multC zeroC oneC" 
+and "local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+and "local_ring_morphism g B addB multB zeroB oneB C addC multC zeroC oneC"
+shows "local_ring_morphism (g \<circ> f) A addA multA zeroA oneA C addC multC zeroC oneC"
+  sorry
+(* use preim_of_max_ideal_is_max twice *)
 
 subsubsection \<open>Locally Ringed Spaces\<close>
 
