@@ -12,6 +12,9 @@ cause errors with monoid subtraction below? --LCP
 *)
 no_notation plus (infixl "+" 65)
 
+lemma (in monoid_homomorphism) monoid_preimage: "Group_Theory.monoid (\<eta> \<^sup>\<inverse> M M') (\<cdot>) \<one>"
+  by (simp add: Int_absorb1 source.monoid_axioms subsetI)
+
 lemma (in group_homomorphism) group_preimage: "Group_Theory.group (\<eta> \<^sup>\<inverse> G G') (\<cdot>) \<one>"
   by (simp add: Int_absorb1 source.group_axioms subsetI)
 
@@ -4247,9 +4250,9 @@ proof -
       then interpret lideal \<aa> "f \<^sup>\<inverse> A B" addA multA zeroA oneA 
         by metis
       have "f ` \<aa> \<noteq> B"
-        by (metis Int_absorb1 Int_lower2 \<open>\<aa> \<noteq> f \<^sup>\<inverse> A B\<close> f.injective f.surjective image_subset_iff_subset_vimage inj_on_image_eq_iff le_infE subset)
+        by (metis Int_absorb1 \<open>\<aa> \<noteq> f \<^sup>\<inverse> A B\<close> f.injective f.surjective image_subset_iff_subset_vimage inj_on_image_eq_iff subset subset_iff)
       moreover have "I \<subseteq> f ` \<aa>"
-        by (smt (verit, best) MI.subset \<open>f \<^sup>\<inverse> A I \<subseteq> \<aa>\<close> f.injective f.surjective image_subset_iff_subset_vimage inf.order_iff inj_on_image_eq_iff le_inf_iff order_refl subset_imageE subset_image_inj)
+        by (smt (verit, ccfv_threshold) Int_iff MI.subset \<open>f \<^sup>\<inverse> A I \<subseteq> \<aa>\<close> f.surjective image_iff subset_iff vimageI)
       moreover have "lideal (f ` \<aa>) B addB multB zeroB oneB"
         by (metis f.multiplicative.image.subset f.ring_epimorphism_axioms im_of_lideal_is_lideal image_subset_iff_subset_vimage inf.orderE inf_sup_aci(1) lideal_axioms)
       ultimately show "f \<^sup>\<inverse> A I = \<aa>"
@@ -4514,8 +4517,7 @@ proof -
     ultimately have "f \<^sup>\<inverse> A I = f \<^sup>\<inverse> A J"
       by (metis A.is_unique Int_absorb1 f.multiplicative.image.subset image_subset_iff_subset_vimage)
     then show "I = J"
-      using    MI.lideal_axioms MI.neq_ring MJ.max_lideal_axioms MJ.neq_ring \<open>max_lideal (f \<^sup>\<inverse> A J) (f \<^sup>\<inverse> A B) addA multA zeroA oneA\<close> f.multiplicative.image.subset f.ring_isomorphism_axioms im_of_max_lideal_is_max image_subset_iff_subset_vimage max_lideal.axioms(1) max_lideal.is_max
-      by (metis Int_absorb1 Int_lower1 MI.lideal_axioms MI.neq_ring MJ.max_lideal_axioms MJ.neq_ring \<open>max_lideal (f \<^sup>\<inverse> A J) (f \<^sup>\<inverse> A B) addA multA zeroA oneA\<close> f.multiplicative.image.subset f.ring_isomorphism_axioms im_of_max_lideal_is_max image_subset_iff_subset_vimage max_lideal.axioms(1) max_lideal.is_max)
+      by (metis MI.lideal_axioms MI.neq_ring MJ.max_lideal_axioms MJ.subset f.preim_subset_imp_subset max_lideal.is_max subset_refl)
   next
     show "\<exists>\<ww>. max_lideal \<ww> B addB multB zeroB oneB"
       by (meson A.has_max_lideal assms(2) im_of_max_lideal_is_max)
@@ -4532,14 +4534,118 @@ qed
 preim_of_max_ideal_is_max to prove that f is a local ring (to achieve this either assume that the rings
 involved are commutative or create a lideal version of preim_of_max_ideal_is_max) *)
 
+
+lemma (in monoid_homomorphism) monoid_epimorphism_image:
+   "monoid_epimorphism \<eta> M (\<cdot>) \<one> (\<eta> ` M) (\<cdot>') \<one>'"
+proof -
+  interpret monoid "\<eta> ` M" "(\<cdot>')" "\<one>'"
+    using image.sub.monoid_axioms by force
+  show ?thesis
+  proof qed (auto simp: bij_betw_def commutes_with_unit commutes_with_composition)
+qed
+
+
+lemma (in group_homomorphism) group_epimorphism_image:
+   "group_epimorphism \<eta> G (\<cdot>) \<one> (\<eta> ` G) (\<cdot>') \<one>'"
+proof -
+  interpret group "\<eta> ` G" "(\<cdot>')" "\<one>'"
+    using image.sub.group_axioms by blast
+  show ?thesis
+  proof qed (auto simp: bij_betw_def commutes_with_composition)
+qed
+  
+lemma (in ring_homomorphism) ring_epimorphism_preimage:
+   "ring_epimorphism \<eta> R (+) (\<cdot>) \<zero> \<one> (\<eta> ` R) (+') (\<cdot>') \<zero>' \<one>'"
+proof -
+  interpret ring "\<eta> ` R" "(+')" "(\<cdot>')" "\<zero>'" "\<one>'"
+  proof qed (auto simp add: target.distributive target.additive.commutative)
+  show ?thesis
+  proof qed (auto simp: additive.commutes_with_composition additive.commutes_with_unit
+      multiplicative.commutes_with_composition multiplicative.commutes_with_unit)
+qed
+
 lemma comp_of_local_ring_morphisms:
-  assumes "local_ring A addA multA zeroA oneA" and "local_ring B addB multB zeroB oneB"
-and "local_ring C addC multC zeroC oneC" 
-and "local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB"
-and "local_ring_morphism g B addB multB zeroB oneB C addC multC zeroC oneC"
-shows "local_ring_morphism (g \<circ> f) A addA multA zeroA oneA C addC multC zeroC oneC"
-  sorry
-(* use preim_of_max_ideal_is_max twice *)
+  assumes "local_ring A addA multA zeroA oneA" 
+    and "local_ring B addB multB zeroB oneB"
+    and "local_ring C addC multC zeroC oneC" 
+    and "local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+    and "local_ring_morphism g B addB multB zeroB oneB C addC multC zeroC oneC"
+  shows "local_ring_morphism (compose A g f) A addA multA zeroA oneA C addC multC zeroC oneC"
+proof -
+  interpret A: local_ring A addA multA zeroA oneA
+    by (simp add: assms)
+  interpret B: local_ring B addB multB zeroB oneB
+    by (simp add: assms)
+  interpret C: local_ring C addC multC zeroC oneC
+    by (simp add: assms)
+  interpret f: local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB
+    by (simp add: assms)
+  interpret g: local_ring_morphism g B addB multB zeroB oneB C addC multC zeroC oneC
+    by (simp add: assms)
+  show ?thesis
+  proof intro_locales
+    show "Set_Theory.map (compose A g f) A C"
+      using comp_maps f.map_axioms g.map_axioms by blast
+    show hom_add: "monoid_homomorphism_axioms (compose A g f) A addA zeroA addC zeroC"
+      by (meson comp_monoid_morphisms f.additive.monoid_homomorphism_axioms g.additive.monoid_homomorphism_axioms monoid_homomorphism_def)
+    show "monoid_homomorphism_axioms (compose A g f) A multA oneA multC oneC"
+      by (meson comp_monoid_morphisms f.multiplicative.monoid_homomorphism_axioms g.multiplicative.monoid_homomorphism_axioms monoid_homomorphism_def)
+    show "local_ring_morphism_axioms (compose A g f) A addA multA zeroA oneA C addC multC zeroC oneC"
+    proof
+      fix \<ww>\<^sub>A \<ww>\<^sub>B
+      assume maxA: "max_lideal \<ww>\<^sub>A A addA multA zeroA oneA"
+        and maxC: "max_lideal \<ww>\<^sub>B C addC multC zeroC oneC"
+      interpret astar: max_lideal \<ww>\<^sub>A A addA multA zeroA oneA
+        using maxA by blast
+      interpret cstar: max_lideal \<ww>\<^sub>B C addC multC zeroC oneC
+        using maxC by blast
+      have "B \<subseteq> g -` C"
+        by blast
+      then interpret gstar: max_lideal "g \<^sup>\<inverse> B \<ww>\<^sub>B" "g \<^sup>\<inverse> B C" addB multB zeroB oneB
+        by (metis B.has_max_lideal g.preimage_of_max_lideal inf_absorb2 maxC)
+      interpret dstar: Group_Theory.monoid "(g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B" addA zeroA
+        by (smt (verit, ccfv_threshold) A.additive.monoid_axioms Group_Theory.monoid.intro Int_iff hom_add cstar.additive.sub_composition_closed cstar.additive.sub_unit_closed monoid.associative monoid.composition_closed monoid.left_unit monoid.right_unit monoid.unit_closed monoid_homomorphism_axioms_def vimageD vimageI)
+      show "(g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B = \<ww>\<^sub>A"
+      proof (rule astar.is_max [symmetric])
+        show "lideal ((g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B) A addA multA zeroA oneA"
+        proof
+          fix u
+          assume u: "u \<in> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B"
+          then have "u \<in> A"
+            by auto
+          show "dstar.invertible u"
+          proof (rule dstar.invertibleI)
+            show "addA u (A.additive.inverse u) = zeroA"
+              using A.additive.invertible_right_inverse \<open>u \<in> A\<close> by blast
+            have "(g \<circ> f \<down> A) (A.additive.inverse u) = C.additive.inverse (g (f u))"
+              by (smt (verit, ccfv_SIG) A.additive.invertible \<open>u \<in> A\<close> comp_monoid_morphisms compose_eq f.additive.monoid_homomorphism_axioms g.additive.monoid_homomorphism_axioms monoid_homomorphism.invertible_commutes_with_inverse)
+            then show "(A.additive.inverse u) \<in> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B"
+              using u by (metis A.additive.invertible A.additive.invertible_inverse_closed C.additive.abelian_group_axioms Int_iff abelian_group_def cstar.additive.subgroup_inverse_iff compose_eq f.map_axioms g.map_axioms group.invertible map.map_closed vimage_eq)
+          qed (use u \<open>u \<in> A\<close> in auto)
+        next
+          fix r a
+          assume "r \<in> A" and "a \<in> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B"
+          then show "multA r a \<in> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B"
+            by (smt (verit, best) A.multiplicative.composition_closed Int_iff \<open>Set_Theory.map (g \<circ> f \<down> A) A C\<close> \<open>monoid_homomorphism_axioms (g \<circ> f \<down> A) A multA oneA multC oneC\<close> cstar.lideal map.map_closed monoid_homomorphism_axioms_def vimageE vimageI2)
+        qed (use dstar.unit_closed dstar.composition_closed in auto)
+        show "(g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B \<noteq> A"
+          by (metis A.multiplicative.unit_closed B.multiplicative.unit_closed Int_iff compose_eq f.multiplicative.commutes_with_unit gstar.has_one_imp_equal gstar.neq_ring vimage_eq)
+        show "\<ww>\<^sub>A \<subseteq> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>B"
+        proof clarsimp
+          fix x
+          assume "x \<in> \<ww>\<^sub>A"
+          then have "x \<in> A"
+            using astar.additive.sub by presburger
+          then have "(g \<circ> f \<down> A) x = g (f x)"
+            by (simp add: compose_eq)
+          also have "... \<in> \<ww>\<^sub>B"
+            sorry
+          finally show "(g \<circ> f \<down> A) x \<in> \<ww>\<^sub>B" .
+        qed
+      qed
+    qed
+  qed
+qed
 
 subsubsection \<open>Locally Ringed Spaces\<close>
 
