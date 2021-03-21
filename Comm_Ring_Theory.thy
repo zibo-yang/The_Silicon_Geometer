@@ -4564,19 +4564,10 @@ preim_of_max_ideal_is_max to prove that f is a local ring (to achieve this eithe
 involved are commutative or create a lideal version of preim_of_max_ideal_is_max) *)
 
 lemma comp_of_local_ring_morphisms:
-  assumes "local_ring A addA multA zeroA oneA"
-      and "local_ring B addB multB zeroB oneB"
-      and "local_ring C addC multC zeroC oneC"
-      and "local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB"
+  assumes "local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB"
       and "local_ring_morphism g B addB multB zeroB oneB C addC multC zeroC oneC"
     shows "local_ring_morphism (compose A g f) A addA multA zeroA oneA C addC multC zeroC oneC"
 proof -
-  interpret A: local_ring A addA multA zeroA oneA
-    by (simp add: assms)
-  interpret B: local_ring B addB multB zeroB oneB
-    by (simp add: assms)
-  interpret C: local_ring C addC multC zeroC oneC
-    by (simp add: assms)
   interpret f: local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB
     by (simp add: assms)
   interpret g: local_ring_morphism g B addB multB zeroB oneB C addC multC zeroC oneC
@@ -4585,7 +4576,7 @@ proof -
     using comp_ring_morphisms f.ring_homomorphism_axioms g.ring_homomorphism_axioms
     by fastforce
   obtain \<ww>\<^sub>B where \<ww>\<^sub>B: "max_lideal \<ww>\<^sub>B B addB multB zeroB oneB"
-    using B.has_max_lideal by presburger
+    using f.target.has_max_lideal by force
   show ?thesis
   proof intro_locales
     show "local_ring_morphism_axioms (compose A g f) A addA multA zeroA oneA C addC multC zeroC oneC"
@@ -4600,10 +4591,10 @@ proof -
       have "B \<subseteq> g -` C"
         by blast
       with max interpret maxg: max_lideal "g \<^sup>\<inverse> B \<ww>\<^sub>C" "g \<^sup>\<inverse> B C" addB multB zeroB oneB
-        by (metis B.has_max_lideal g.preimage_of_max_lideal inf_absorb2)
+        by (metis Int_absorb1 \<ww>\<^sub>B g.preimage_of_max_lideal)
       interpret maxgf: Group_Theory.monoid "(g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>C" addA zeroA
         by (simp add: monoid_def vimage_def gf.additive.commutes_with_composition
-                      gf.additive.commutes_with_unit A.additive.associative)
+                      gf.additive.commutes_with_unit f.source.additive.associative)
       show "(g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>C = \<ww>\<^sub>A"
       proof (rule maxA.is_max [symmetric])
         show "lideal ((g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>C) A addA multA zeroA oneA"
@@ -4614,13 +4605,16 @@ proof -
             by auto
           show "maxgf.invertible u"
           proof (rule maxgf.invertibleI)
-            show "addA u (A.additive.inverse u) = zeroA"
-              using A.additive.invertible_right_inverse \<open>u \<in> A\<close> by blast
-            have "(g \<circ> f \<down> A) (A.additive.inverse u) = C.additive.inverse (g (f u))"
-              by (metis A.additive.invertible \<open>u \<in> A\<close> compose_eq gf.additive.invertible_commutes_with_inverse)
-            then show "(A.additive.inverse u) \<in> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>C"
-              by (metis A.additive.invertible A.additive.invertible_inverse_closed C.additive.group_axioms
-                        Int_iff compose_eq maxC.additive.subgroup_inverse_iff f.map_closed g.map_axioms group.invertible map.map_closed u vimage_eq)
+            show "addA u (f.source.additive.inverse u) = zeroA"
+              using f.source.additive.invertible_right_inverse \<open>u \<in> A\<close> by blast
+            have "(g \<circ> f \<down> A) (f.source.additive.inverse u) = g.target.additive.inverse (g (f u))"
+              by (metis f.source.additive.invertible \<open>u \<in> A\<close> compose_eq 
+                    gf.additive.invertible_commutes_with_inverse)
+            then show "(f.source.additive.inverse u) \<in> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>C"
+              by (metis f.source.additive.invertible f.source.additive.invertible_inverse_closed  
+                    g.target.additive.group_axioms Int_iff compose_eq 
+                    maxC.additive.subgroup_inverse_iff f.map_closed g.map_axioms group.invertible 
+                    map.map_closed u vimage_eq)
           qed (use u \<open>u \<in> A\<close> in auto)
         next
           fix r a
@@ -4629,7 +4623,9 @@ proof -
             by (simp add: maxC.lideal gf.multiplicative.commutes_with_composition)
         qed (use maxgf.unit_closed maxgf.composition_closed in auto)
         show "(g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>C \<noteq> A"
-          by (metis A.multiplicative.unit_closed B.multiplicative.unit_closed Int_iff compose_eq f.multiplicative.commutes_with_unit maxg.has_one_imp_equal maxg.neq_ring vimage_eq)
+          by (metis f.source.multiplicative.unit_closed f.target.multiplicative.unit_closed Int_iff 
+              compose_eq f.multiplicative.commutes_with_unit maxg.has_one_imp_equal maxg.neq_ring 
+              vimage_eq)
         show "\<ww>\<^sub>A \<subseteq> (g \<circ> f \<down> A) \<^sup>\<inverse> A \<ww>\<^sub>C"
           apply clarsimp
           using f.preimage_of_max_lideal g.preimage_of_max_lideal \<ww>\<^sub>B
