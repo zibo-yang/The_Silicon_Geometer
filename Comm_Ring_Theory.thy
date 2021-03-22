@@ -4262,20 +4262,23 @@ proof -
 qed
 
 lemma isomorphic_to_local_is_local:
-  assumes ring: "ring A addA multA zeroA oneA" and lring: "local_ring B addB multB zeroB oneB"
+  assumes lring: "local_ring B addB multB zeroB oneB"
     and iso: "ring_isomorphism f A addA multA zeroA oneA B addB multB zeroB oneB"
   shows "local_ring A addA multA zeroA oneA"
 proof intro_locales
+  interpret ring A addA multA zeroA oneA 
+    by (meson iso ring_homomorphism.axioms(2) ring_isomorphism.axioms(1))
+
   show "Group_Theory.monoid A addA zeroA"
-    by (meson abelian_group.axioms(2) assms(1) commutative_monoid_def ring_def)
+    by (simp add: additive.monoid_axioms)
   show "Group_Theory.group_axioms A addA zeroA"
-    by (meson Group_Theory.group.axioms(2) abelian_group.axioms(1) assms(1) ring.axioms(1))
+    by (meson Group_Theory.group_def additive.group_axioms)
   show "commutative_monoid_axioms A addA"
-    by (meson abelian_group_def assms(1) commutative_monoid_def ring_def)
+    by (simp add: additive.commutative commutative_monoid_axioms_def)
   show "Group_Theory.monoid A multA oneA"
-    by (meson assms(1) ring_def)
+    by (simp add: multiplicative.monoid_axioms)
   show "ring_axioms A addA multA"
-    by (meson assms(1) ring_def)
+    by (meson local.ring_axioms ring.axioms(3))
   have hom: "monoid_homomorphism f A multA oneA B multB oneB"
     by (meson iso ring_homomorphism_def ring_isomorphism.axioms(1))
   have "bij_betw f A B"
