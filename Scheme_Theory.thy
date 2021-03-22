@@ -48,6 +48,150 @@ affine_scheme  R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_o
 (ind_sheaf.ind_mult_str mult_str U) (ind_sheaf.ind_zero_str zero_str U)
 (ind_sheaf.ind_one_str one_str U))"
 
+
+locale iso_stalks = 
+  stk1:stalk S is_open \<FF>1 \<rho>1 b add_str1 mult_str1 zero_str1 one_str1 I x +
+  stk2:stalk S is_open \<FF>2 \<rho>2 b add_str2 mult_str2 zero_str2 one_str2 I x
+  for S is_open \<FF>1 \<rho>1 b add_str1 mult_str1 zero_str1 one_str1 I x 
+        \<FF>2 \<rho>2 add_str2 mult_str2 zero_str2 one_str2 +
+  assumes 
+    stalk_eq:"\<forall>U\<in>I. \<FF>1 U = \<FF>2 U \<and> add_str1 U = add_str2 U \<and> mult_str1 U = mult_str2 U 
+            \<and> zero_str1 U = zero_str2 U \<and> one_str1 U = one_str2 U"
+    and stalk\<rho>_eq:"\<forall>U V. U\<in>I \<and> V \<in>I \<longrightarrow> \<rho>1 U V = \<rho>2 U V"
+begin
+
+lemma 
+  assumes "U \<in> I"
+  shows has_ring_isomorphism:"ring_isomorphism (identity stk1.carrier_stalk) stk1.carrier_stalk 
+          stk1.add_stalk stk1.mult_stalk (stk1.zero_stalk U) (stk1.one_stalk U)
+          stk2.carrier_stalk stk2.add_stalk stk2.mult_stalk (stk2.zero_stalk U) (stk2.one_stalk U)"
+   and carrier_stalk_eq:"stk1.carrier_stalk = stk2.carrier_stalk"
+   and class_of_eq:"stk1.class_of = stk2.class_of"
+proof -
+  have "is_open U" "x \<in> U"
+    using stk1.index assms by auto
+  interpret ring1:ring stk1.carrier_stalk stk1.add_stalk stk1.mult_stalk "stk1.zero_stalk U" 
+                  "stk1.one_stalk U"
+    using stk1.stalk_is_ring[OF \<open>is_open U\<close> \<open>x \<in> U\<close>] .
+  interpret ring2:ring stk2.carrier_stalk stk2.add_stalk stk2.mult_stalk "stk2.zero_stalk U"
+                  "stk2.one_stalk U"
+    using stk2.stalk_is_ring[OF \<open>is_open U\<close> \<open>x \<in> U\<close>] .
+
+  interpret e1:equivalence "Sigma I \<FF>1" "{(x, y). stk1.rel x y}"
+    using stk1.rel_is_equivalence .
+  interpret e2:equivalence "Sigma I \<FF>2" "{(x, y). stk2.rel x y}"
+    using stk2.rel_is_equivalence .
+
+  have Sigma_eq:"Sigma I \<FF>1  =  Sigma I \<FF>2"
+  proof (rule Sigma_cong[OF refl])
+    fix x assume "x \<in> I" 
+    from stalk_eq[rule_format,OF this]
+    show "\<FF>1 x = \<FF>2 x" by simp
+  qed
+  moreover have "stk1.rel xx yy \<longleftrightarrow> stk2.rel xx yy" 
+                  if "xx\<in>Sigma I \<FF>1" "yy\<in>Sigma I \<FF>2"
+                  for xx yy 
+    unfolding stk1.rel_def stk2.rel_def                
+    by (metis stalk\<rho>_eq stalk_eq)          
+  ultimately have Class_eq: "e1.Class = e2.Class" 
+    unfolding e1.Class_def e2.Class_def
+    by (auto intro!:ext)
+  then show class_of_eq:"stk1.class_of = stk2.class_of"
+    unfolding stk1.class_of_def stk2.class_of_def by auto
+
+  show "stk1.carrier_stalk = stk2.carrier_stalk"
+    using Class_eq Sigma_eq e1.natural.surjective e2.natural.surjective 
+      stk1.carrier_direct_lim_def stk1.carrier_stalk_def stk2.carrier_direct_lim_def 
+      stk2.carrier_stalk_def stk2.neighborhoods_eq by force
+
+  let ?id = "identity stk1.carrier_stalk"
+  show "ring_isomorphism (identity stk1.carrier_stalk) stk1.carrier_stalk 
+          stk1.add_stalk stk1.mult_stalk (stk1.zero_stalk U) (stk1.one_stalk U)
+          stk2.carrier_stalk stk2.add_stalk stk2.mult_stalk (stk2.zero_stalk U) (stk2.one_stalk U)"
+  proof
+    show "?id (stk1.one_stalk U) = stk2.one_stalk U" 
+    proof -
+      have "stk1.one_stalk U \<in> stk1.carrier_stalk" by blast
+      then have "?id (stk1.one_stalk U) = stk1.one_stalk U" by auto
+      also have "... = stk2.one_stalk U"
+        unfolding stk1.one_stalk_def stk2.one_stalk_def class_of_eq
+        by (simp add: assms stalk_eq)
+      finally show ?thesis .
+    qed
+    show "?id (stk1.zero_stalk U) = stk2.zero_stalk U" 
+    proof -
+      have "stk1.zero_stalk U \<in> stk1.carrier_stalk" by blast
+      then have "?id (stk1.zero_stalk U) = stk1.zero_stalk U" by auto
+      also have "... = stk2.zero_stalk U"
+        unfolding stk1.zero_stalk_def stk2.zero_stalk_def class_of_eq
+        by (simp add: assms stalk_eq)
+      finally show ?thesis .
+    qed
+
+   
+    show "?id (stk1.add_stalk X' Y') = stk2.add_stalk (?id X') (?id Y')" 
+      "?id (stk1.mult_stalk X' Y') = stk2.mult_stalk (?id X') (?id Y')" 
+      if "X' \<in> stk1.carrier_stalk" "Y' \<in> stk1.carrier_stalk" for X' Y'
+    proof -
+      define x where "x=(SOME x. x \<in> X')"
+      define y where "y=(SOME y. y \<in> Y')"
+      have x:"x\<in>X'" "x\<in>Sigma I \<FF>1" and x_alt:"X' = stk1.class_of (fst x) (snd x)"
+        using stk1.rel_carrier_Eps_in that(1) stk1.carrier_stalk_def stk2.neighborhoods_eq x_def 
+        by auto
+      have y:"y\<in>Y'" "y\<in>Sigma I \<FF>1" and y_alt:"Y' = stk1.class_of (fst y) (snd y)"
+        using stk1.rel_carrier_Eps_in that(2) stk1.carrier_stalk_def stk2.neighborhoods_eq y_def 
+        by auto
+      obtain "fst x \<subseteq> S" "fst y \<subseteq> S"
+        using x(2) y(2) stk1.index 
+        by (metis mem_Sigma_iff prod.collapse stk1.open_imp_subset stk2.subset_of_opens)
+      obtain w where w: "w\<in>I" "w \<subseteq> fst x" "w \<subseteq> fst y"
+        using stk1.has_lower_bound x(2) y(2) by force
+      have "w \<subseteq> S"  
+        by (simp add: stk1.open_imp_subset stk1.subset_of_opens w(1))
+
+      have "stk1.add_stalk X' Y' = stk1.class_of w (add_str1 w (\<rho>1 (fst x) w (snd x))
+                                         (\<rho>1 (fst y) w (snd y)))"
+        unfolding x_alt y_alt stk1.add_stalk_def
+        apply (subst stk1.add_rel_class_of[where W=w])
+        using x y w by auto
+      also have "... = stk2.class_of w (add_str2 w (\<rho>2 (fst x) w (snd x)) (\<rho>2 (fst y) w (snd y)))"
+        using class_of_eq stalk\<rho>_eq stalk_eq w(1) x(2) y(2) by force
+      also have "... = stk2.add_stalk X' Y'"
+        unfolding stk2.add_stalk_def x_alt y_alt class_of_eq   
+        apply (subst stk2.add_rel_class_of[where W=w])
+        using x y w by (auto simp add: Sigma_eq)
+      finally have "stk1.add_stalk X' Y' = stk2.add_stalk X' Y'" .
+      moreover have "stk1.add_stalk X' Y' \<in> stk1.carrier_stalk"
+        by (simp add: that(1) that(2))
+      ultimately show "?id (stk1.add_stalk X' Y') = stk2.add_stalk (?id X') (?id Y')" 
+        using that by simp
+
+      have "stk1.mult_stalk X' Y' = stk1.class_of w (mult_str1 w (\<rho>1 (fst x) w (snd x))
+                                         (\<rho>1 (fst y) w (snd y)))"
+        unfolding x_alt y_alt stk1.mult_stalk_def
+        apply (subst stk1.mult_rel_class_of[where W=w])
+        using x y w by auto
+      also have "... = stk2.class_of w (mult_str2 w (\<rho>2 (fst x) w (snd x)) (\<rho>2 (fst y) w (snd y)))"
+        using class_of_eq stalk\<rho>_eq stalk_eq w(1) x(2) y(2) by force
+      also have "... = stk2.mult_stalk X' Y'"
+        unfolding stk2.mult_stalk_def x_alt y_alt class_of_eq   
+        apply (subst stk2.mult_rel_class_of[where W=w])
+        using x y w by (auto simp add: Sigma_eq)
+      finally have "stk1.mult_stalk X' Y' = stk2.mult_stalk X' Y'" .
+      moreover have "stk1.mult_stalk X' Y' \<in> stk1.carrier_stalk"
+        by (simp add: that(1) that(2))
+      ultimately show "?id (stk1.mult_stalk X' Y') = stk2.mult_stalk (?id X') (?id Y')" 
+        using that by simp
+    qed
+
+    from \<open>stk1.carrier_stalk = stk2.carrier_stalk\<close> 
+    show "?id \<in> stk1.carrier_stalk \<rightarrow>\<^sub>E stk2.carrier_stalk"
+      "bij_betw ?id stk1.carrier_stalk stk2.carrier_stalk"
+      by (auto simp flip: id_def)
+  qed
+qed
+end
+
 context comp_affine_scheme
 begin
 
@@ -79,10 +223,11 @@ proof -
   have "affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open local.ind_sheaf ind_ring_morphisms b
           ind_add_str ind_mult_str ind_zero_str ind_one_str"
   proof intro_locales
+ 
     show "locally_ringed_space_axioms is_open local.ind_sheaf ind_ring_morphisms ind_add_str 
             ind_mult_str ind_zero_str ind_one_str"
     proof -
-      have \<section>: "stalk.is_local is_open local.ind_sheaf ind_ring_morphisms ind_add_str
+      have "stalk.is_local is_open local.ind_sheaf ind_ring_morphisms ind_add_str
                 ind_mult_str ind_zero_str ind_one_str
                 (neighborhoods u) u U"
         if "u \<in> U" and opeU: "is_open U" for u U
@@ -93,137 +238,31 @@ proof -
           ind_mult_str ind_zero_str ind_one_str "neighborhoods u" u
           apply (unfold_locales)
           unfolding neighborhoods_def using \<open>U \<subseteq> X\<close> \<open>u\<in>U\<close> by auto
-        interpret stX_r:ring stX.carrier_stalk stX.add_stalk stX.mult_stalk 
-          "stX.zero_stalk U" "stX.one_stalk U"
-          using that stX.stalk_is_ring by simp_all
-
         interpret stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str "neighborhoods u" u
           by (meson direct_lim_def ind_sheaf.axioms(1) ind_sheaf_axioms stX.stalk_axioms stalk_def)
-        interpret r:ring carrier_stalk add_stalk mult_stalk "zero_stalk U" "one_stalk U"
-          using stalk_is_ring that by simp_all
-        have "ring stX.carrier_stalk stX.add_stalk stX.mult_stalk (stX.zero_stalk U) (stX.one_stalk U)"
-          by (simp add: opeU stX.stalk_is_ring that(1))
-        moreover have "local_ring carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
+       
+        have "local_ring carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
           using is_local_def opeU stalks_are_local that(1) by blast
-        moreover have "ring_isomorphism (restrict id stX.carrier_stalk)
+        moreover have "ring_isomorphism (identity stX.carrier_stalk)
             stX.carrier_stalk stX.add_stalk stX.mult_stalk (stX.zero_stalk U) (stX.one_stalk U)
             carrier_stalk add_stalk mult_stalk (zero_stalk U) (one_stalk U)"
-        proof 
-          let ?id = "restrict id stX.carrier_stalk"
-
-          let ?A="Sigma (neighborhoods u) local.ind_sheaf"
-          let ?B="Sigma (neighborhoods u) \<O>\<^sub>X"
-          interpret A:equivalence "Sigma (neighborhoods u) local.ind_sheaf" "{(x, y). stX.rel x y}"
-            using stX.rel_is_equivalence by simp
-          interpret B:equivalence "Sigma (neighborhoods u) \<O>\<^sub>X" "{(x, y). rel x y}"
-            using rel_is_equivalence  by simp
-
-          have stX_carrier:"stX.carrier_stalk = A.Partition"
-            unfolding stX.carrier_stalk_def stX.carrier_direct_lim_def by rule
-
-          have S_eq:"?A = ?B" 
-            apply (rule Sigma_cong)
-            by (simp_all add: eq_\<O>\<^sub>X open_imp_subset subset_of_opens)
-          moreover have E_eq:"{(x, y). stX.rel x y} = {(x, y). rel x y}" 
-          proof -
-            have "stX.rel a1 a2 \<longleftrightarrow> rel a1 a2" if "a1\<in>?A" "a2\<in>?A" for a1 a2 
-              unfolding stX.rel_def rel_def by (metis eq_\<O>\<^sub>X eq_\<rho> open_imp_subset subset_of_opens)
-            with S_eq show ?thesis 
-              by (smt (verit, best) A.left_closed A.right_closed B.left_closed Collect_cong 
-                  Pair_inject case_prodE case_prodI2 mem_Collect_eq rel_Class_iff)
-          qed
-          ultimately have AB:"A.Partition = B.Partition" "A.Class = B.Class"
-            by auto
-          then have class_of_eq:"stX.class_of = class_of"
-            unfolding stX.class_of_def class_of_def by auto 
-
-          show "?id (stX.one_stalk U) = one_stalk U" 
-          proof -
-            have "stX.one_stalk U \<in> stX.carrier_stalk" by blast
-            then have "?id (stX.one_stalk U) = stX.one_stalk U" by auto
-            also have "... = one_stalk U"
-              unfolding stX.one_stalk_def one_stalk_def 
-              unfolding class_of_eq eq_one_str[OF UX] stX_carrier by rule
-            finally show ?thesis .
-          qed
-
-          show "?id (stX.zero_stalk U) = zero_stalk U" 
-          proof -
-            have "stX.zero_stalk U \<in> stX.carrier_stalk" by blast
-            then have "?id (stX.zero_stalk U) = stX.zero_stalk U" by auto
-            also have "... = zero_stalk U"
-              unfolding stX.zero_stalk_def zero_stalk_def 
-              unfolding class_of_eq eq_zero_str[OF UX] stX_carrier by rule
-            finally show ?thesis .
-          qed
-
-          show "?id (stX.add_stalk X' Y') = add_stalk (?id X') (?id Y')" 
-            "?id (stX.mult_stalk X' Y') = mult_stalk (?id X') (?id Y')" 
-            if "X' \<in> stX.carrier_stalk" "Y' \<in> stX.carrier_stalk" for X' Y'
-          proof -
-            define x where "x=(SOME x. x \<in> X')"
-            define y where "y=(SOME y. y \<in> Y')"
-            have x:"x\<in>X'" "x\<in>?A" and x_alt:"X' = stX.class_of (fst x) (snd x)"
-              using stX.rel_carrier_Eps_in[OF that(1)[unfolded stX.carrier_stalk_def]] 
-              unfolding x_def by auto
-            have y:"y\<in>Y'" "y\<in>?A" and y_alt:"Y' = stX.class_of (fst y) (snd y)"
-              using stX.rel_carrier_Eps_in[OF that(2)[unfolded stX.carrier_stalk_def]] 
-              unfolding y_def by auto
-            obtain "fst x \<subseteq> X" "fst y \<subseteq> X"
-              using open_imp_subset subset_of_opens x(2) y(2) by force
-            obtain w where w: "w\<in>neighborhoods u" "w \<subseteq> fst x" "w \<subseteq> fst y"
-              using stX.has_lower_bound x(2) y(2) by force
-            have "w \<subseteq> X" 
-              by (simp add: open_imp_subset subset_of_opens w(1))
-
-            have "stX.add_stalk X' Y' = stX.class_of w (ind_add_str w 
-                    (ind_ring_morphisms (fst x) w (snd x)) (ind_ring_morphisms (fst y) w (snd y)))"
-              unfolding x_alt y_alt stX.add_stalk_def
-              apply (subst stX.add_rel_class_of[where W=w])
-              using x y w by auto
-            also have "... = class_of w (add_str w (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y)))"
-              unfolding class_of_eq  eq_add_str[OF \<open>w \<subseteq> X\<close>]
-              using eq_\<rho> \<open>fst x \<subseteq> X\<close> \<open>fst y \<subseteq> X\<close> \<open>w \<subseteq> X\<close> by simp
-            also have "... = add_stalk X' Y'"
-              unfolding add_stalk_def x_alt y_alt class_of_eq   
-              apply (subst add_rel_class_of[where W=w])
-              using x y w S_eq by auto
-            finally have "stX.add_stalk X' Y' = add_stalk X' Y'" .
-            moreover have "stX.add_stalk X' Y' \<in> stX.carrier_stalk"
-              unfolding stX.add_stalk_def using that 
-              using stX.carrier_stalk_def by blast
-            ultimately show "?id (stX.add_stalk X' Y') = add_stalk (?id X') (?id Y')" 
-              using that by simp
-
-            have "stX.mult_stalk X' Y' = stX.class_of w (ind_mult_str w 
-                    (ind_ring_morphisms (fst x) w (snd x)) (ind_ring_morphisms (fst y) w (snd y)))"
-              unfolding x_alt y_alt stX.mult_stalk_def
-              apply (subst stX.mult_rel_class_of[where W=w])
-              using x y w by auto
-            also have "... = class_of w (mult_str w (\<rho> (fst x) w (snd x)) (\<rho> (fst y) w (snd y)))"
-              unfolding class_of_eq  eq_mult_str[OF \<open>w \<subseteq> X\<close>]
-              using eq_\<rho> \<open>fst x \<subseteq> X\<close> \<open>fst y \<subseteq> X\<close> \<open>w \<subseteq> X\<close> by simp
-            also have "... = mult_stalk X' Y'"
-              using mult_rel_class_of[where W=w]
-              using S_eq class_of_eq mult_stalk_def w x(2) x_alt y(2) y_alt by auto
-            finally have "stX.mult_stalk X' Y' = mult_stalk X' Y'" .
-            moreover have "stX.mult_stalk X' Y' \<in> stX.carrier_stalk"
-              unfolding stX.mult_stalk_def using that 
-              using stX.carrier_stalk_def by blast
-            ultimately show "?id (stX.mult_stalk X' Y') = mult_stalk (?id X') (?id Y')" 
-              using that by simp
-          qed
-
-          have "stX.carrier_stalk = carrier_stalk"
-            unfolding stX_carrier carrier_stalk_def carrier_direct_lim_def
-            using AB(1) by simp
-          then show "?id \<in> stX.carrier_stalk \<rightarrow>\<^sub>E carrier_stalk"
-            "bij_betw ?id stX.carrier_stalk carrier_stalk"
-            by auto
-        qed 
+        proof -
+          interpret iso_stalks X is_open local.ind_sheaf ind_ring_morphisms b ind_add_str 
+              ind_mult_str ind_zero_str ind_one_str "neighborhoods u" u \<O>\<^sub>X \<rho>  add_str mult_str 
+              zero_str one_str 
+            apply unfold_locales
+            subgoal 
+              by (simp add: eq_\<O>\<^sub>X eq_add_str eq_mult_str eq_one_str eq_zero_str open_imp_subset 
+                  subset_of_opens)
+            subgoal using eq_\<rho> open_imp_subset subset_of_opens by auto
+            done
+          have "U \<in> neighborhoods u" 
+            by (simp add: opeU stX.index that(1))
+          from has_ring_isomorphism[OF this] 
+          show ?thesis .
+        qed
         ultimately show ?thesis unfolding stX.is_local_def
-          by (rule isomorphic_to_local_is_local[of _ _ _ _ _ carrier_stalk add_stalk mult_stalk 
-                "zero_stalk U" "one_stalk U"])
+          using isomorphic_to_local_is_local by fast
       qed
       then show ?thesis using locally_ringed_space_axioms_def by force
     qed
@@ -294,17 +333,100 @@ proof -
               apply intro_locales
               using \<open>x \<in> X\<close> by (simp add: ind_mor_btw_stalks_axioms.intro)
 
-            have "is_local U induced_morphism"
-              using are_local_morphisms[of x U] using that by auto
-            then show ?thesis 
-              txt \<open>
-                We know \<^term>\<open>is_local\<close> and \<^term>\<open>ind_btw.is_local\<close> are almost equivalent because
-                  components in the interpreted @{term ind_mor_btw_stalks}s are almost the same.
-                  For example, @{term ind_sheaf} and @{term \<O>\<^sub>X} can be related by @{thm eq_\<O>\<^sub>X}. 
-                  However, it does not seem trivial to fill the gap here.\<close>
-              sorry
+            interpret stk1:stalk X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str 
+                              "{U. is_open U \<and> x \<in> U}" x 
+              apply unfold_locales
+              using \<open>x \<in> X\<close> by auto
+            interpret stk2:stalk X is_open local.ind_sheaf ind_ring_morphisms b ind_add_str
+                ind_mult_str ind_zero_str ind_one_str "{U. is_open U \<and> x \<in> U}" x 
+              apply unfold_locales
+              using \<open>x \<in> X\<close> by auto
+            interpret stk3:stalk Spec is_zariski_open sheaf_spec 
+                sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec
+                zero_sheaf_spec one_sheaf_spec "{U. is_zariski_open U \<and> f x \<in> U}" "f x"
+              apply unfold_locales
+              by (auto simp add: stk2.is_elem)
+            interpret ring31:ring_homomorphism induced_morphism stk3.carrier_stalk stk3.add_stalk 
+              stk3.mult_stalk "stk3.zero_stalk U" "stk3.one_stalk U" stk1.carrier_stalk 
+              stk1.add_stalk stk1.mult_stalk "stk1.zero_stalk (f \<^sup>\<inverse> X U)" "stk1.one_stalk (f \<^sup>\<inverse> X U)"
+              using ring_homomorphism_induced_morphism[OF \<open>is_zariski_open U\<close> \<open>f x \<in> U\<close>] .
+            interpret ring32:ring_homomorphism ind_btw.induced_morphism stk3.carrier_stalk 
+              stk3.add_stalk 
+              stk3.mult_stalk "stk3.zero_stalk U" "stk3.one_stalk U" stk2.carrier_stalk 
+              stk2.add_stalk stk2.mult_stalk "stk2.zero_stalk (f \<^sup>\<inverse> X U)" "stk2.one_stalk (f \<^sup>\<inverse> X U)"
+              using ind_btw.ring_homomorphism_induced_morphism[OF \<open>is_zariski_open U\<close> \<open>f x \<in> U\<close>] .
+
+            interpret iso:iso_stalks X is_open \<O>\<^sub>X \<rho>  b add_str mult_str zero_str one_str   
+                      "{U. is_open U \<and> x \<in> U}" x local.ind_sheaf ind_ring_morphisms   
+                      ind_add_str 
+                      ind_mult_str ind_zero_str ind_one_str
+              apply unfold_locales
+              subgoal 
+                by (metis eq_\<O>\<^sub>X eq_add_str eq_mult_str eq_one_str eq_zero_str open_imp_subset 
+                    stk2.subset_of_opens)
+              subgoal 
+                using eq_\<rho> open_imp_subset stk2.subset_of_opens by presburger
+              done
+            have fU:"f \<^sup>\<inverse> X U \<in> {U. is_open U \<and> x \<in> U}" 
+              using is_continuous[OF \<open>is_zariski_open U\<close>] 
+              using stk2.is_elem that(3) by blast
+
+            have is_local:"is_local U induced_morphism"
+              using are_local_morphisms[of x U] using that by auto           
+            from this[unfolded is_local_def] 
+            have "local_ring_morphism (identity stk2.carrier_stalk \<circ> induced_morphism \<down> stk3.carrier_stalk) 
+                    stk3.carrier_stalk stk3.add_stalk stk3.mult_stalk (stk3.zero_stalk U) 
+                    (stk3.one_stalk U) stk2.carrier_stalk stk2.add_stalk stk2.mult_stalk 
+                     (stk2.zero_stalk (f \<^sup>\<inverse> X U)) (stk2.one_stalk (f \<^sup>\<inverse> X U))" 
+            proof (elim comp_of_local_ring_morphisms)
+              interpret local_ring_morphism induced_morphism stk3.carrier_stalk stk3.add_stalk 
+                stk3.mult_stalk "stk3.zero_stalk U" "stk3.one_stalk U" stk1.carrier_stalk 
+                stk1.add_stalk stk1.mult_stalk "stk1.zero_stalk (f \<^sup>\<inverse> X U)"
+                "stk1.one_stalk (f \<^sup>\<inverse> X U)"
+                using is_local[unfolded is_local_def] .
+
+              have "local_ring stk1.carrier_stalk stk1.add_stalk stk1.mult_stalk 
+                      (stk1.zero_stalk (f \<^sup>\<inverse> X U)) (stk1.one_stalk (f \<^sup>\<inverse> X U))"
+                using target.local_ring_axioms .
+              moreover have "ring_isomorphism (identity stk1.carrier_stalk) stk1.carrier_stalk 
+                    stk1.add_stalk stk1.mult_stalk (stk1.zero_stalk (f \<^sup>\<inverse> X U)) 
+                    (stk1.one_stalk (f \<^sup>\<inverse> X U)) stk2.carrier_stalk stk2.add_stalk stk2.mult_stalk
+                    (stk2.zero_stalk (f \<^sup>\<inverse> X U)) (stk2.one_stalk (f \<^sup>\<inverse> X U))"
+                using iso.has_ring_isomorphism[OF fU] .
+              ultimately have "local_ring_morphism (identity stk1.carrier_stalk) stk1.carrier_stalk 
+                    stk1.add_stalk stk1.mult_stalk (stk1.zero_stalk (f \<^sup>\<inverse> X U)) 
+                    (stk1.one_stalk (f \<^sup>\<inverse> X U)) stk2.carrier_stalk stk2.add_stalk stk2.mult_stalk
+                    (stk2.zero_stalk (f \<^sup>\<inverse> X U)) (stk2.one_stalk (f \<^sup>\<inverse> X U))"
+                by (rule iso_is_local_ring_morphism)
+              then show "local_ring_morphism (identity stk2.carrier_stalk) stk1.carrier_stalk 
+                    stk1.add_stalk stk1.mult_stalk (stk1.zero_stalk (f \<^sup>\<inverse> X U)) 
+                    (stk1.one_stalk (f \<^sup>\<inverse> X U)) stk2.carrier_stalk stk2.add_stalk stk2.mult_stalk
+                    (stk2.zero_stalk (f \<^sup>\<inverse> X U)) (stk2.one_stalk (f \<^sup>\<inverse> X U))"
+                using iso.carrier_stalk_eq[OF fU] by simp
+            qed
+            moreover have "identity stk2.carrier_stalk \<circ> induced_morphism \<down> stk3.carrier_stalk
+                              = ind_btw.induced_morphism"
+            proof -
+              have "(identity stk2.carrier_stalk \<circ> induced_morphism \<down> stk3.carrier_stalk) x 
+                        = ind_btw.induced_morphism x" (is "?L=?R") if "x\<in>stk3.carrier_stalk" for x 
+              proof -
+                have "?L = identity stk2.carrier_stalk (induced_morphism x)"
+                  unfolding compose_def using that by simp
+                also have "... = induced_morphism x"
+                  using that iso.carrier_stalk_eq[OF fU] by auto
+                also have "... = ?R"
+                  unfolding induced_morphism_def ind_btw.induced_morphism_def
+                  using iso.class_of_eq[OF fU] by auto
+                finally show ?thesis .
+              qed
+              then show ?thesis unfolding ind_btw.induced_morphism_def
+                by (smt (z3) compose_def restrict_apply' restrict_ext)
+            qed
+            ultimately show ?thesis unfolding is_local_def ind_btw.is_local_def
+              by auto
           qed
-          then show ?thesis by (simp add: morphism_locally_ringed_spaces_axioms_def)
+          then show ?thesis 
+            by (simp add: morphism_locally_ringed_spaces_axioms_def)
         qed
         subgoal 
         proof -
