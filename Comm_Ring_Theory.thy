@@ -1,3 +1,7 @@
+
+text \<open>Authors: Anthony Bordg and Lawrence Paulson,
+with some contributions from Wenda Li\<close>
+
 theory Comm_Ring_Theory
   imports
     "Group_Further_Theory"
@@ -1286,10 +1290,6 @@ qed
 
 
 (* ex. 0.26 *)
-(*
-lemma quotient_ring_is_comm_ring:
-  shows "comm_ring carrier_quotient_ring add_rel mult_rel zero_rel one_rel"
-*)
 sublocale comm_ring carrier_quotient_ring add_rel mult_rel zero_rel one_rel
 proof (unfold_locales; unfold carrier_quotient_ring_iff)
   show add_assoc:"add_rel (add_rel a b) c = add_rel a (add_rel b c)" and
@@ -3345,8 +3345,7 @@ proof unfold_locales
 qed
 
 
-(* The canonical function from \<FF> U into lim \<FF> for U \<in> I:
-A BIT WEIRD THOUGH, IT'S THE SAME AS CLASS_OF -- LCP*)
+(* The canonical function from \<FF> U into lim \<FF> for U \<in> I:*)
 definition canonical_fun:: "'a set \<Rightarrow> 'b \<Rightarrow> ('a set \<times> 'b) set"
   where "canonical_fun U x = \<lfloor>U, x\<rfloor>"
 
@@ -4562,10 +4561,6 @@ proof -
       multiplicative.commutes_with_composition multiplicative.commutes_with_unit)
 qed
 
-(* Use isomorphic_to_local_is_local to prove that B is a local ring, then use
-preim_of_max_ideal_is_max to prove that f is a local ring (to achieve this either assume that the rings
-involved are commutative or create a lideal version of preim_of_max_ideal_is_max) *)
-
 lemma comp_of_local_ring_morphisms:
   assumes "local_ring_morphism f A addA multA zeroA oneA B addB multB zeroB oneB"
       and "local_ring_morphism g B addB multB zeroB oneB C addC multC zeroC oneC"
@@ -4808,7 +4803,7 @@ proof -
   qed
 qed
 
-lemma same_class_from_restrict: (*I ADDED THE ASSUMPTION \<pp> \<in> U -- LCP*)
+lemma same_class_from_restrict:
   assumes "is_zariski_open U" "is_zariski_open V" "U \<subseteq> V" "s \<in> \<O> V" "\<pp> \<in> U"
   shows "st.class_of V s = st.class_of U (sheaf_spec_morphisms V U s)"
 proof -
@@ -5131,11 +5126,7 @@ proof qed (auto simp: is_elem)
 definition induced_morphism:: "('c set \<times> 'd) set \<Rightarrow> ('a set \<times> 'b) set" where
 "induced_morphism \<equiv> \<lambda>C \<in> stfx.carrier_stalk. let r = (SOME r. r \<in> C) in stx.class_of (f\<^sup>\<inverse> X (fst r)) (\<phi>\<^sub>f (fst r) (snd r))"
 
-(*
-One should think of fst r as a V in index, and snd r as a d in \<O>\<^sub>Y V.
-Since induced morphism is defined on a representative of the class C, one should check that it
-is well defined.
-*)
+(* One should think of fst r as a V in index, and snd r as a d in \<O>\<^sub>Y V. *)
 
 lemma phi_in_O:
   assumes "is_open\<^sub>Y V" "q \<in> \<O>\<^sub>Y V"

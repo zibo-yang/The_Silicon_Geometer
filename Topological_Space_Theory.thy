@@ -1,3 +1,7 @@
+
+text \<open>Authors: Anthony Bordg and Lawrence Paulson,
+with some contributions from Wenda Li\<close>
+
 theory Topological_Space_Theory
   imports Complex_Main
           "Jacobson_Basic_Algebra.Set_Theory"

@@ -1,3 +1,7 @@
+
+text \<open>Authors: Anthony Bordg and Lawrence Paulson,
+with some contributions from Wenda Li\<close>
+
 theory Scheme_Theory
 imports "Comm_Ring_Theory"
 
@@ -69,6 +73,7 @@ proof -
   ultimately show ?thesis 
     unfolding morphism_presheaves_of_rings_def by auto
 qed
+
 
 section \<open>Affine Schemes\<close>
 

@@ -1,3 +1,6 @@
+
+text \<open>Authors: Anthony Bordg and Lawrence Paulson\<close>
+
 theory Group_Further_Theory
   imports Main 
           "Jacobson_Basic_Algebra.Group_Theory"

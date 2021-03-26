@@ -1,3 +1,6 @@
+
+text \<open>Authors: Anthony Bordg and Lawrence Paulson\<close>
+
 theory Set_Further_Theory
   imports "Jacobson_Basic_Algebra.Set_Theory"
 
