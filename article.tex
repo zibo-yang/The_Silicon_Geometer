@@ -355,6 +355,22 @@ The definition above which could naively appear as a dependent type gives raise 
 
 % snippet of code to be inserted here for `locale direct_lim` and the definitions `rel`, `add_rel`, `mult_rel` and the statement of `lemma exercise_0_35`
 
+For every $U \in I$, there is a canonical inclusion from $\mathscr{F}(U)$ to $\varinjlim \mathscr{F}(U)$. 
+
+% snippet of code to be inserted here for `definition canonical_fun` of Comm_Ring_Theory.thy
+
+The direct limit satisfies a useful universal property. Indeed, for every ring $A$ equipped with ring morphisms $\psi_U: \mathscr{F}(U) \rightarrow A$ satisfying $\psi_V \circ \rho_{UV} = \psi_U$ for every inclusion $V \subseteq U$, there exists a unique ring morphism $u$ making the following diagram commutes.
+\[
+\begin{tikzcd}
+\mathscr{F}(U)  \arrow[rr, "\rho_{UV}"] \arrow[rd] \arrow[rdd, bend right, "\psi_U"'] & & \mathscr{F}(V) \arrow[ld]	\arrow[ldd, bend left, "\psi_V"]	\\
+						& \varinjlim \mathscr{F}(U) \arrow[d, "u", dashed] &	\\
+						& A &  
+\end{tikzcd}
+\] 
+The counterpart in Isabelle is as follows.
+
+% snippet of code to be inserted here for `proposition (in direct_lim) universal_property`  
+
 One can instantiate direct limits in the following particular case.
 
 \begin{definition}[stalks of a presheaf]
