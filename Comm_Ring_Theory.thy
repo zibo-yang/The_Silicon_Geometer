@@ -3095,7 +3095,7 @@ proof -
 qed
 
 (* exercise 0.35 *)
-lemma exercise_0_35:
+lemma direct_lim_is_ring:
   assumes "U \<in> I"
   shows "ring carrier_direct_lim add_rel mult_rel \<lfloor>U, \<zero>\<^bsub>U\<^esub>\<rfloor> \<lfloor>U, \<one>\<^bsub>U\<^esub>\<rfloor>"
 proof unfold_locales
@@ -3393,7 +3393,7 @@ proposition (in direct_lim) universal_property:
 proof
   fix V assume "V \<in> I"
   interpret ring_V: ring carrier_direct_lim add_rel mult_rel "\<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>" "\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>"
-    using \<open>V \<in> I\<close> exercise_0_35 by blast
+    using \<open>V \<in> I\<close> direct_lim_is_ring by blast
   interpret ring_\<psi>V: ring_homomorphism "\<psi> V" "\<FF> V" "+\<^bsub>V\<^esub>" "\<cdot>\<^bsub>V\<^esub>" "\<zero>\<^bsub>V\<^esub>" "\<one>\<^bsub>V\<^esub>" A add mult zero one
     using \<open>V \<in> I\<close> r_hom by presburger
 
@@ -3535,7 +3535,7 @@ lemma stalk_is_ring:
   shows "ring carrier_stalk add_stalk mult_stalk (zero_stalk V) (one_stalk V)"
 proof -
   interpret r: ring carrier_direct_lim add_rel mult_rel "\<lfloor>V, \<zero>\<^bsub>V\<^esub>\<rfloor>" "\<lfloor>V, \<one>\<^bsub>V\<^esub>\<rfloor>"
-    using assms exercise_0_35 index by blast
+    using assms direct_lim_is_ring index by blast
   show ?thesis
     using r.additive.monoid_axioms
     unfolding zero_stalk_def one_stalk_def add_stalk_def mult_stalk_def carrier_stalk_def
@@ -5194,10 +5194,10 @@ proof intro_locales
     by (metis assms(1) is_morphism_of_sheaves morphism_presheaves_of_rings.is_ring_morphism morphism_sheaves_of_rings_def)
   interpret V: ring stfx.carrier_direct_lim stfx.add_rel stfx.mult_rel "stfx.class_of V (zero_str\<^sub>Y V)"
     "stfx.class_of V (one_str\<^sub>Y V)"
-    using assms stfx.exercise_0_35 by force
+    using assms stfx.direct_lim_is_ring by force
   interpret X: ring stx.carrier_direct_lim stx.add_rel stx.mult_rel "stx.class_of X (zero_str\<^sub>X X)"
      "stx.class_of X (one_str\<^sub>X X)"
-    using stx.exercise_0_35 stx.is_elem by auto
+    using stx.direct_lim_is_ring stx.is_elem by auto
   interpret dlY: direct_lim Y is_open\<^sub>Y \<O>\<^sub>Y \<rho>\<^sub>Y d add_str\<^sub>Y
     mult_str\<^sub>Y zero_str\<^sub>Y one_str\<^sub>Y "target.neighborhoods (f x)"
     using stfx.direct_lim_axioms stfx.neighborhoods_eq by force
