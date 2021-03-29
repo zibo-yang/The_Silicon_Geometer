@@ -587,6 +587,9 @@ This construction translates into the following very legible locale.
 \ rel{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\ {\isacharparenleft}{\kern0pt}\isakeyword{infix}\ {\isachardoublequoteopen}{\isasymsim}{\isachardoublequoteclose}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
 \ \ \isakeyword{where}\ {\isachardoublequoteopen}x\ {\isasymsim}\ y\ {\isasymequiv}\ {\isasymexists}s{\isadigit{1}}{\isachardot}{\kern0pt}\ s{\isadigit{1}}\ {\isasymin}\ S\ {\isasymand}\ s{\isadigit{1}}\ {\isasymcdot}\ {\isacharparenleft}{\kern0pt}snd\ y\ {\isasymcdot}\ fst\ x\ {\isacharminus}{\kern0pt}\ snd\ x\ {\isasymcdot}\ fst\ y{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isasymzero}{\isachardoublequoteclose}\isanewline
 \isanewline
+\isacommand{interpretation}\isamarkupfalse%
+\ rel{\isacharcolon}{\kern0pt}\ equivalence\ {\isachardoublequoteopen}R\ {\isasymtimes}\ S{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharbraceleft}{\kern0pt}{\isacharparenleft}{\kern0pt}x{\isacharcomma}{\kern0pt}y{\isacharparenright}{\kern0pt}\ {\isasymin}\ {\isacharparenleft}{\kern0pt}R{\isasymtimes}S{\isacharparenright}{\kern0pt}{\isasymtimes}{\isacharparenleft}{\kern0pt}R{\isasymtimes}S{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ x\ {\isasymsim}\ y{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
 \isacommand{definition}\isamarkupfalse%
 \ frac{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\ {\isacharparenleft}{\kern0pt}\isakeyword{infixl}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}{\isacharslash}{\kern0pt}{\isachardoublequoteclose}\ {\isadigit{7}}{\isadigit{5}}{\isacharparenright}{\kern0pt}\isanewline
 \ \ \isakeyword{where}\ {\isachardoublequoteopen}r\ {\isacharslash}{\kern0pt}\ s\ {\isasymequiv}\ rel{\isachardot}{\kern0pt}Class\ {\isacharparenleft}{\kern0pt}r{\isacharcomma}{\kern0pt}\ s{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
@@ -620,6 +623,65 @@ This construction translates into the following very legible locale.
 Remember that the complement of a prime ideal $\mathfrak{p}$ in $R$ is a multiplicative submonoid, hence we can apply the previous construction with $S \coloneqq R - \mathfrak{p}$. The resulting ring  $S^{-1} R$ is called the \emph{local ring of $R$ at $\mathfrak{p}$}. \\
 
 % snippet of code to be inserted for the subsection <Local Rings at Prime Ideals> up to the definition `one_local_ring_at`
+\begin{isabelle}
+\isacommand{context}\isamarkupfalse%
+\ pr{\isacharunderscore}{\kern0pt}ideal\isanewline
+\isakeyword{begin}\isanewline
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ submonoid{\isacharunderscore}{\kern0pt}pr{\isacharunderscore}{\kern0pt}ideal{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}submonoid\ {\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ I{\isacharparenright}{\kern0pt}\ R\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymone}{\isachardoublequoteclose}\isanewline
+\isacommand{proof}\isamarkupfalse%
+\isanewline
+\ \ \isacommand{show}\isamarkupfalse%
+\ {\isachardoublequoteopen}a\ {\isasymcdot}\ b\ {\isasymin}\ R{\isasymsetminus}I{\isachardoublequoteclose}\ \isakeyword{if}\ {\isachardoublequoteopen}a\ {\isasymin}\ R{\isasymsetminus}I{\isachardoublequoteclose}\ {\isachardoublequoteopen}b\ {\isasymin}\ R{\isasymsetminus}I{\isachardoublequoteclose}\ \isakeyword{for}\ a\ b\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ that\ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}metis\ Diff{\isacharunderscore}{\kern0pt}iff\ absorbent\ comm{\isachardot}{\kern0pt}multiplicative{\isachardot}{\kern0pt}composition{\isacharunderscore}{\kern0pt}closed{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{show}\isamarkupfalse%
+\ {\isachardoublequoteopen}{\isasymone}\ {\isasymin}\ R{\isasymsetminus}I{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ ideal{\isachardot}{\kern0pt}ideal{\isacharparenleft}{\kern0pt}{\isadigit{2}}{\isacharparenright}{\kern0pt}\ ideal{\isacharunderscore}{\kern0pt}axioms\ pr{\isacharunderscore}{\kern0pt}ideal{\isachardot}{\kern0pt}carrier{\isacharunderscore}{\kern0pt}neq\ pr{\isacharunderscore}{\kern0pt}ideal{\isacharunderscore}{\kern0pt}axioms\ \isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ fastforce\isanewline
+\isacommand{qed}\isamarkupfalse%
+\ auto%
+\isanewline
+\isanewline
+\isacommand{interpretation}\isamarkupfalse%
+\ local{\isacharcolon}{\kern0pt}quotient{\isacharunderscore}{\kern0pt}ring\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ I{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ R\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isasymzero}\ {\isasymone}\isanewline
+\ \ \isacommand{apply}\isamarkupfalse%
+\ intro{\isacharunderscore}{\kern0pt}locales\isanewline
+\ \ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}meson\ submonoid{\isacharunderscore}{\kern0pt}def\ submonoid{\isacharunderscore}{\kern0pt}pr{\isacharunderscore}{\kern0pt}ideal{\isacharparenright}{\kern0pt}%
+
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ carrier{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}carrier{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ I{\isacharparenright}{\kern0pt}\isactrlsup {\isasyminverse}\ R\isactrlbsub {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\isactrlesub {\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ add{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}add{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ {\isasymequiv}\ local{\isachardot}{\kern0pt}add{\isacharunderscore}{\kern0pt}rel\ {\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ mult{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}mult{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ {\isasymequiv}\ local{\isachardot}{\kern0pt}mult{\isacharunderscore}{\kern0pt}rel\ {\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ uminus{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}uminus{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ {\isasymequiv}\ local{\isachardot}{\kern0pt}uminus{\isacharunderscore}{\kern0pt}rel\ {\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ zero{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}zero{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ {\isasymequiv}\ local{\isachardot}{\kern0pt}zero{\isacharunderscore}{\kern0pt}rel{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ one{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}one{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ {\isasymequiv}\ local{\isachardot}{\kern0pt}one{\isacharunderscore}{\kern0pt}rel{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{end}
+\end{isabelle}
 
 This allows us to introduce the next construction.	\\
 Let $U$ be an open subset of $\text{Spec}\,R$. We define $\mathscr{O}_{\spec}(U)$ to be the set of all functions 
@@ -632,7 +694,64 @@ Last, if $V \subseteq U$, then the morphism of rings $\mathscr{O}_{\spec}(U) \ri
 One checks $\mathscr{O}_{\spec}$ is a sheaf of rings on $\text{Spec}\,R$ and the pair $(\text{Spec}\,R, \mathscr{O}_{\spec})$ is called the \emph{spectrum of the ring $R$}. \\
 This last construction translates smoothly in Isabelle. 
 
-% snippet of code here for the defintions `is_locally_frac`, `is_regular`, `sheaf_spec`, `add_sheaf_spec`, `mult_sheaf_spec`, `zero_sheaf_spec`, `one_sheaf_spec`, `sheaf_spec_morphisms` and finally the statement of `lemma sheaf_spec_is_sheaf`.		
+% snippet of code here for the defintions `is_locally_frac`, `is_regular`, `sheaf_spec`, `add_sheaf_spec`, `mult_sheaf_spec`, `zero_sheaf_spec`, `one_sheaf_spec`, `sheaf_spec_morphisms` and finally the statement of `lemma sheaf_spec_is_sheaf`.
+
+\begin{isabelle}
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ is{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}frac{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{where}\ {\isachardoublequoteopen}is{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}frac\ s\ V\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymexists}r\ f{\isachardot}{\kern0pt}\ r\ {\isasymin}\ R\ {\isasymand}\ f\ {\isasymin}\ R\ {\isasymand}\ {\isacharparenleft}{\kern0pt}{\isasymforall}{\isasymqq}\ {\isasymin}\ V{\isachardot}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ f\ {\isasymnotin}\ {\isasymqq}\ {\isasymand}\ s\ {\isasymqq}\ {\isacharequal}{\kern0pt}\ quotient{\isacharunderscore}{\kern0pt}ring{\isachardot}{\kern0pt}frac\ {\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ {\isasymqq}{\isacharparenright}{\kern0pt}\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ r\ f{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}regular\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}is{\isacharunderscore}{\kern0pt}regular\ s\ U\ {\isasymequiv}\ {\isasymforall}{\isasympp}{\isachardot}{\kern0pt}\ {\isasympp}\ {\isasymin}\ U\ {\isasymlongrightarrow}\ \isanewline
+\ \ {\isacharparenleft}{\kern0pt}{\isasymexists}V{\isachardot}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ V\ {\isasymand}\ V\ {\isasymsubseteq}\ U\ {\isasymand}\ {\isasympp}\ {\isasymin}\ V\ {\isasymand}\ {\isacharparenleft}{\kern0pt}is{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}frac\ s\ V{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ sheaf{\isacharunderscore}{\kern0pt}spec\isanewline
+\ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymO}\ {\isacharunderscore}{\kern0pt}{\isachardoublequoteclose}\ {\isacharbrackleft}{\kern0pt}{\isadigit{9}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{9}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymO}\ U\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}s{\isasymin}{\isacharparenleft}{\kern0pt}{\isasymPi}\isactrlsub E\ {\isasympp}{\isasymin}U{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}R\isactrlbsub {\isasympp}\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\isactrlesub {\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}regular\ s\ U{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ add{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\isanewline
+\ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{where}\ {\isachardoublequoteopen}add{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U\ s\ s{\isacharprime}{\kern0pt}\ {\isasymequiv}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ {\isasymlambda}{\isasympp}{\isasymin}U{\isachardot}{\kern0pt}\ quotient{\isacharunderscore}{\kern0pt}ring{\isachardot}{\kern0pt}add{\isacharunderscore}{\kern0pt}rel\ {\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ {\isasympp}{\isacharparenright}{\kern0pt}\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isacharparenleft}{\kern0pt}s\ {\isasympp}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}s{\isacharprime}{\kern0pt}\ {\isasympp}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ mult{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\isanewline
+\ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{where}\ {\isachardoublequoteopen}mult{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U\ s\ s{\isacharprime}{\kern0pt}\ {\isasymequiv}\ \isanewline
+\ \ \ \ \ \ \ \ \ {\isasymlambda}{\isasympp}{\isasymin}U{\isachardot}{\kern0pt}\ quotient{\isacharunderscore}{\kern0pt}ring{\isachardot}{\kern0pt}mult{\isacharunderscore}{\kern0pt}rel\ {\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ {\isasympp}{\isacharparenright}{\kern0pt}\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isacharparenleft}{\kern0pt}s\ {\isasympp}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}s{\isacharprime}{\kern0pt}\ {\isasympp}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ zero{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\isanewline
+\ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{where}\ {\isachardoublequoteopen}zero{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U\ {\isasymequiv}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymlambda}{\isasympp}{\isasymin}U{\isachardot}{\kern0pt}\ quotient{\isacharunderscore}{\kern0pt}ring{\isachardot}{\kern0pt}zero{\isacharunderscore}{\kern0pt}rel\ {\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ {\isasympp}{\isacharparenright}{\kern0pt}\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ one{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\isanewline
+\ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{where}\ {\isachardoublequoteopen}one{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U\ {\isasymequiv}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymlambda}{\isasympp}{\isasymin}U{\isachardot}{\kern0pt}\ quotient{\isacharunderscore}{\kern0pt}ring{\isachardot}{\kern0pt}one{\isacharunderscore}{\kern0pt}rel\ {\isacharparenleft}{\kern0pt}R\ {\isasymsetminus}\ {\isasympp}{\isacharparenright}{\kern0pt}\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}morphisms\isanewline
+\ \ \ \ \ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}\ set{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \ \ \ \ \isakeyword{where}\ {\isachardoublequoteopen}sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}morphisms\ U\ V\ {\isasymequiv}\ {\isasymlambda}s{\isasymin}{\isacharparenleft}{\kern0pt}{\isasymO}\ U{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ restrict\ s\ V{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}sheaf{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}sheaf{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}rings\ Spec\ is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ sheaf{\isacharunderscore}{\kern0pt}spec\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}morphisms\ {\isasymO}b\ add{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ mult{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zero{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ one{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec{\isachardoublequoteclose}
+\end{isabelle}
 
 Next, we introduce ringed spaces and their morphisms.
 
@@ -642,11 +761,33 @@ Next, we introduce ringed spaces and their morphisms.
 
 % snippet of code `locale ringed_space` to be inserted here.
 
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ ringed{\isacharunderscore}{\kern0pt}space\ {\isacharequal}{\kern0pt}\ sheaf{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}rings
+\end{isabelle}
+
 \begin{definition}[morphism of ringed spaces]
 	A morphism of ringed spaces from $(X, \mathscr{O}_X)$ to $(Y, \mathscr{O}_Y)$ is a pair $(f, \phi_f)$ consisting of a continuous map $f: X \rightarrow Y$ between topological spaces and a morphism $\phi_f: \mathscr{O}_Y \rightarrow f_{*} \mathscr{O}_X$ of sheaves of rings.   
 \end{definition}
 
 % snippet of code `locale morphism_ringed-spaces` of Comm_Ring_Theory.thy to be inserted here
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ morphism{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}spaces\ {\isacharequal}{\kern0pt}\isanewline
+\ \ \ \ \ \ im{\isacharunderscore}{\kern0pt}sheaf\ X\ is{\isacharunderscore}{\kern0pt}open\isactrlsub X\ {\isasymO}\isactrlsub X\ {\isasymrho}\isactrlsub X\ b\ add{\isacharunderscore}{\kern0pt}str\isactrlsub X\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub X\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub X\ one{\isacharunderscore}{\kern0pt}str\isactrlsub X\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Y\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ f\ \isanewline
+\ \ \ \ \ \ {\isacharplus}{\kern0pt}\ codom{\isacharcolon}{\kern0pt}\ ringed{\isacharunderscore}{\kern0pt}space\ Y\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ {\isasymO}\isactrlsub Y\ {\isasymrho}\isactrlsub Y\ d\ add{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zero{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ one{\isacharunderscore}{\kern0pt}str\isactrlsub Y\isanewline
+\ \ \ \ \ \ \isakeyword{for}\ X\ \isakeyword{and}\ is{\isacharunderscore}{\kern0pt}open\isactrlsub X\ \isakeyword{and}\ {\isasymO}\isactrlsub X\ \isakeyword{and}\ {\isasymrho}\isactrlsub X\ \isakeyword{and}\ b\ \isakeyword{and}\ add{\isacharunderscore}{\kern0pt}str\isactrlsub X\ \isakeyword{and}\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub X\isanewline
+\ \ \ \ \ \ \ \ \ \ \isakeyword{and}\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub X\ \isakeyword{and}\ one{\isacharunderscore}{\kern0pt}str\isactrlsub X\ \isakeyword{and}\ Y\ \isakeyword{and}\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ \isakeyword{and}\ {\isasymO}\isactrlsub Y\ \isakeyword{and}\ {\isasymrho}\isactrlsub Y\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \isakeyword{and}\ d\ \isakeyword{and}\ add{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ \isakeyword{and}\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ \isakeyword{and}\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ \isakeyword{and}\ one{\isacharunderscore}{\kern0pt}str\isactrlsub Y\isanewline
+\ \ \ \ \ \ \ \ \ \ \isakeyword{and}\ f\ \isanewline
+\ \ \ \ \ \ {\isacharplus}{\kern0pt}\ \isakeyword{fixes}\ {\isasymphi}\isactrlsub f{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}c\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}d\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{assumes}\ is{\isacharunderscore}{\kern0pt}morphism{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}sheaves{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}morphism{\isacharunderscore}{\kern0pt}sheaves{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}rings\ Y\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ {\isasymO}\isactrlsub Y\ {\isasymrho}\isactrlsub Y\ d\ add{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ one{\isacharunderscore}{\kern0pt}str\isactrlsub Y\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ im{\isacharunderscore}{\kern0pt}sheaf\ im{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}morphisms\ b\ add{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ mult{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zero{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ one{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ {\isasymphi}\isactrlsub f{\isachardoublequoteclose}
+\end{isabelle}
 
 A classic and ubiquitous notion in mathematics is the \emph{direct limit} of a family of structured sets, here a family of rings. \\
 Let $X$ be a topological space and $\mathscr{F}$ a presheaf of rings on $X$. The set $I$ will denote a subset of the set of all open subsets of $X$ such that for every $U$ and $V$ in $I$ there exists $W$ in $I$ with $W \subseteq U \cap V$. \\
@@ -676,9 +817,73 @@ The definition above which could naively appear as a dependent type gives raise 
 
 % snippet of code to be inserted here for `locale direct_lim` and the definitions `rel`, `add_rel`, `mult_rel` and the statement of `lemma exercise_0_35`
 
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ direct{\isacharunderscore}{\kern0pt}lim\ {\isacharequal}{\kern0pt}\ sheaf{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}rings\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{fixes}\ I{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{assumes}\ subset{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}opens{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymAnd}U{\isachardot}{\kern0pt}\ U\ {\isasymin}\ I\ {\isasymLongrightarrow}\ is{\isacharunderscore}{\kern0pt}open\ U{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{and}\ has{\isacharunderscore}{\kern0pt}lower{\isacharunderscore}{\kern0pt}bound{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymAnd}U\ V{\isachardot}{\kern0pt}\ {\isasymlbrakk}\ U{\isasymin}I{\isacharsemicolon}{\kern0pt}\ V{\isasymin}I\ {\isasymrbrakk}\ {\isasymLongrightarrow}\ {\isasymexists}W{\isasymin}I{\isachardot}{\kern0pt}\ W\ {\isasymsubseteq}\ U\ {\isasyminter}\ V{\isachardoublequoteclose}\isanewline
+\isakeyword{begin}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ rel{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\ {\isacharparenleft}{\kern0pt}\isakeyword{infix}\ {\isachardoublequoteopen}{\isasymsim}{\isachardoublequoteclose}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}x\ {\isasymsim}\ y\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}fst\ x\ {\isasymin}\ I\ {\isasymand}\ fst\ y\ {\isasymin}\ I{\isacharparenright}{\kern0pt}\ {\isasymand}\ {\isacharparenleft}{\kern0pt}snd\ x\ {\isasymin}\ {\isasymFF}\ {\isacharparenleft}{\kern0pt}fst\ x{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymand}\ snd\ y\ {\isasymin}\ {\isasymFF}\ {\isacharparenleft}{\kern0pt}fst\ y{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isasymand}\ {\isacharparenleft}{\kern0pt}{\isasymexists}W{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}W\ {\isasymin}\ I{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymand}\ {\isacharparenleft}{\kern0pt}W\ {\isasymsubseteq}\ fst\ x\ {\isasyminter}\ fst\ y{\isacharparenright}{\kern0pt}\ {\isasymand}\ {\isasymrho}\ {\isacharparenleft}{\kern0pt}fst\ x{\isacharparenright}{\kern0pt}\ W\ {\isacharparenleft}{\kern0pt}snd\ x{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharequal}{\kern0pt}\ {\isasymrho}\ {\isacharparenleft}{\kern0pt}fst\ y{\isacharparenright}{\kern0pt}\ W\ {\isacharparenleft}{\kern0pt}snd\ y{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{interpretation}\isamarkupfalse%
+\ rel{\isacharcolon}{\kern0pt}equivalence\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}Sigma\ I\ {\isasymFF}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharbraceleft}{\kern0pt}{\isacharparenleft}{\kern0pt}x{\isacharcomma}{\kern0pt}\ y{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ x\ {\isasymsim}\ y{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ class{\isacharunderscore}{\kern0pt}of{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}b\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymlfloor}{\isacharparenleft}{\kern0pt}{\isacharunderscore}{\kern0pt}{\isacharcomma}{\kern0pt}{\isacharslash}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isacharparenright}{\kern0pt}{\isasymrfloor}{\isachardoublequoteclose}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymlfloor}U{\isacharcomma}{\kern0pt}s{\isasymrfloor}\ {\isasymequiv}\ rel{\isachardot}{\kern0pt}Class\ {\isacharparenleft}{\kern0pt}U{\isacharcomma}{\kern0pt}\ s{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ carrier{\isacharunderscore}{\kern0pt}direct{\isacharunderscore}{\kern0pt}lim{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}carrier{\isacharunderscore}{\kern0pt}direct{\isacharunderscore}{\kern0pt}lim\ {\isasymequiv}\ rel{\isachardot}{\kern0pt}Partition{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ get{\isacharunderscore}{\kern0pt}lower{\isacharunderscore}{\kern0pt}bound{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set{\isachardoublequoteclose}\ \isakeyword{where}\isanewline
+\ \ {\isachardoublequoteopen}get{\isacharunderscore}{\kern0pt}lower{\isacharunderscore}{\kern0pt}bound\ U\ V{\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}SOME\ W{\isachardot}{\kern0pt}\ W\ {\isasymin}\ I\ {\isasymand}\ W\ {\isasymsubseteq}\ U\ {\isasymand}\ W\ {\isasymsubseteq}\ V{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ add{\isacharunderscore}{\kern0pt}rel\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}add{\isacharunderscore}{\kern0pt}rel\ X\ Y\ {\isasymequiv}\ let\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ x\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}SOME\ x{\isachardot}{\kern0pt}\ x\ {\isasymin}\ X{\isacharparenright}{\kern0pt}{\isacharsemicolon}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ y\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}SOME\ y{\isachardot}{\kern0pt}\ y\ {\isasymin}\ Y{\isacharparenright}{\kern0pt}{\isacharsemicolon}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ w\ {\isacharequal}{\kern0pt}\ get{\isacharunderscore}{\kern0pt}lower{\isacharunderscore}{\kern0pt}bound\ {\isacharparenleft}{\kern0pt}fst\ x{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}fst\ y{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ in\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymlfloor}w{\isacharcomma}{\kern0pt}\ add{\isacharunderscore}{\kern0pt}str\ w\ {\isacharparenleft}{\kern0pt}{\isasymrho}\ {\isacharparenleft}{\kern0pt}fst\ x{\isacharparenright}{\kern0pt}\ w\ {\isacharparenleft}{\kern0pt}snd\ x{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymrho}\ {\isacharparenleft}{\kern0pt}fst\ y{\isacharparenright}{\kern0pt}\ w\ {\isacharparenleft}{\kern0pt}snd\ y{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isasymrfloor}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ mult{\isacharunderscore}{\kern0pt}rel\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}mult{\isacharunderscore}{\kern0pt}rel\ X\ Y\ {\isasymequiv}\ let\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ x\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}SOME\ x{\isachardot}{\kern0pt}\ x\ {\isasymin}\ X{\isacharparenright}{\kern0pt}{\isacharsemicolon}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ y\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}SOME\ y{\isachardot}{\kern0pt}\ y\ {\isasymin}\ Y{\isacharparenright}{\kern0pt}{\isacharsemicolon}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ w\ {\isacharequal}{\kern0pt}\ get{\isacharunderscore}{\kern0pt}lower{\isacharunderscore}{\kern0pt}bound\ {\isacharparenleft}{\kern0pt}fst\ x{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}fst\ y{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ in\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymlfloor}w{\isacharcomma}{\kern0pt}\ mult{\isacharunderscore}{\kern0pt}str\ w\ {\isacharparenleft}{\kern0pt}{\isasymrho}\ {\isacharparenleft}{\kern0pt}fst\ x{\isacharparenright}{\kern0pt}\ w\ {\isacharparenleft}{\kern0pt}snd\ x{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymrho}\ {\isacharparenleft}{\kern0pt}fst\ y{\isacharparenright}{\kern0pt}\ w\ {\isacharparenleft}{\kern0pt}snd\ y{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isasymrfloor}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ exercise{\isacharunderscore}{\kern0pt}{\isadigit{0}}{\isacharunderscore}{\kern0pt}{\isadigit{3}}{\isadigit{5}}{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}U\ {\isasymin}\ I{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}ring\ carrier{\isacharunderscore}{\kern0pt}direct{\isacharunderscore}{\kern0pt}lim\ add{\isacharunderscore}{\kern0pt}rel\ mult{\isacharunderscore}{\kern0pt}rel\ {\isasymlfloor}U{\isacharcomma}{\kern0pt}\ {\isasymzero}\isactrlbsub U\isactrlesub {\isasymrfloor}\ {\isasymlfloor}U{\isacharcomma}{\kern0pt}\ {\isasymone}\isactrlbsub U\isactrlesub {\isasymrfloor}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{end}
+\end{isabelle}
+
 For every $U \in I$, there is a canonical inclusion from $\mathscr{F}(U)$ to $\varinjlim \mathscr{F}(U)$. 
 
 % snippet of code to be inserted here for `definition canonical_fun` of Comm_Ring_Theory.thy
+\begin{isabelle}
+\isacommand{definition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ direct{\isacharunderscore}{\kern0pt}lim{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ canonical{\isacharunderscore}{\kern0pt}fun\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}b\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}canonical{\isacharunderscore}{\kern0pt}fun\ U\ x\ {\isacharequal}{\kern0pt}\ {\isasymlfloor}U{\isacharcomma}{\kern0pt}\ x{\isasymrfloor}{\isachardoublequoteclose}
+\end{isabelle}
 
 The direct limit satisfies a useful universal property. Indeed, for every ring $A$ equipped with ring morphisms $\psi_U: \mathscr{F}(U) \rightarrow A$ satisfying $\psi_V \circ \rho_{UV} = \psi_U$ for every inclusion $V \subseteq U$, there exists a unique ring morphism $u$ making the following diagram commutes.
 \[
@@ -691,6 +896,21 @@ The direct limit satisfies a useful universal property. Indeed, for every ring $
 The counterpart in Isabelle is as follows.
 
 % snippet of code to be inserted here for `proposition (in direct_lim) universal_property`  
+\begin{isabelle}
+\isacommand{proposition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ direct{\isacharunderscore}{\kern0pt}lim{\isacharparenright}{\kern0pt}\ universal{\isacharunderscore}{\kern0pt}property{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{fixes}\ A{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}c\ set{\isachardoublequoteclose}\ \isakeyword{and}\ {\isasympsi}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}b\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}c{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \isakeyword{and}\ add{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}c\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}c\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}c{\isachardoublequoteclose}\ \isakeyword{and}\ mult{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}c\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}c\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}c{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \isakeyword{and}\ zero{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}c{\isachardoublequoteclose}\ \isakeyword{and}\ one{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}c{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}ring\ A\ add\ mult\ zero\ one{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{and}\ {\isachardoublequoteopen}{\isasymAnd}U{\isachardot}{\kern0pt}\ U\ {\isasymin}\ I\ {\isasymLongrightarrow}\ ring{\isacharunderscore}{\kern0pt}homomorphism\ {\isacharparenleft}{\kern0pt}{\isasympsi}\ U{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymFF}\ U{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}\isactrlbsub U\isactrlesub {\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}{\isasymcdot}\isactrlbsub U\isactrlesub {\isacharparenright}{\kern0pt}\ {\isasymzero}\isactrlbsub U\isactrlesub \ {\isasymone}\isactrlbsub U\isactrlesub \ A\ add\ mult\ zero\ one{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{and}\ {\isachardoublequoteopen}{\isasymAnd}U\ V\ x{\isachardot}{\kern0pt}\ {\isasymlbrakk}U\ {\isasymin}\ I{\isacharsemicolon}{\kern0pt}\ V\ {\isasymin}\ I{\isacharsemicolon}{\kern0pt}\ V\ {\isasymsubseteq}\ U{\isacharsemicolon}{\kern0pt}\ x\ {\isasymin}\ {\isacharparenleft}{\kern0pt}{\isasymFF}\ U{\isacharparenright}{\kern0pt}{\isasymrbrakk}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymLongrightarrow}\ {\isacharparenleft}{\kern0pt}{\isasympsi}\ V\ {\isasymcirc}\ {\isasymrho}\ U\ V{\isacharparenright}{\kern0pt}\ x\ {\isacharequal}{\kern0pt}\ {\isasympsi}\ U\ x{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}{\isasymforall}V{\isasymin}I{\isachardot}{\kern0pt}\ {\isasymexists}{\isacharbang}{\kern0pt}u{\isachardot}{\kern0pt}\ ring{\isacharunderscore}{\kern0pt}homomorphism\ u\ carrier{\isacharunderscore}{\kern0pt}direct{\isacharunderscore}{\kern0pt}lim\ add{\isacharunderscore}{\kern0pt}rel\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mult{\isacharunderscore}{\kern0pt}rel\ {\isasymlfloor}V{\isacharcomma}{\kern0pt}{\isasymzero}\isactrlbsub V\isactrlesub {\isasymrfloor}\ {\isasymlfloor}V{\isacharcomma}{\kern0pt}{\isasymone}\isactrlbsub V\isactrlesub {\isasymrfloor}\ A\ add\ mult\ zero\ one\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymand}\ {\isacharparenleft}{\kern0pt}{\isasymforall}U{\isasymin}I{\isachardot}{\kern0pt}\ {\isasymforall}x{\isasymin}{\isacharparenleft}{\kern0pt}{\isasymFF}\ U{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}u\ {\isasymcirc}\ canonical{\isacharunderscore}{\kern0pt}fun\ U{\isacharparenright}{\kern0pt}\ x\ {\isacharequal}{\kern0pt}\ {\isasympsi}\ U\ x{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}
+\end{isabelle}
 
 One can instantiate direct limits in the following particular case.
 
@@ -701,6 +921,38 @@ One can instantiate direct limits in the following particular case.
 
 % snippet of code to be inserted here for `locale stalk` and the definitions `carrier_stalk`, `add_stalk`, `mult_stalk`, `zero_stalk`, `one_stalk`
 
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ stalk\ {\isacharequal}{\kern0pt}\ direct{\isacharunderscore}{\kern0pt}lim\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{fixes}\ x{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{assumes}\ is{\isacharunderscore}{\kern0pt}elem{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}x\ {\isasymin}\ S{\isachardoublequoteclose}\ \isakeyword{and}\ index{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}I\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}U{\isachardot}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open\ U\ {\isasymand}\ x\ {\isasymin}\ U{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isakeyword{begin}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ carrier{\isacharunderscore}{\kern0pt}stalk{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}carrier{\isacharunderscore}{\kern0pt}stalk\ {\isasymequiv}\ dlim\ {\isasymFF}\ {\isasymrho}\ {\isacharparenleft}{\kern0pt}neighborhoods\ x{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ add{\isacharunderscore}{\kern0pt}stalk\isanewline
+\ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}add{\isacharunderscore}{\kern0pt}stalk\ {\isasymequiv}\ add{\isacharunderscore}{\kern0pt}rel{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ mult{\isacharunderscore}{\kern0pt}stalk\isanewline
+\ \ \ \ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}mult{\isacharunderscore}{\kern0pt}stalk\ {\isasymequiv}\ mult{\isacharunderscore}{\kern0pt}rel{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ zero{\isacharunderscore}{\kern0pt}stalk{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}zero{\isacharunderscore}{\kern0pt}stalk\ V\ {\isasymequiv}\ class{\isacharunderscore}{\kern0pt}of\ V\ {\isasymzero}\isactrlbsub V\isactrlesub {\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ one{\isacharunderscore}{\kern0pt}stalk{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}one{\isacharunderscore}{\kern0pt}stalk\ V\ {\isasymequiv}\ class{\isacharunderscore}{\kern0pt}of\ V\ {\isasymone}\isactrlbsub V\isactrlesub {\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{end}
+\end{isabelle}
+
 One further step towards schemes consists in introducing local rings, but first one needs to teach Isabelle simple facts about \emph{maximal ideals} starting with their definition. 
 
 \begin{definition}[maximal ideal]
@@ -708,10 +960,24 @@ One further step towards schemes consists in introducing local rings, but first 
 \end{definition}
 
 % snippet of code to be inserted here for `locale max_ideal`
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ max{\isacharunderscore}{\kern0pt}ideal\ {\isacharequal}{\kern0pt}\ comm{\isacharunderscore}{\kern0pt}ring\ R\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymzero}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymone}{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharplus}{\kern0pt}\ ideal\ I\ \ R\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymzero}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymone}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{for}\ R\ \isakeyword{and}\ I\ \isakeyword{and}\ addition\ {\isacharparenleft}{\kern0pt}\isakeyword{infixl}\ {\isachardoublequoteopen}{\isacharplus}{\kern0pt}{\isachardoublequoteclose}\ {\isadigit{6}}{\isadigit{5}}{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \isakeyword{and}\ multiplication\ {\isacharparenleft}{\kern0pt}\isakeyword{infixl}\ {\isachardoublequoteopen}{\isasymcdot}{\isachardoublequoteclose}\ {\isadigit{7}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{and}\ zero\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymzero}{\isachardoublequoteclose}{\isacharparenright}{\kern0pt}\ \isakeyword{and}\ unit\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymone}{\isachardoublequoteclose}{\isacharparenright}{\kern0pt}\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ neq{\isacharunderscore}{\kern0pt}ring{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}I\ {\isasymnoteq}\ R{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \ \ \ \isakeyword{and}\ is{\isacharunderscore}{\kern0pt}max{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymAnd}{\isasymaa}{\isachardot}{\kern0pt}\ {\isasymlbrakk}ideal\ {\isasymaa}\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}{\isacharsemicolon}{\kern0pt}{\isasymaa}\ {\isasymnoteq}\ R{\isacharsemicolon}{\kern0pt}I\ {\isasymsubseteq}\ {\isasymaa}\ {\isasymrbrakk}{\isasymLongrightarrow}\ I\ {\isacharequal}{\kern0pt}\ {\isasymaa}{\isachardoublequoteclose}
+\end{isabelle}
+
 
 Classic facts about maximal ideals include the fact that every maximal ideal is prime.
 
 % snippet of code to be included for `proposition is_pr_ideal` of Comm_Ring_Theory.thy
+\begin{isabelle}
+\isacommand{proposition}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ max{\isacharunderscore}{\kern0pt}ideal{\isacharparenright}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}pr{\isacharunderscore}{\kern0pt}ideal{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}pr{\isacharunderscore}{\kern0pt}ideal\ R\ I\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}{\isachardoublequoteclose}
+\end{isabelle}
 	
 We then introduce the notion of a \emph{local ring}.
 
@@ -720,10 +986,23 @@ We then introduce the notion of a \emph{local ring}.
 \end{definition}
 
 % snippet of code to be included here for `locale local_ring`
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ local{\isacharunderscore}{\kern0pt}ring\ {\isacharequal}{\kern0pt}\ ring\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ is{\isacharunderscore}{\kern0pt}unique{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymAnd}I\ J{\isachardot}{\kern0pt}\ max{\isacharunderscore}{\kern0pt}lideal\ I\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymLongrightarrow}\ max{\isacharunderscore}{\kern0pt}lideal\ J\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}\ {\isasymLongrightarrow}\ I\ {\isacharequal}{\kern0pt}\ J{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{and}\ has{\isacharunderscore}{\kern0pt}max{\isacharunderscore}{\kern0pt}lideal{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymexists}{\isasymww}{\isachardot}{\kern0pt}\ max{\isacharunderscore}{\kern0pt}lideal\ {\isasymww}\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}{\isachardoublequoteclose}
+\end{isabelle}
 
 In particular, we prove as expected that the local ring of $R$ at $\mathfrak{p}$, previously denoted $R_{\mathfrak{p}}$, is a local ring.
 
 % snippet of code to be included for `lemma local_ring_at_is_local` of Comm_Ring_Theory.thy.
+\begin{isabelle}
+\isacommand{lemma}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ pr{\isacharunderscore}{\kern0pt}ideal{\isacharparenright}{\kern0pt}\ local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}local{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}local{\isacharunderscore}{\kern0pt}ring\ carrier{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ add{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ mult{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ zero{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at\ one{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isachardoublequoteclose}
+\end{isabelle}
 
 Local rings have their corresponding notion of morphisms. 
 
@@ -732,7 +1011,20 @@ Local rings have their corresponding notion of morphisms.
 	A local homomorphism $f: A \rightarrow B$ is a morphism of rings such that $f^{-1} (\mathfrak{m}_B) = \mathfrak{m}_A$. 
 \end{definition}
 
-% snippet of code to be inserted here `locale local_ring_morphism`		
+% snippet of code to be inserted here `locale local_ring_morphism`	
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}morphism\ {\isacharequal}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ source{\isacharcolon}{\kern0pt}\ local{\isacharunderscore}{\kern0pt}ring\ A\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isasymzero}\ {\isasymone}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ {\isacharplus}{\kern0pt}\ target{\isacharcolon}{\kern0pt}\ local{\isacharunderscore}{\kern0pt}ring\ B\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymzero}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymone}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \ \ \ \ \ \ {\isacharplus}{\kern0pt}\ ring{\isacharunderscore}{\kern0pt}homomorphism\ f\ A\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymzero}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymone}{\isachardoublequoteclose}\ B\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymzero}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymone}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{for}\ f\ \isakeyword{and}\ A\ \isakeyword{and}\ addition\ {\isacharparenleft}{\kern0pt}\isakeyword{infixl}\ {\isachardoublequoteopen}{\isacharplus}{\kern0pt}{\isachardoublequoteclose}\ {\isadigit{6}}{\isadigit{5}}{\isacharparenright}{\kern0pt}\ \isakeyword{and}\ multiplication\ {\isacharparenleft}{\kern0pt}\isakeyword{infixl}\ {\isachardoublequoteopen}{\isasymcdot}{\isachardoublequoteclose}\ {\isadigit{7}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \isakeyword{and}\ zero\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymzero}{\isachardoublequoteclose}{\isacharparenright}{\kern0pt}\ \isakeyword{and}\ unit\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymone}{\isachardoublequoteclose}{\isacharparenright}{\kern0pt}\ \isakeyword{and}\ B\ \isakeyword{and}\ addition{\isacharprime}{\kern0pt}\ {\isacharparenleft}{\kern0pt}\isakeyword{infixl}\ {\isachardoublequoteopen}{\isacharplus}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\ {\isadigit{6}}{\isadigit{5}}{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \isakeyword{and}\ multiplication{\isacharprime}{\kern0pt}\ {\isacharparenleft}{\kern0pt}\isakeyword{infixl}\ {\isachardoublequoteopen}{\isasymcdot}{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\ {\isadigit{7}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{and}\ zero{\isacharprime}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymzero}{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}{\isacharparenright}{\kern0pt}\ \isakeyword{and}\ unit{\isacharprime}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isasymone}{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}{\isacharparenright}{\kern0pt}\isanewline
+\ \ {\isacharplus}{\kern0pt}\ \isakeyword{assumes}\ preimage{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}max{\isacharunderscore}{\kern0pt}lideal{\isacharcolon}{\kern0pt}\isanewline
+\ \ \ \ \ \ {\isachardoublequoteopen}{\isasymAnd}{\isasymww}\isactrlsub A\ {\isasymww}\isactrlsub B{\isachardot}{\kern0pt}\ max{\isacharunderscore}{\kern0pt}lideal\ {\isasymww}\isactrlsub A\ A\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}\ {\isasymLongrightarrow}\ max{\isacharunderscore}{\kern0pt}lideal\ {\isasymww}\isactrlsub B\ B\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isasymzero}{\isacharprime}{\kern0pt}\ {\isasymone}{\isacharprime}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ {\isasymLongrightarrow}\ {\isacharparenleft}{\kern0pt}f\isactrlsup {\isasyminverse}\ A\ {\isasymww}\isactrlsub B{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isasymww}\isactrlsub A{\isachardoublequoteclose}
+\end{isabelle}
 
 Finally, we are able to introduce \emph{locally ringed spaces}.
 
@@ -741,6 +1033,12 @@ Finally, we are able to introduce \emph{locally ringed spaces}.
 \end{definition}
 
 % snippet of code to be introduced here for `locale locally_ringed_space`
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}space\ {\isacharequal}{\kern0pt}\ ringed{\isacharunderscore}{\kern0pt}space\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ stalks{\isacharunderscore}{\kern0pt}are{\isacharunderscore}{\kern0pt}local{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymAnd}x\ U{\isachardot}{\kern0pt}\ x\ {\isasymin}\ U\ {\isasymLongrightarrow}\ is{\isacharunderscore}{\kern0pt}open\ U\ {\isasymLongrightarrow}\ stalk{\isachardot}{\kern0pt}is{\isacharunderscore}{\kern0pt}local\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ is{\isacharunderscore}{\kern0pt}open\ {\isasymFF}\ {\isasymrho}\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ {\isacharparenleft}{\kern0pt}neighborhoods\ x{\isacharparenright}{\kern0pt}\ x\ U{\isachardoublequoteclose}
+\end{isabelle}
 
 Moreover, one has the following results.
 
@@ -749,6 +1047,31 @@ Moreover, one has the following results.
 \end{proposition}	
 
 % snippet of code to be inserted here for `lemma stalk_at_prime_is_iso_to_local_ring_at_prime`
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ key{\isacharunderscore}{\kern0pt}map\ {\isacharequal}{\kern0pt}\ comm{\isacharunderscore}{\kern0pt}ring\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{fixes}\ {\isasympp}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set{\isachardoublequoteclose}\ \isakeyword{assumes}\ is{\isacharunderscore}{\kern0pt}prime{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasympp}\ {\isasymin}\ Spec{\isachardoublequoteclose}\isanewline
+\isakeyword{begin}\isanewline
+\isanewline
+\isacommand{interpretation}\isamarkupfalse%
+\ pi{\isacharcolon}{\kern0pt}pr{\isacharunderscore}{\kern0pt}ideal\ R\ {\isasympp}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ {\isasymzero}\ {\isasymone}%
+\isanewline
+\isanewline
+\isacommand{interpretation}\isamarkupfalse%
+\ st{\isacharcolon}{\kern0pt}\ stalk\ {\isachardoublequoteopen}Spec{\isachardoublequoteclose}\ is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ sheaf{\isacharunderscore}{\kern0pt}spec\ sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}morphisms\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymO}b\ add{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ mult{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ zero{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ one{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isachardoublequoteopen}{\isacharbraceleft}{\kern0pt}U{\isachardot}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ U\ {\isasymand}\ {\isasympp}{\isasymin}U{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\ {\isasympp}\isanewline
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ stalk{\isacharunderscore}{\kern0pt}at{\isacharunderscore}{\kern0pt}prime{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}iso{\isacharunderscore}{\kern0pt}to{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharunderscore}{\kern0pt}prime{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ V{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isasympp}\ {\isasymin}\ V{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}{\isasymexists}{\isasymphi}{\isachardot}{\kern0pt}\ ring{\isacharunderscore}{\kern0pt}isomorphism\ {\isasymphi}\ st{\isachardot}{\kern0pt}carrier{\isacharunderscore}{\kern0pt}stalk\ st{\isachardot}{\kern0pt}add{\isacharunderscore}{\kern0pt}stalk\ st{\isachardot}{\kern0pt}mult{\isacharunderscore}{\kern0pt}stalk\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}st{\isachardot}{\kern0pt}zero{\isacharunderscore}{\kern0pt}stalk\ V{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}st{\isachardot}{\kern0pt}one{\isacharunderscore}{\kern0pt}stalk\ V{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}R\ \isactrlbsub {\isasympp}\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\isactrlesub {\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}pi{\isachardot}{\kern0pt}add{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}pi{\isachardot}{\kern0pt}mult{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}pi{\isachardot}{\kern0pt}zero{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}pi{\isachardot}{\kern0pt}one{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}at{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{end}
+\end{isabelle}
 	
 \begin{cor}
 	$(\text{Spec}\,R, \mathscr{O}_{\spec})$ is a locally ringed space.
@@ -757,6 +1080,13 @@ Moreover, one has the following results.
 As a sanity check for our formal definitions, we prove in Isabelle that the spectrum of a commutative ring is indeed a locally ringed space, a result that requires some amount of formal machinery.
 
 % snippet of code to be inserted here for the corresponding statement in Isabelle `lemma spec_is_locally_ringed_space`
+\begin{isabelle}
+\isacommand{lemma}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ spec{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}space{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}space\ Spec\ is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ sheaf{\isacharunderscore}{\kern0pt}spec\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}morphisms\ {\isasymO}b\ add{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ mult{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zero{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ one{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec{\isachardoublequoteclose}
+\end{isabelle}
 
 The required formal machinery and our formalization as a whole benefit from the interpretation mechanism that allows to keep statements and proof scripts concise. Without this mechanism the terms involved in the statements and proof scripts of such an intricate hierarchy of nested algebraic structures would have to be fed with many arguments, cluttering these statements and proof scripts to the point where they would become unreadable and difficult to use. Fortunately, the interpretation mechanism that comes with locales allows for concise and manageable terms with many implicit arguments which are declared beforehand using the interpretation mechanism.
   
@@ -773,6 +1103,38 @@ Now, we introduce our last construction. \\
 As usual we embed this construction into a dedicated locale in Isabelle.
 
 % snippet of code to be inserted here for `locale ind_morphism_bwt_lim`	up to `definition induced_morphism`
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ ind{\isacharunderscore}{\kern0pt}mor{\isacharunderscore}{\kern0pt}btw{\isacharunderscore}{\kern0pt}stalks\ {\isacharequal}{\kern0pt}\ morphism{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}spaces\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{fixes}\ x{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isachardoublequoteopen}{\isacharprime}{\kern0pt}a{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{assumes}\ is{\isacharunderscore}{\kern0pt}elem{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}x\ {\isasymin}\ X{\isachardoublequoteclose}\isanewline
+\isakeyword{begin}\isanewline
+\isanewline
+\isacommand{interpretation}\isamarkupfalse%
+\ stx{\isacharcolon}{\kern0pt}stalk\ X\ is{\isacharunderscore}{\kern0pt}open\isactrlsub X\ {\isasymO}\isactrlsub X\ {\isasymrho}\isactrlsub X\ b\ add{\isacharunderscore}{\kern0pt}str\isactrlsub X\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub X\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub X\ \isanewline
+\ \ one{\isacharunderscore}{\kern0pt}str\isactrlsub X\ {\isachardoublequoteopen}{\isacharbraceleft}{\kern0pt}U{\isachardot}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open\isactrlsub X\ U\ {\isasymand}\ x\ {\isasymin}\ U{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}x{\isachardoublequoteclose}\isanewline
+\isacommand{proof}\isamarkupfalse%
+\ \isacommand{qed}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}auto\ simp{\isacharcolon}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}elem{\isacharparenright}{\kern0pt}%
+\isanewline
+\isanewline
+\isacommand{interpretation}\isamarkupfalse%
+\ stfx{\isacharcolon}{\kern0pt}\ stalk\ Y\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ {\isasymO}\isactrlsub Y\ {\isasymrho}\isactrlsub Y\ d\ add{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ \isanewline
+\ \ one{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ {\isachardoublequoteopen}{\isacharbraceleft}{\kern0pt}U{\isachardot}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ U\ {\isasymand}\ {\isacharparenleft}{\kern0pt}f\ x{\isacharparenright}{\kern0pt}\ {\isasymin}\ U{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\ {\isachardoublequoteopen}f\ x{\isachardoublequoteclose}\isanewline
+\isacommand{proof}\isamarkupfalse%
+\ \isacommand{qed}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}auto\ simp{\isacharcolon}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}elem{\isacharparenright}{\kern0pt}%
+\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ induced{\isacharunderscore}{\kern0pt}morphism{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}c\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}d{\isacharparenright}{\kern0pt}\ set\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set\ {\isasymtimes}\ {\isacharprime}{\kern0pt}b{\isacharparenright}{\kern0pt}\ set{\isachardoublequoteclose}\ \isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}induced{\isacharunderscore}{\kern0pt}morphism\ {\isasymequiv}\ {\isasymlambda}C\ {\isasymin}\ stfx{\isachardot}{\kern0pt}carrier{\isacharunderscore}{\kern0pt}stalk{\isachardot}{\kern0pt}\ \ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ let\ r\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}SOME\ r{\isachardot}{\kern0pt}\ r\ {\isasymin}\ C{\isacharparenright}{\kern0pt}\ in\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stx{\isachardot}{\kern0pt}class{\isacharunderscore}{\kern0pt}of\ {\isacharparenleft}{\kern0pt}f\isactrlsup {\isasyminverse}\ X\ {\isacharparenleft}{\kern0pt}fst\ r{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymphi}\isactrlsub f\ {\isacharparenleft}{\kern0pt}fst\ r{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}snd\ r{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{end}
+\end{isabelle}
+
 
 This last construction is required to define morphisms between locally ringed spaces.
 			
@@ -781,12 +1143,30 @@ This last construction is required to define morphisms between locally ringed sp
 \end{definition}
 
 % snippet of code to be introduced here for `locale morphism_locally_ringed_spaces`, still in Comm_Ring_Theory.thy
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ morphism{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}spaces\ {\isacharequal}{\kern0pt}\ morphism{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}spaces\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ are{\isacharunderscore}{\kern0pt}local{\isacharunderscore}{\kern0pt}morphisms{\isacharcolon}{\kern0pt}\isanewline
+\ \ \ \ {\isachardoublequoteopen}{\isasymAnd}x\ V{\isachardot}{\kern0pt}\ {\isasymlbrakk}x\ {\isasymin}\ X{\isacharsemicolon}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ V{\isacharsemicolon}{\kern0pt}\ f\ x\ {\isasymin}\ V{\isasymrbrakk}\ {\isasymLongrightarrow}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ ind{\isacharunderscore}{\kern0pt}mor{\isacharunderscore}{\kern0pt}btw{\isacharunderscore}{\kern0pt}stalks{\isachardot}{\kern0pt}is{\isacharunderscore}{\kern0pt}local\ X\ is{\isacharunderscore}{\kern0pt}open\isactrlsub X\ {\isasymO}\isactrlsub X\ {\isasymrho}\isactrlsub X\ add{\isacharunderscore}{\kern0pt}str\isactrlsub X\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mult{\isacharunderscore}{\kern0pt}str\isactrlsub X\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub X\ one{\isacharunderscore}{\kern0pt}str\isactrlsub X\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ {\isasymO}\isactrlsub Y\ {\isasymrho}\isactrlsub Y\ add{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mult{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ one{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ f\ x\ V\ {\isasymphi}\isactrlbsub X\ is{\isacharunderscore}{\kern0pt}open\isactrlsub X\ {\isasymO}\isactrlsub X\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymrho}\isactrlsub X\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ {\isasymO}\isactrlsub Y\ {\isasymrho}\isactrlsub Y\ f\ {\isasymphi}\isactrlsub f\ x\isactrlesub {\isachardoublequoteclose}
+\end{isabelle}
 
 \begin{remark}
 	A morphism $(f, \phi_f)$ between locally ringed spaces is an isomorphism if and only if $f$ is an isomorphism between topological spaces, \textit{i.e.} a homeomorphism, and $\phi_f$ is an isomorphism between sheaves of rings.
 \end{remark}
 
 % snippet of code to be introduced for `iso_locally_ringed_spaces`
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ iso{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}spaces\ {\isacharequal}{\kern0pt}\ morphism{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}spaces\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ is{\isacharunderscore}{\kern0pt}homeomorphism{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}homeomorphism\ X\ is{\isacharunderscore}{\kern0pt}open\isactrlsub X\ Y\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ f{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \ \ \isakeyword{and}\ is{\isacharunderscore}{\kern0pt}iso{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}sheaves{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}iso{\isacharunderscore}{\kern0pt}sheaves{\isacharunderscore}{\kern0pt}of{\isacharunderscore}{\kern0pt}rings\ Y\ is{\isacharunderscore}{\kern0pt}open\isactrlsub Y\ {\isasymO}\isactrlsub Y\ {\isasymrho}\isactrlsub Y\ d\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ add{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ mult{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ zero{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ one{\isacharunderscore}{\kern0pt}str\isactrlsub Y\ im{\isacharunderscore}{\kern0pt}sheaf\ im{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}morphisms\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b\ add{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ mult{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ zero{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ one{\isacharunderscore}{\kern0pt}im{\isacharunderscore}{\kern0pt}sheaf\ {\isasymphi}\isactrlsub f{\isachardoublequoteclose}
+\end{isabelle}
 
 Ultimately, we reach our goal: teaching schemes to Isabelle.	
 
@@ -795,29 +1175,114 @@ Ultimately, we reach our goal: teaching schemes to Isabelle.
 \end{definition}
 
 % snippet of code to be introduced for `locale affine_scheme` in Scheme_Theory.thy
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ affine{\isacharunderscore}{\kern0pt}scheme\ {\isacharequal}{\kern0pt}\ comm{\isacharunderscore}{\kern0pt}ring\ \isanewline
+\ \ \ \ {\isacharplus}{\kern0pt}\ locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}space\ X\ is{\isacharunderscore}{\kern0pt}open\ {\isasymO}\isactrlsub X\ {\isasymrho}\ b\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ \isanewline
+\ \ \ \ {\isacharplus}{\kern0pt}\ iso{\isacharunderscore}{\kern0pt}locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}spaces\ X\ is{\isacharunderscore}{\kern0pt}open\ {\isasymO}\isactrlsub X\ {\isasymrho}\ b\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\isanewline
+\ \ \ \ \ \ \ \ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ {\isachardoublequoteopen}Spec{\isachardoublequoteclose}\ is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ sheaf{\isacharunderscore}{\kern0pt}spec\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}morphisms\ {\isasymO}b\ {\isachardoublequoteopen}{\isasymlambda}U{\isachardot}{\kern0pt}\ add{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isachardoublequoteclose}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isachardoublequoteopen}{\isasymlambda}U{\isachardot}{\kern0pt}\ mult{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymlambda}U{\isachardot}{\kern0pt}\ zero{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isachardoublequoteopen}{\isasymlambda}U{\isachardot}{\kern0pt}\ one{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isachardoublequoteclose}\ f\ {\isasymphi}\isactrlsub f\isanewline
+\ \ \ \ \ \ \ \ \ \ \isakeyword{for}\ X\ is{\isacharunderscore}{\kern0pt}open\ {\isasymO}\isactrlsub X\ {\isasymrho}\ b\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ f\ {\isasymphi}\isactrlsub f
+\end{isabelle}
 
 Of course, spectra of commutative rings being locally ringed spaces provide a class of affine schemes.
 
 % snippet of code to be introduced here for `lemma spec_is_affine_scheme`
+\begin{isabelle}
+\isacommand{lemma}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ comm{\isacharunderscore}{\kern0pt}ring{\isacharparenright}{\kern0pt}\ spec{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}affine{\isacharunderscore}{\kern0pt}scheme{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}affine{\isacharunderscore}{\kern0pt}scheme\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}\ Spec\ is{\isacharunderscore}{\kern0pt}zariski{\isacharunderscore}{\kern0pt}open\ sheaf{\isacharunderscore}{\kern0pt}spec\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ sheaf{\isacharunderscore}{\kern0pt}spec{\isacharunderscore}{\kern0pt}morphisms\ {\isasymO}b\ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ add{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ mult{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ zero{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ one{\isacharunderscore}{\kern0pt}sheaf{\isacharunderscore}{\kern0pt}spec\ U{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}identity\ Spec{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ identity\ {\isacharparenleft}{\kern0pt}{\isasymO}\ U{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}
+\end{isabelle}
 
 \begin{definition}[scheme]
 	A scheme is a locally ringed space $(X, \mathscr{O}_X)$ in which every point has an open neighborhood $U$ such that the topological space $U$, together with the sheaf $\mathscr{O}_X | _U$, is an affine scheme.
 \end{definition}
 
 % snippet of code to be inserted here for `locale scheme`
-
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ scheme\ {\isacharequal}{\kern0pt}\ comm{\isacharunderscore}{\kern0pt}ring\ \isanewline
+\ \ \ \ \ {\isacharplus}{\kern0pt}\ locally{\isacharunderscore}{\kern0pt}ringed{\isacharunderscore}{\kern0pt}space\ X\ is{\isacharunderscore}{\kern0pt}open\ {\isasymO}\isactrlsub X\ {\isasymrho}\ b\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ \isanewline
+\ \ \isakeyword{for}\ X\ is{\isacharunderscore}{\kern0pt}open\ {\isasymO}\isactrlsub X\ {\isasymrho}\ b\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ {\isacharplus}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ are{\isacharunderscore}{\kern0pt}affine{\isacharunderscore}{\kern0pt}schemes{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymAnd}x{\isachardot}{\kern0pt}\ x\ {\isasymin}\ X\ {\isasymLongrightarrow}\ {\isacharparenleft}{\kern0pt}{\isasymexists}U{\isachardot}{\kern0pt}\ x{\isasymin}U\ \isanewline
+\ \ \ \ \ \ \ \ \ \ {\isasymand}\ is{\isacharunderscore}{\kern0pt}open\ U\ {\isasymand}\ \ {\isacharparenleft}{\kern0pt}{\isasymexists}f\ {\isasymphi}\isactrlsub f{\isachardot}{\kern0pt}\ affine{\isacharunderscore}{\kern0pt}scheme\ \ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}\ U\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}ind{\isacharunderscore}{\kern0pt}topology{\isachardot}{\kern0pt}ind{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}open\ X\ is{\isacharunderscore}{\kern0pt}open\ U{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}ind{\isacharunderscore}{\kern0pt}sheaf{\isachardot}{\kern0pt}ind{\isacharunderscore}{\kern0pt}sheaf\ {\isasymO}\isactrlsub X\ U{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}ind{\isacharunderscore}{\kern0pt}sheaf{\isachardot}{\kern0pt}ind{\isacharunderscore}{\kern0pt}ring{\isacharunderscore}{\kern0pt}morphisms\ {\isasymrho}\ U{\isacharparenright}{\kern0pt}\ b\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}ind{\isacharunderscore}{\kern0pt}sheaf{\isachardot}{\kern0pt}ind{\isacharunderscore}{\kern0pt}add{\isacharunderscore}{\kern0pt}str\ add{\isacharunderscore}{\kern0pt}str\ U{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}ind{\isacharunderscore}{\kern0pt}sheaf{\isachardot}{\kern0pt}ind{\isacharunderscore}{\kern0pt}mult{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\ U{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}ind{\isacharunderscore}{\kern0pt}sheaf{\isachardot}{\kern0pt}ind{\isacharunderscore}{\kern0pt}zero{\isacharunderscore}{\kern0pt}str\ zero{\isacharunderscore}{\kern0pt}str\ U{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}ind{\isacharunderscore}{\kern0pt}sheaf{\isachardot}{\kern0pt}ind{\isacharunderscore}{\kern0pt}one{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ U{\isacharparenright}{\kern0pt}\ f\ {\isasymphi}\isactrlsub f{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}
+\end{isabelle}
 To catch on the state of the art in the Lean theorem prover, we finally prove in Isabelle that an affine scheme is a scheme and we give the example of the empty scheme $(\emptyset, \mathscr{O}_\emptyset)$, where $\mathscr{O}_\emptyset(\emptyset)$ is the zero ring $\lbrace 0 \rbrace$. 
 
 % snippets of code to be inserted here for `lemma affine_scheme_is_scheme` and for `empty_scheme_is_scheme`
+\begin{isabelle}
+\isacommand{lemma}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}\isakeyword{in}\ affine{\isacharunderscore}{\kern0pt}scheme{\isacharparenright}{\kern0pt}\ affine{\isacharunderscore}{\kern0pt}scheme{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}scheme{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}scheme\ R\ {\isacharparenleft}{\kern0pt}{\isacharplus}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymcdot}{\isacharparenright}{\kern0pt}\ {\isasymzero}\ {\isasymone}\ X\ is{\isacharunderscore}{\kern0pt}open\ {\isasymO}\isactrlsub X\ {\isasymrho}\ b\ add{\isacharunderscore}{\kern0pt}str\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mult{\isacharunderscore}{\kern0pt}str\ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str{\isachardoublequoteclose}
+\end{isabelle}
 
+\begin{isabelle}
+\isacommand{lemma}\isamarkupfalse%
+\ empty{\isacharunderscore}{\kern0pt}scheme{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}scheme{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}scheme\ {\isacharbraceleft}{\kern0pt}{\isadigit{0}}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}nat{\isacharbraceright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}x\ y{\isachardot}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}x\ y{\isachardot}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}\ {\isadigit{0}}\ {\isadigit{0}}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ U{\isacharequal}{\kern0pt}{\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isadigit{0}}{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}U\ V{\isachardot}{\kern0pt}\ identity{\isacharbraceleft}{\kern0pt}{\isadigit{0}}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}nat{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isadigit{0}}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}U\ x\ y{\isachardot}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}{\isasymlambda}U\ x\ y{\isachardot}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymlambda}U{\isachardot}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}
+\end{isabelle}
 
 \section{Concluding Thoughts}
 
 For our formalization we built upon Ballarin's work \cite{ballarin20} formalizing parts of Jacobson's \textit{Basic Algebra} textbook. We believe Ballarin's nice formalization could serve as a first stepping stone to a new algebra library for Isabelle. We also hope the present work could serve as a second stepping stone in that direction. Also, we seized the opportunity of formalizing schemes to partly rebuild the topology library. Our new topology library is entirely built on modern locales instead of using type classes like it is the case in \textit{HOL-Topological\_Spaces.thy}, allowing for more abstraction. In particular, our topological spaces have explicit carrier sets instead of using \textit{UNIV}. 
 % snippet of code to be included here for `locale topological_space` of Topological_Space_Theory.thy
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ topological{\isacharunderscore}{\kern0pt}space\ {\isacharequal}{\kern0pt}\ \isanewline
+\ \ \isakeyword{fixes}\ S\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set{\isachardoublequoteclose}\ \isakeyword{and}\ is{\isacharunderscore}{\kern0pt}open\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{assumes}\ open{\isacharunderscore}{\kern0pt}space\ {\isacharbrackleft}{\kern0pt}simp{\isacharcomma}{\kern0pt}\ intro{\isacharbrackright}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}is{\isacharunderscore}{\kern0pt}open\ S{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \isakeyword{and}\ open{\isacharunderscore}{\kern0pt}empty\ {\isacharbrackleft}{\kern0pt}simp{\isacharcomma}{\kern0pt}\ intro{\isacharbrackright}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}is{\isacharunderscore}{\kern0pt}open\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \isakeyword{and}\ open{\isacharunderscore}{\kern0pt}imp{\isacharunderscore}{\kern0pt}subset{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}is{\isacharunderscore}{\kern0pt}open\ U\ {\isasymLongrightarrow}\ U\ {\isasymsubseteq}\ S{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isakeyword{and}\ open{\isacharunderscore}{\kern0pt}inter\ {\isacharbrackleft}{\kern0pt}intro{\isacharbrackright}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymlbrakk}is{\isacharunderscore}{\kern0pt}open\ U{\isacharsemicolon}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open\ V{\isasymrbrakk}\ {\isasymLongrightarrow}\ is{\isacharunderscore}{\kern0pt}open\ {\isacharparenleft}{\kern0pt}U\ {\isasyminter}\ V{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \isakeyword{and}\ open{\isacharunderscore}{\kern0pt}union\ {\isacharbrackleft}{\kern0pt}intro{\isacharbrackright}{\kern0pt}{\isacharcolon}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isachardoublequoteopen}{\isasymAnd}F{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set{\isacharparenright}{\kern0pt}\ set{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymAnd}x{\isachardot}{\kern0pt}\ x\ {\isasymin}\ F\ {\isasymLongrightarrow}\ is{\isacharunderscore}{\kern0pt}open\ x{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymLongrightarrow}\ is{\isacharunderscore}{\kern0pt}open\ {\isacharparenleft}{\kern0pt}{\isasymUnion}x{\isasymin}F{\isachardot}{\kern0pt}\ x{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}
+\end{isabelle}
+
 Within the locale for topological spaces the axiom \textit{open\_imp\_subset} enforces that an open is automatically a subset of the ambient space. This is a nice addition to the former definition, since it avoids having to add this assumption in every lemma including an open among its assumptions. Our library rebuilds basic facts about topological spaces without using type classes or any deprecated feature of Isabelle and it includes among other things material about the topology generated by a basis, covers, the induced topology on a subset and homeomorphisms. 
 % snippets of code to be included here for `inductive generated_topology`, `lemma generated_topology_is_topology`  and `locale homeomorphism`
-\\
+\begin{isabelle}
+\isacommand{inductive}\isamarkupfalse%
+\ generated{\isacharunderscore}{\kern0pt}topology\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \isakeyword{for}\ S\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set{\isachardoublequoteclose}\ \isakeyword{and}\ B\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\isanewline
+\ \ \ \ UNIV{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}generated{\isacharunderscore}{\kern0pt}topology\ S\ B\ S{\isachardoublequoteclose}\isanewline
+\ \ {\isacharbar}{\kern0pt}\ Int{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}generated{\isacharunderscore}{\kern0pt}topology\ S\ B\ {\isacharparenleft}{\kern0pt}U\ {\isasyminter}\ V{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \isakeyword{if}\ {\isachardoublequoteopen}generated{\isacharunderscore}{\kern0pt}topology\ S\ B\ U{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}generated{\isacharunderscore}{\kern0pt}topology\ S\ B\ V{\isachardoublequoteclose}\isanewline
+\ \ {\isacharbar}{\kern0pt}\ UN{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}generated{\isacharunderscore}{\kern0pt}topology\ S\ B\ {\isacharparenleft}{\kern0pt}{\isasymUnion}K{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \isakeyword{if}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isasymAnd}U{\isachardot}{\kern0pt}\ U\ {\isasymin}\ K\ {\isasymLongrightarrow}\ generated{\isacharunderscore}{\kern0pt}topology\ S\ B\ U{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ {\isacharbar}{\kern0pt}\ Basis{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}generated{\isacharunderscore}{\kern0pt}topology\ S\ B\ b{\isachardoublequoteclose}\ \isakeyword{if}\ {\isachardoublequoteopen}b\ {\isasymin}\ B\ {\isasymand}\ b\ {\isasymsubseteq}\ S{\isachardoublequoteclose}
+\end{isabelle}
+\begin{isabelle}
+\isacommand{lemma}\isamarkupfalse%
+\ generated{\isacharunderscore}{\kern0pt}topology{\isacharunderscore}{\kern0pt}is{\isacharunderscore}{\kern0pt}topology{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{fixes}\ S{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set{\isachardoublequoteclose}\ \isakeyword{and}\ B{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}a\ set\ set{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}topological{\isacharunderscore}{\kern0pt}space\ S\ {\isacharparenleft}{\kern0pt}generated{\isacharunderscore}{\kern0pt}topology\ S\ B{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}
+\end{isabelle}
+\begin{isabelle}
+\isacommand{locale}\isamarkupfalse%
+\ homeomorphism\ {\isacharequal}{\kern0pt}\ \isanewline
+\ \ continuous{\isacharunderscore}{\kern0pt}map\ {\isacharplus}{\kern0pt}\ bijective{\isacharunderscore}{\kern0pt}map\ f\ S\ S{\isacharprime}{\kern0pt}\ {\isacharplus}{\kern0pt}\ \isanewline
+\ \ continuous{\isacharunderscore}{\kern0pt}map\ S{\isacharprime}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open{\isacharprime}{\kern0pt}\ S\ is{\isacharunderscore}{\kern0pt}open\ {\isachardoublequoteopen}inverse{\isacharunderscore}{\kern0pt}map\ f\ S\ S{\isacharprime}{\kern0pt}{\isachardoublequoteclose}
+\end{isabelle}
 The formalized material has a size of roughly 7300-line of code including some prerequisites in commutative  algebra and our partial reconstruction of the topology library. Given the output of this work, a formalization of schemes in Isabelle, such a relatively short formalization conveys the power of Isabelle module systems. \\
 To summarize, our work makes a triple contribution to Isabelle/HOL: a first stepping stone towards a new topology library, a second stepping stone towards a new algebra library and a formalization of schemes in algebraic geometry. Most importantly, our work demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. 
 Actually, it seems that our experience in Isabelle to formalize schemes was much smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
