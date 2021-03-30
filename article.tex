@@ -1047,6 +1047,7 @@ Finally, we are able to introduce \emph{locally ringed spaces}.
 Moreover, one has the following results.
 
 \begin{proposition}
+	\label{prop:keyprop}
 	For every $\mathfrak{p} \in \text{Spec}\,R$, the stalk $\mathscr{O}_{\spec, \mathfrak{p}}$ is isomorphic as a ring to $R_{\mathfrak{p}}$.	
 \end{proposition}	
 
@@ -1076,12 +1077,16 @@ Moreover, one has the following results.
 \isanewline
 \isacommand{end}
 \end{isabelle}
+
+Now, it suffices to teach Isabelle that a ring that is isomorphic to a local ring is local.
+
+% snippet of code to be inserted here for the statement of `lemma isomorphic_to_local_is_local`
 	
 \begin{cor}
 	$(\text{Spec}\,R, \mathscr{O}_{\spec})$ is a locally ringed space.
 \end{cor}
 
-As a sanity check for our formal definitions, we prove in Isabelle that the spectrum of a commutative ring is indeed a locally ringed space, a result that requires some amount of formal machinery.
+As a sanity check for our formal definitions, we eventually prove in Isabelle that the spectrum of a commutative ring is indeed a locally ringed space, a result that required some amount of formal machinery, especially to prove the key proposition \ref{prop:keyprop}.
 
 % snippet of code to be inserted here for the corresponding statement in Isabelle `lemma spec_is_locally_ringed_space`
 \begin{isabelle}
