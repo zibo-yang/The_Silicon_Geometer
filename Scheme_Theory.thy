@@ -80,32 +80,12 @@ section \<open>Affine Schemes\<close>
 text \<open>Computational affine schemes take the isomorphism with Spec as part of their data,
 while in the locale for affine schemes we merely assert the existence of such an isomorphism.\<close> 
 
-locale comp_affine_scheme = comm_ring +
+locale affine_scheme = comm_ring +
 locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
 iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
 "Spec" is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b "\<lambda>U. add_sheaf_spec U"
 "\<lambda>U. mult_sheaf_spec U" "\<lambda>U. zero_sheaf_spec U" "\<lambda>U. one_sheaf_spec U" f \<phi>\<^sub>f
 for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str f \<phi>\<^sub>f
-
-(* definition 0.46 *)
-locale affine_scheme = comm_ring + 
-locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str 
-for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
-  assumes is_iso_to_spec: "\<exists>f \<phi>\<^sub>f. iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str
-Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b (\<lambda>U. add_sheaf_spec U)
-(\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U) f \<phi>\<^sub>f"
-
-sublocale comp_affine_scheme \<subseteq> affine_scheme
-proof
-  obtain f \<phi>\<^sub>f where "iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str Spec is_zariski_open sheaf_spec
-        sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
-    using iso_locally_ringed_spaces_axioms by auto
-  show "\<exists>f \<phi>\<^sub>f.
-       iso_locally_ringed_spaces X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str Spec is_zariski_open sheaf_spec
-        sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f"
-    using iso_locally_ringed_spaces_axioms by auto
-qed
-
 
 section \<open>Schemes\<close>
 
@@ -114,10 +94,10 @@ locale scheme = comm_ring +
 locally_ringed_space X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str 
 for X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str +
   assumes are_affine_schemes: "\<And>x. x \<in> X \<Longrightarrow> (\<exists>U. x\<in>U \<and> is_open U \<and> 
-affine_scheme  R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
+(\<exists>f \<phi>\<^sub>f. affine_scheme  R (+) (\<cdot>) \<zero> \<one> U (ind_topology.ind_is_open X is_open U) (ind_sheaf.ind_sheaf \<O>\<^sub>X U) 
 (ind_sheaf.ind_ring_morphisms \<rho> U) b (ind_sheaf.ind_add_str add_str U)
 (ind_sheaf.ind_mult_str mult_str U) (ind_sheaf.ind_zero_str zero_str U)
-(ind_sheaf.ind_one_str one_str U))"
+(ind_sheaf.ind_one_str one_str U) f \<phi>\<^sub>f))"
 
 locale iso_stalks = 
   stk1:stalk S is_open \<FF>1 \<rho>1 b add_str1 mult_str1 zero_str1 one_str1 I x +
@@ -262,10 +242,7 @@ proof -
 qed
 end
 
-context comp_affine_scheme
-begin
-
-lemma comp_affine_scheme_is_scheme:
+lemma (in affine_scheme) affine_scheme_is_scheme:
   shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str"
 proof -
   interpret ind_sheaf X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str X
@@ -291,11 +268,10 @@ proof -
     by (simp add: ind_one_str_def inf.absorb_iff2)
 
   have "affine_scheme R (+) (\<cdot>) \<zero> \<one> X is_open local.ind_sheaf ind_ring_morphisms b
-          ind_add_str ind_mult_str ind_zero_str ind_one_str"
-  proof intro_locales
- 
-    show "locally_ringed_space_axioms is_open local.ind_sheaf ind_ring_morphisms ind_add_str 
-            ind_mult_str ind_zero_str ind_one_str"
+          ind_add_str ind_mult_str ind_zero_str ind_one_str f \<phi>\<^sub>f"
+  proof -
+    have "locally_ringed_space X is_open local.ind_sheaf ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str
+     ind_one_str" 
     proof -
       have "stalk.is_local is_open local.ind_sheaf ind_ring_morphisms ind_add_str
                 ind_mult_str ind_zero_str ind_one_str
@@ -334,10 +310,13 @@ proof -
         ultimately show ?thesis unfolding stX.is_local_def
           using isomorphic_to_local_is_local by fast
       qed
-      then show ?thesis using locally_ringed_space_axioms_def by force
+      then show ?thesis
+        by (simp add: locally_ringed_space_axioms_def locally_ringed_space_def
+            ringed_space_def sheaf_of_rings_axioms)
     qed
-    show "affine_scheme_axioms R (+) (\<cdot>) \<zero> \<one> X is_open local.ind_sheaf ind_ring_morphisms b 
-            ind_add_str ind_mult_str ind_zero_str ind_one_str" 
+    moreover have "iso_locally_ringed_spaces X is_open local.ind_sheaf ind_ring_morphisms b 
+        ind_add_str ind_mult_str ind_zero_str ind_one_str Spec is_zariski_open sheaf_spec 
+        sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec zero_sheaf_spec one_sheaf_spec f \<phi>\<^sub>f" 
     proof- 
       interpret im_sheafXS:Comm_Ring_Theory.im_sheaf X is_open local.ind_sheaf 
               ind_ring_morphisms b ind_add_str ind_mult_str ind_zero_str ind_one_str Spec 
@@ -611,27 +590,21 @@ proof -
             by (meson is_morphism_of_sheaves morphism_sheaves_of_rings.axioms)
         qed
         done
-      then show ?thesis unfolding affine_scheme_axioms_def by auto
+      then show ?thesis by (simp add: iso_locally_ringed_spaces_def)
     qed
+    ultimately show ?thesis 
+      unfolding affine_scheme_def using comm_ring_axioms by auto
   qed
   moreover have "is_open X" by simp
   ultimately show ?thesis
     by unfold_locales fastforce
 qed
 
-end (* comp_affine_scheme *)
-
-lemma (in affine_scheme) affine_scheme_is_scheme:
-  shows "scheme R (+) (\<cdot>) \<zero> \<one> X is_open \<O>\<^sub>X \<rho> b add_str mult_str zero_str one_str" 
-  using comp_affine_scheme.comp_affine_scheme_is_scheme comp_affine_scheme_def is_iso_to_spec 
-local.comm_ring_axioms locally_ringed_space_axioms by fastforce
-
-
-lemma (in comm_ring) spec_is_comp_affine_scheme:
-  shows "comp_affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
+lemma (in comm_ring) spec_is_affine_scheme:
+  shows "affine_scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)
 (identity Spec) (\<lambda>U. identity (\<O> U))"
-proof (intro comp_affine_scheme.intro)
+proof (intro affine_scheme.intro)
   show "comm_ring R (+) (\<cdot>) \<zero> \<one>" by (simp add: local.comm_ring_axioms)
 next
   show "locally_ringed_space Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b add_sheaf_spec mult_sheaf_spec
@@ -706,10 +679,10 @@ qed
 lemma (in comm_ring) spec_is_scheme:
   shows "scheme R (+) (\<cdot>) \<zero> \<one> Spec is_zariski_open sheaf_spec sheaf_spec_morphisms \<O>b
 (\<lambda>U. add_sheaf_spec U) (\<lambda>U. mult_sheaf_spec U) (\<lambda>U. zero_sheaf_spec U) (\<lambda>U. one_sheaf_spec U)"
-  by (metis spec_is_comp_affine_scheme comp_affine_scheme.comp_affine_scheme_is_scheme)
+  by (metis spec_is_affine_scheme affine_scheme.affine_scheme_is_scheme)
  
-lemma empty_scheme_is_comp_affine_scheme:
-  shows "comp_affine_scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 
+lemma empty_scheme_is_affine_scheme:
+  shows "affine_scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 
 {} (\<lambda>U. U={}) (\<lambda>U. {0::nat}) (\<lambda>U V. identity{0}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)
 (\<lambda>\<pp>\<in>Spec. undefined) (\<lambda>U. \<lambda>s \<in> cring0.sheaf_spec U. 0)"
 proof -
@@ -872,6 +845,6 @@ qed
 
 lemma empty_scheme_is_scheme:
   shows "scheme {0::nat} (\<lambda>x y. 0) (\<lambda>x y. 0) 0 0 {} (\<lambda>U. U={}) (\<lambda>U. {0}) (\<lambda>U V. identity{0::nat}) 0 (\<lambda>U x y. 0) (\<lambda>U x y. 0) (\<lambda>U. 0) (\<lambda>U. 0)"
-  by (metis comp_affine_scheme.comp_affine_scheme_is_scheme empty_scheme_is_comp_affine_scheme)
+  by (metis affine_scheme.affine_scheme_is_scheme empty_scheme_is_affine_scheme)
 
 end
