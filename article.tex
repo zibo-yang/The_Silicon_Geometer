@@ -1044,7 +1044,7 @@ Finally, we are able to introduce \emph{locally ringed spaces}.
 \ \ \ \ \ \ \ \ \ \ \ is{\isacharunderscore}{\kern0pt}open\ {\isasymFF}\ {\isasymrho}\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ {\isacharparenleft}{\kern0pt}neighborhoods\ x{\isacharparenright}{\kern0pt}\ x\ U{\isachardoublequoteclose}
 \end{isabelle}
 
-Moreover, one has the following results.
+Moreover, one has the following result.
 
 \begin{proposition}
 	\label{prop:keyprop}
@@ -1078,7 +1078,7 @@ Moreover, one has the following results.
 \isacommand{end}
 \end{isabelle}
 
-Now, it suffices to teach Isabelle that a ring that is isomorphic to a local ring is local.
+Now, it suffices to teach Isabelle that a ring which is isomorphic to a local ring is local.
 
 % snippet of code to be inserted here for the statement of `lemma isomorphic_to_local_is_local`
 
@@ -1301,7 +1301,8 @@ Within the locale for topological spaces the axiom \textit{open\_imp\_subset} en
 \ \ continuous{\isacharunderscore}{\kern0pt}map\ S{\isacharprime}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open{\isacharprime}{\kern0pt}\ S\ is{\isacharunderscore}{\kern0pt}open\ {\isachardoublequoteopen}inverse{\isacharunderscore}{\kern0pt}map\ f\ S\ S{\isacharprime}{\kern0pt}{\isachardoublequoteclose}
 \end{isabelle}
 The formalized material has a size of roughly 7300-line of code including some prerequisites in commutative  algebra and our partial reconstruction of the topology library. Given the output of this work, a formalization of schemes in Isabelle, such a relatively short formalization conveys the power of Isabelle module systems. \\
-To summarize, our work makes a triple contribution to Isabelle/HOL: a first stepping stone towards a new topology library, a second stepping stone towards a new algebra library and a formalization of schemes in algebraic geometry. Most importantly, our work demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. 
+To summarize, our work makes a triple contribution to Isabelle/HOL: a first stepping stone towards a new topology library, a second stepping stone towards a new algebra library and finally it develops a library for modern algebraic geometry. \\
+Most importantly, our work meets the challenge of formalizing for the first time Grothendieck's schemes in a simple type theory and in doing so it demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. We hope this work will help mathematicians interested in the formalization of mathematics to make a more informed decision about which systems are available to them. \\
 Actually, it seems that our experience in Isabelle to formalize schemes was much smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
 \begin{quote}
 	The project is completely incompatible with modern Lean and mathlib, but if you compile it then you get a sorry-free proof that an affine scheme is a scheme. During our proof we ran into a huge problem because our blueprint, the Stacks Project, assumed that $R[1/f][1/g]=R[1/fg]$, and this turns out to be unprovable for Lean’s version of equality [\dots]. The Lean community wrestled with this idea, and has ultimately come up with a beefed-up notion of equality for which the identity is now true.\footnote{\url{https://xenaproject.wordpress.com/2020/06/05/the-sphere-eversion-project/}}
@@ -1310,7 +1311,8 @@ This raises the question of whether dependent types could be, at least in some s
 
 \section*{Acknowledgments}
 
-Work on this paper was supported by the ERC Advanced Grant ALEXANDRIA (Project GA 742178).  			
+Work on this paper was supported by the ERC Advanced Grant ALEXANDRIA (Project GA 742178).  \\
+Anthony Bordg thanks Kevin Buzzard for his stimulating wit and his communicative energy.			
 
 
 \begin{thebibliography}{}
