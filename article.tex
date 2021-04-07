@@ -109,6 +109,14 @@ We should note that the Isabelle proof assistant is based on a much more minimal
 	What can Isabelle/HOL actually do before it breaks? Nobody knows. [\dots] But do you people want to attract “working mathematicians”? Then where are the schemes? Can your system even do schemes? I don’t know. Does anyone know? If it cannot then this would be very valuable to know because it will help mathematician early adopters to make an informed decision about which system to use.\footnote{\url{https://xenaproject.wordpress.com/2020/02/09/where-is-the-fashionable-mathematics/}}
 \end{quote}
 In this article we present a concise and elegant formalization of schemes in Isabelle/HOL based on state-of-the-art locales, without using any record. Our presentation follows the classic graduate textbook of Hartshorne \cite{hartshorne}. 			
+
+
+\section{Isabelle/HOL, Simple Type Theory and Locales}
+\label{sec:isabelle}
+
+Isabelle/HOL is a proof assistant for higher-order logic: Church's simple type theory~\cite{church40}, with a number of modest extensions. It is therefore based on the typed $\lambda$-calculus with boolean and function types. A boolean-valued function is a predicate, which yields a simple typed set theory that is expressive enough to express abstract mathematics, as we shall see below. 
+
+In Church's original conception, the sole purpose to types is to prevent inconsistency. People today, influenced by programming languages, prefer to give types a more dominant role.
  
 
 \section{Schemes in Isabelle/HOL}
@@ -1044,7 +1052,7 @@ Finally, we are able to introduce \emph{locally ringed spaces}.
 \ \ \ \ \ \ \ \ \ \ \ is{\isacharunderscore}{\kern0pt}open\ {\isasymFF}\ {\isasymrho}\ add{\isacharunderscore}{\kern0pt}str\ mult{\isacharunderscore}{\kern0pt}str\ zero{\isacharunderscore}{\kern0pt}str\ one{\isacharunderscore}{\kern0pt}str\ {\isacharparenleft}{\kern0pt}neighborhoods\ x{\isacharparenright}{\kern0pt}\ x\ U{\isachardoublequoteclose}
 \end{isabelle}
 
-Moreover, one has the following results.
+Moreover, one has the following result.
 
 \begin{proposition}
 	\label{prop:keyprop}
@@ -1078,7 +1086,7 @@ Moreover, one has the following results.
 \isacommand{end}
 \end{isabelle}
 
-Now, it suffices to teach Isabelle that a ring that is isomorphic to a local ring is local.
+Now, it suffices to teach Isabelle that a ring which is isomorphic to a local ring is local.
 
 % snippet of code to be inserted here for the statement of `lemma isomorphic_to_local_is_local`
 
@@ -1258,8 +1266,9 @@ To catch on the state of the art in the Lean theorem prover, we finally prove in
 \end{isabelle}
 
 \section{Concluding Thoughts}
+\setlength{\parindent}{10ex}
 
-For our formalization we built upon Ballarin's work \cite{ballarin20} formalizing parts of Jacobson's \textit{Basic Algebra} textbook. We believe Ballarin's nice formalization could serve as a first stepping stone to a new algebra library for Isabelle. We also hope the present work could serve as a second stepping stone in that direction. Also, we seized the opportunity of formalizing schemes to partly rebuild the topology library. Our new topology library is entirely built on modern locales instead of using type classes like it is the case in \textit{HOL-Topological\_Spaces.thy}, allowing for more abstraction. In particular, our topological spaces have explicit carrier sets instead of using \textit{UNIV}. 
+For our formalization we built upon Ballarin's work \cite{ballarin20} formalizing parts of Jacobson's \textit{Basic Algebra} textbook. We believe Ballarin's nice formalization could serve as a first stepping stone to a new algebra library for Isabelle. We also hope the present work could serve as a second stepping stone in that direction. Also, we seized the opportunity of formalizing schemes to build a new topology library despite the two existing formalizations of topology in Isabelle/HOL, namely \textit{HOL-Topological\_Spaces.thy}\footnote{\url{https://isabelle.in.tum.de/dist/library/HOL/HOL/Topological_Spaces.html}} and \textit{HOL-Analysis/Abstract\_Topology}\footnote{\url{https://isabelle.in.tum.de/dist/library/HOL/HOL-Analysis/Abstract_Topology.html}}. Our new topology library is entirely built on modern locales without using type classes nor type declarations (via the \textit{typedef} command). In particular, our topological spaces have explicit carrier sets as part of their data instead of using \textit{UNIV} or having to define it later as the union of all the open sets. 
 % snippet of code to be included here for `locale topological_space` of Topological_Space_Theory.thy
 \begin{isabelle}
 \isacommand{locale}\isamarkupfalse%
@@ -1273,8 +1282,7 @@ For our formalization we built upon Ballarin's work \cite{ballarin20} formalizin
 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isachardoublequoteopen}{\isasymAnd}F{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ set{\isacharparenright}{\kern0pt}\ set{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymAnd}x{\isachardot}{\kern0pt}\ x\ {\isasymin}\ F\ {\isasymLongrightarrow}\ is{\isacharunderscore}{\kern0pt}open\ x{\isacharparenright}{\kern0pt}\isanewline
 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymLongrightarrow}\ is{\isacharunderscore}{\kern0pt}open\ {\isacharparenleft}{\kern0pt}{\isasymUnion}x{\isasymin}F{\isachardot}{\kern0pt}\ x{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}
 \end{isabelle}
-
-Within the locale for topological spaces the axiom \textit{open\_imp\_subset} enforces that an open is automatically a subset of the ambient space. This is a nice addition to the former definition, since it avoids having to add this assumption in every lemma including an open among its assumptions. Our library rebuilds basic facts about topological spaces without using type classes or any deprecated feature of Isabelle and it includes among other things material about the topology generated by a basis, covers, the induced topology on a subset and homeomorphisms. 
+Within the locale for topological spaces the axiom \textit{open\_imp\_subset} enforces that an open is automatically a subset of the ambient space. This is a welcome addition, since it avoids having to add this assumption in every lemma mentioning an open set among its assumptions, making the economy of dozens of trivial assumptions. Our library includes basic facts about topological spaces like the topology generated by a basis, covers, the induced topology on a subset and homeomorphisms. 
 % snippets of code to be included here for `inductive generated_topology`, `lemma generated_topology_is_topology`  and `locale homeomorphism`
 \begin{isabelle}
 \isacommand{inductive}\isamarkupfalse%
@@ -1300,17 +1308,22 @@ Within the locale for topological spaces the axiom \textit{open\_imp\_subset} en
 \ \ continuous{\isacharunderscore}{\kern0pt}map\ {\isacharplus}{\kern0pt}\ bijective{\isacharunderscore}{\kern0pt}map\ f\ S\ S{\isacharprime}{\kern0pt}\ {\isacharplus}{\kern0pt}\ \isanewline
 \ \ continuous{\isacharunderscore}{\kern0pt}map\ S{\isacharprime}{\kern0pt}\ is{\isacharunderscore}{\kern0pt}open{\isacharprime}{\kern0pt}\ S\ is{\isacharunderscore}{\kern0pt}open\ {\isachardoublequoteopen}inverse{\isacharunderscore}{\kern0pt}map\ f\ S\ S{\isacharprime}{\kern0pt}{\isachardoublequoteclose}
 \end{isabelle}
-The formalized material has a size of roughly 7300-line of code including some prerequisites in commutative  algebra and our partial reconstruction of the topology library. Given the output of this work, a formalization of schemes in Isabelle, such a relatively short formalization conveys the power of Isabelle module systems. \\
-To summarize, our work makes a triple contribution to Isabelle/HOL: a first stepping stone towards a new topology library, a second stepping stone towards a new algebra library and a formalization of schemes in algebraic geometry. Most importantly, our work demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. 
-Actually, it seems that our experience in Isabelle to formalize schemes was much smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
+
+Actually, this reliance on modern locales avoiding type classes and type declarations whenever possible is present throughout our development. It inaugurates a new discipline of formalizing mathematics with Isabelle/HOL which is exemplary in bridging the gap between set theory and type theory within Isabelle/HOL, with the benefit of avoiding the extension of Isabelle's logic with a new rule for type definition as proposed by Kun\v{c}ar and Popescu in their types-to-sets framework \cite{typestosets}. \\
+The formalized material has a size of roughly 7300-line of code including all the prerequisites in commutative  algebra (prime and maximal ideals, localization of a ring \dots) and even our partial reconstruction of the topology library (down to the notion of a topological space). Given the output of this work, a formalization of schemes in Isabelle, such a relatively short formalization conveys the power of Isabelle module systems. \\
+To summarize, our work makes a triple contribution to Isabelle/HOL: a first stepping stone towards a new topology library, a second stepping stone towards a new algebra library and finally it develops a library for modern algebraic geometry. \\
+Most importantly, our work meets the challenge of formalizing for the first time Grothendieck's schemes in a simple type theory and in doing so it demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. We hope this work will help mathematicians interested in the formalization of mathematics to make a more informed decision about which systems are available to them.
+
+Last, it seems that our experience in Isabelle to formalize schemes was much smoother than the corresponding one in Lean, since Kevin Buzzard reported on his blog the important difficulties he faced during his formalization in Lean:
 \begin{quote}
 	The project is completely incompatible with modern Lean and mathlib, but if you compile it then you get a sorry-free proof that an affine scheme is a scheme. During our proof we ran into a huge problem because our blueprint, the Stacks Project, assumed that $R[1/f][1/g]=R[1/fg]$, and this turns out to be unprovable for Lean’s version of equality [\dots]. The Lean community wrestled with this idea, and has ultimately come up with a beefed-up notion of equality for which the identity is now true.\footnote{\url{https://xenaproject.wordpress.com/2020/06/05/the-sphere-eversion-project/}}
 \end{quote}	
-This raises the question of whether dependent types could be, at least in some situations, more of a burden than an advantage. Indeed, in the age of machine learning one may suspect there is a trade-off between the expressiveness of a type theory and one's ability to subject it to automation, for instance through SMT solvers and the so-called hammers embedded in some proof assistants. A dual question is to know how deep one can go formalizing mathematics in a simple type theory. This work provides a first hint at an answer that should not be ruled out: simple type theory is not too simple.       
+This raises the question of whether dependent types could be, at least in some situations, more of a burden than an advantage \cite{PaulsonLamport}. Indeed, in the age of machine learning one may suspect there is a trade-off between the expressiveness of a type theory and one's ability to subject it to automation, for instance through SMT solvers and the so-called hammers embedded in some proof assistants. A dual question is to know how deep one can go formalizing mathematics in a simple type theory. This work provides a first hint at an answer that should not be ruled out: simple type theory is not too simple.       
 
 \section*{Acknowledgments}
 
-Work on this paper was supported by the ERC Advanced Grant ALEXANDRIA (Project GA 742178).  			
+Work on this paper was supported by the ERC Advanced Grant ALEXANDRIA (Project GA 742178).  \\
+Anthony Bordg thanks Kevin Buzzard for his stimulating wit and his communicative energy.			
 
 
 \begin{thebibliography}{}
@@ -1359,6 +1372,16 @@ Work on this paper was supported by the ERC Advanced Grant ALEXANDRIA (Project G
 	Bordg A.:
 	\newblock \textit{The Localization of a Commutative Ring}.
 	\newblock Archive of Formal Proofs (2018)
+	
+	\bibitem{typestosets}
+	Kunčar, O., Popescu, A.:
+	\newblock \textit{From Types to Sets by Local Type Definition in Higher-Order Logic}. 
+	\newblock J. Autom. Reason. 62, 237–260 (2019)
+	
+	\bibitem{PaulsonLamport}
+	Lamport, L. and Paulson, L. C.:
+	\newblock \textit{Should Your Specification Language Be Typed}.
+	\newblock  ACM Transactions on Programming Languages and Systems (TOPLAS) 21, no. 3, 502-526 (1999)
 	
 \end{thebibliography}
 
