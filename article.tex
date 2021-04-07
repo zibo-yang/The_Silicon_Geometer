@@ -114,10 +114,11 @@ In this article we present a concise and elegant formalization of schemes in Isa
 \section{Isabelle/HOL, Simple Type Theory and Locales}
 \label{sec:isabelle}
 
-Isabelle/HOL is a proof assistant for higher-order logic: Church's simple type theory~\cite{church40}, with a number of modest extensions. It is therefore based on the typed $\lambda$-calculus with boolean and function types. A boolean-valued function is a predicate, which yields a simple typed set theory that is expressive enough to express abstract mathematics, as we shall see below. 
+Isabelle/HOL~\cite{isa-tutorial} is a proof assistant for higher-order logic: Church's simple type theory~\cite{church40}, with a number of modest extensions. It is therefore based on the typed $\lambda$-calculus with boolean and function types. A boolean-valued function is a predicate, which yields a simple typed set theory that is expressive enough to express abstract mathematics, as we shall see below. 
 
-In Church's original conception, the sole purpose to types is to prevent inconsistency. People today, influenced by programming languages, prefer to give types a more dominant role.
- 
+In Church's original conception, the sole purpose of types is to prevent inconsistency, all collections being represented as sets. People today, influenced by programming languages, prefer to give types a more dominant role. They expect to have numeric types like \isa{int}, \isa{rat}, \isa{real}, \isa{complex} and for types to play a major role in logical reasoning. For example, an expression like \isa{x+y} should be interpreted with respect to the types of \isa{x} and~\isa{y}.
+Type classes \cite{wenzel-type} support this sort of type-based disambiguation in a strong sense, so that \isa{x+y} refers to the correct instance of addition for its operands.
+This works for such trivialities as the basic laws for addition and multiplication (with the help of type classes for groups and rings) and for more advanced topological properties~\cite{hoelzl-filters}.
 
 \section{Schemes in Isabelle/HOL}
 \label{sec:schemes}
@@ -468,7 +469,7 @@ At this point, let me quote the mathematician Kevin Buzzard:
 	I am not sure that it is even possible to write this code in Isabelle/HOL in such a way that it will run in finite time, [\dots], and a sheaf is a dependent type, and your clever HOL workarounds will not let you use typeclasses [\dots]\footnote{\url{https://xenaproject.wordpress.com/2020/02/09/where-is-the-fashionable-mathematics/}. See the section entitled \textit{Isabelle/HOL users}.}
 \end{quote}
 
-We do not use old-fashioned typeclasses, we do use modern locales. We encapsulated within the locale dedicated to a preasheaf of rings $\mathscr{F}$ the ring structures on the underlying sets $\mathscr{F}(U)$'s simply using the functional \textit{add\_str} (\textit{resp.} \textit{mult\_str}, \textit{zero\_str}, \textit{one\_str}) that takes an open subset $U$ and outputs the multiplication (\textit{resp.} the addition, the additive unit, the multiplicative unit) on the set $\mathscr{F}(U)$. The resulting formalization of sheaves of rings in Isabelle is not only possible, but it is concise (6 lines), very neat and tidy, almost transparent with respect to the pen-and-paper definition. \\
+We do not use old-fashioned type classes, we do use modern locales. We encapsulated within the locale dedicated to a preasheaf of rings $\mathscr{F}$ the ring structures on the underlying sets $\mathscr{F}(U)$'s simply using the functional \textit{add\_str} (\textit{resp.} \textit{mult\_str}, \textit{zero\_str}, \textit{one\_str}) that takes an open subset $U$ and outputs the multiplication (\textit{resp.} the addition, the additive unit, the multiplicative unit) on the set $\mathscr{F}(U)$. The resulting formalization of sheaves of rings in Isabelle is not only possible, but it is concise (6 lines), very neat and tidy, almost transparent with respect to the pen-and-paper definition. \\
 It will not be any more difficult to define (pre)sheaves valued in any category of structured sets (groups, modules \dots) or even to define in Isabelle a general notion of $\mathscr{C}$-valued (pre)sheaves by embarking the category $\mathscr{C}$ as part of the data within the locale.  	
 
 
