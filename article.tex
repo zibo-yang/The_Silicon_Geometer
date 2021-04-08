@@ -117,10 +117,10 @@ Isabelle/HOL~\cite{isa-tutorial} is a proof assistant for higher-order logic---C
 
 In Church's original conception, the sole purpose of types is to prevent inconsistency, all collections being represented as sets. People today, influenced by programming languages, prefer to give types a more dominant role. They expect to have numeric types like \isa{int}, \isa{nat}, \isa{real}, \isa{complex} and for types to play a major role in logical reasoning. For example, an expression like \isa{x+y} should be interpreted with respect to the types of \isa{x} and~\isa{y}.
 Isabelle/HOL's \emph{type classes} \cite{wenzel-type} support this sort of type-based disambiguation in a strong sense, so that \isa{x+y} refers to the correct instance of addition.
-Type classes work for such trivialities as the basic laws for addition and multiplication (with the help of type classes for groups and rings) and for more advanced topological properties~\cite{hoelzl-filters}. A new type, once proved to be a topological space, instantly inherits such concepts as limits and continuity along with all theorems proved about them,
+Type classes work for such trivialities as the basic laws for addition and multiplication (with the help of type classes for groups and rings) and for more advanced topological properties~\cite{hoelzl-filters}. A new type, once proved to be a topological space, instantly inherits such concepts as limits and continuity along with all theorems proved about them.
 
 The drawback of type classes is simply that they refer to types. Mathematical constructions are generally too complex to formalise as types. Even the carrier of a group can be a complex object. Moving to a stronger type system, as done in Coq or Lean, brings issues of its own. Our solution is to define what we need using the naive set theory that comes with higher-order logic, through the mechanism of locales.%
-\footnote{Not to be confused with the locales of topos theory!}
+\footnote{Not to be confused with the locales of point-free topology!}
 
 A \emph{locale}~\cite{ballarin-locales-module} represents an Isabelle/HOL proof context. It can take parameters and instances of other locales. It can declare components constrained by assumptions. Thus they correspond directly to the mathematical practice of defining a monoid, say, as a tuple $(M,{\cdot},1)$ satisfying the obvious properties. 
 A locale can inherit multiple instances, as when we define a monoid homomorphism with respect to two monoids.
