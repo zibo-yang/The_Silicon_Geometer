@@ -68,6 +68,9 @@
 % To make the index and bibliography appear in the table of contents:
 \usepackage[nottoc]{tocbibind}
 
+% To define a Keywords section: 
+\providecommand{\keywords}[1]{\textbf{\textit{Keywords---}} #1}
+
 % notations:
 \def\spec{\text{Spec}\,R}
 
@@ -86,6 +89,8 @@
 \begin{abstract}
  	We report on a formalization of Grothendieck's schemes in the proof assistant Isabelle and we discuss in the process the design choices made. Schemes being sophisticated mathematical objects in algebraic geometry introduced by the mathematician Alexander Grothendieck in 1960, this experiment shows that the simple type theory implemented in Isabelle can easily handle such sophisticated objects despite doubts raised about Isabelle capability in that direction.   
 \end{abstract}
+
+\keywords{Formal Verification, High-order Logic, Type Theory, Algebraic Geometry, Schemes}
 
 \section{Motivation and Problems}
 \label{sec:intro}
@@ -1190,7 +1195,7 @@ Within the locale for topological spaces the axiom \textit{open\_imp\_subset} en
 \end{isabelle}
 
 Actually, this reliance on locales, avoiding type classes and type declarations whenever possible, pervades our development. It inaugurates a new discipline of formalizing mathematics with Isabelle/HOL which is exemplary in bridging the gap between set theory and type theory within Isabelle/HOL, while forgoing the extension of Isabelle's logic with a new rule for type definition as proposed by Kun\v{c}ar and Popescu in their types-to-sets framework \cite{typestosets}. \\
-The formalized material has a size of roughly 7300 lines of code, including all the prerequisites in commutative  algebra (prime and maximal ideals, localization of a ring and much else) and even our partial reconstruction of the topology library (down to the notion of a topological space). Given the output of this work, a formalization of schemes in Isabelle, such a relatively short formalization conveys the power of Isabelle module systems. \\
+The formalized material has a size of roughly 7300 lines of code \cite{Grothendieck_Schemes-AFP}, including all the prerequisites in commutative  algebra (prime and maximal ideals, localization of a ring and much else) and even our partial reconstruction of the topology library (down to the notion of a topological space). Given the output of this work, a formalization of schemes in Isabelle, such a relatively short formalization conveys the power of Isabelle module systems. \\
 To summarize, our work makes a triple contribution to Isabelle/HOL: a first stepping stone towards a new topology library, a second stepping stone towards a new algebra library and finally it develops a library for modern algebraic geometry. \\
 Most importantly, our work meets the challenge of formalizing for the first time Grothendieck's schemes in simple type theory and in doing so it demonstrates that intricate dependencies of algebraic structures can be managed elegantly in Isabelle. We hope this work will help mathematicians interested in the formalization of mathematics to make a more informed decision about which systems are available to them.
 
