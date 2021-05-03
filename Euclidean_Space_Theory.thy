@@ -3,7 +3,7 @@ theory Euclidean_Space_Theory
           Group_Further_Theory
           HOL.Filter
           Topological_Space_Theory
-          "HOL-Library.Quadratic_Discriminant"
+          
 
 begin
 
