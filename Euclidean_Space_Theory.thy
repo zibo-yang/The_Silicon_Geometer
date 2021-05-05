@@ -2,6 +2,8 @@ theory Euclidean_Space_Theory
   imports Complex_Main 
           Group_Further_Theory
           HOL.Filter
+          Topological_Space_Theory
+          
 
 begin
 
@@ -16,6 +18,7 @@ locale real_vector_space = abelian_group V add zero
   and add_scale: "x \<in> V \<Longrightarrow> (r + s) \<cdot>\<^sub>\<real> x = r \<cdot>\<^sub>\<real> x + s \<cdot>\<^sub>\<real> x"
   and scale_scale: "x \<in> V \<Longrightarrow> r \<cdot>\<^sub>\<real> s \<cdot>\<^sub>\<real> x = (r * s) \<cdot>\<^sub>\<real> x"
   and one_scale: "x \<in> V \<Longrightarrow> 1 \<cdot>\<^sub>\<real> x = x"
+  and scale_closed: "x \<in> V \<Longrightarrow> r \<cdot>\<^sub>\<real> x \<in> V"
 begin
 
 abbreviation divide:: "'a \<Rightarrow> real \<Rightarrow> 'a"  (infixl "'/\<^sub>\<real>" 70)
@@ -44,12 +47,92 @@ begin
 definition dist:: "'a \<Rightarrow> 'a \<Rightarrow> real"
   where "dist x y \<equiv> \<parallel>minus y x\<parallel>" 
 (* Why the notation for minus from Group_Further_Theory.thy does not work here ? *)
+lemma dist_nonneg:
+  assumes "x \<in> V" and "y \<in> V"
+  shows"dist x y \<ge> 0"
+proof-
+  from assms have "minus y x \<in> V" 
+    by (auto simp: minus_def)
+  thus "dist x y \<ge> 0" 
+    by (auto simp add:is_nonneg dist_def)
+qed
+lemma dist_nonzero:
+  assumes "x \<in> V" and "y \<in> V"
+  shows" dist x y = 0 \<longleftrightarrow> x = y"
+proof
+  from assms have "inverse x \<in> V" 
+    unfolding invertible invertible_inverse_closed 
+    by auto
+  with assms have "minus y x \<in> V" 
+    by (auto simp add: minus_def)
+  hence "minus y x = \<zero>" if "dist x y = 0"
+    using dist_def  is_pos_on_nonzero that
+    by auto
+  with assms show "x = y" if "dist x y = 0"
+    using minus_def invertible_inverse_inverse that
+    by (metis \<open>local.inverse x \<in> V\<close> 
+              invertible invertible_left_inverse 
+              local.inverse_unique)
+next
+  from assms have "y = inverse (inverse x)" if "x = y"
+    using invertible that  
+    by auto
+  with assms have "minus y x = \<zero>" if "x = y"
+    unfolding minus_def
+    using invertible invertible_right_inverse that 
+    by auto
+  thus  "dist x y = 0"if "x = y" 
+    unfolding dist_def 
+    using is_pos_on_nonzero that 
+    by auto
+qed
 
+lemma dist_triangle:
+  assumes"x \<in> V" " y \<in> V" "z \<in> V"
+  shows"dist x y + dist y z \<ge> dist x z"
+proof-
+  from assms have interm: "(minus y x) + (minus z y) = minus z x" 
+    unfolding minus_def
+    by (smt (verit) 
+        associative 
+        commutative 
+        composition_closed 
+        invertible 
+        invertible_inverse_closed 
+        monoid.invertible_right_inverse2 
+        monoid_axioms)
+  with assms show "dist x y + dist y z \<ge> dist x z" 
+    unfolding dist_def
+    using triangle_eq_holds[of "minus y x" "minus z y"]
+          minus_def 
+    by auto 
+  qed
 (* prove that dist is a metric, hence prove that an euclidean space is a topological space *)
+definition is_open_space::"'a set \<Rightarrow> bool" where 
+"is_open_space K \<equiv> (K \<subseteq> V) \<and> 
+(\<forall>k. k \<in> K \<longrightarrow> (\<exists>r::real . r > 0 \<longrightarrow>(\<forall>z. z \<in> V \<longrightarrow> dist z k \<le> r \<longrightarrow> z \<in> K)))"
 
 end (* real_normed_vector_space *)
 
-sublocale real_normed_vector_space \<subseteq> topological_space sorry
+sublocale real_normed_vector_space \<subseteq> sub: topological_space V "is_open_space"
+proof(unfold_locales)
+  show"is_open_space V" 
+    unfolding is_open_space_def 
+    by blast
+  show"is_open_space {}" 
+    unfolding is_open_space_def 
+    by blast
+  show"\<And>U. is_open_space U \<Longrightarrow> U \<subseteq> V"
+    unfolding is_open_space_def 
+    by auto
+  show"\<And>S T. is_open_space S \<Longrightarrow> is_open_space T \<Longrightarrow> is_open_space (S \<inter> T)"
+    unfolding is_open_space_def 
+    by blast
+  show"\<And>F. (\<And>x. x \<in> F \<Longrightarrow> is_open_space x) \<Longrightarrow> is_open_space (\<Union>x\<in>F. x) "
+    unfolding is_open_space_def 
+    by blast
+qed
+
 
 locale bounded_linear_map = 
 dom: real_normed_vector_space V add zero scale norm + 
@@ -70,15 +153,42 @@ and is_pos_definite: "x \<in> V \<Longrightarrow> x \<noteq> \<zero> \<Longright
 begin
 
 lemma inner_prod_of_zero:
-  shows "\<langle>\<zero>,\<zero>\<rangle> = 0" sorry
+  shows "\<langle>\<zero>,\<zero>\<rangle> = 0" 
+proof-
+  have "\<langle>\<zero>,\<zero>\<rangle> + \<langle>\<zero>,\<zero>\<rangle> = \<langle>\<zero>,\<zero>\<rangle>" 
+    using add_is_linear[of \<zero> \<zero> \<zero>] 
+    by auto
+  then show"\<langle>\<zero>,\<zero>\<rangle> = 0" 
+    by auto
+qed
 
 lemma is_positive_semi_definite:
   assumes "x \<in> V"
-  shows "\<langle>x,x\<rangle> \<ge> 0" sorry
+  shows "\<langle>x,x\<rangle> \<ge> 0"
+proof cases
+  assume "x = \<zero>"
+  with assms show "\<langle>x,x\<rangle> \<ge> 0" 
+    using inner_prod_of_zero 
+    by auto
+next
+  assume "x \<noteq> \<zero>"
+  with assms show "\<langle>x,x\<rangle> \<ge> 0" 
+    using is_pos_definite[of x]  
+    by auto
+qed
 
 lemma is_definite:
   assumes "x \<in> V"
-  shows "\<langle>x,x\<rangle> = 0 \<Longrightarrow> x = \<zero>" sorry
+  shows "\<langle>x,x\<rangle> = 0 \<Longrightarrow> x = \<zero>" 
+proof-
+  assume "\<langle>x,x\<rangle> = 0"
+  then have "x \<noteq> \<zero> \<Longrightarrow> False" 
+    using is_pos_definite[of x] assms 
+    by auto
+  then show "x = \<zero>" 
+    by auto
+qed
+
 
 end (* inner_product_space *)
 
@@ -94,23 +204,246 @@ and euclidean_all_zero_iff: "(\<forall>u\<in>Basis. \<langle>x,u\<rangle> = 0) \
 (* the two last axioms should be deduced from two axioms asserting that Basis is free and spans V *)
 begin
 
-definition distance:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<d>'(_,_')")
-  where "\<d>(u,v) \<equiv> sqrt (\<langle>minus u v , minus u v\<rangle>)"
-(* Why the notation for minus from Group_Further_Theory.thy does not work here ? *)
-
-(* prove that dist is a metric, hence prove that an euclidean space is a topological space *)
-
 definition norm:: "'a \<Rightarrow> real" ("\<parallel>_\<parallel>")
   where "norm u \<equiv> sqrt (\<langle>u,u\<rangle>)"
 
 (* prove that norm is a norm *)
+lemma norm_is_nonneg_evs:
+  assumes "x \<in> V"
+  shows"\<parallel>x\<parallel> \<ge> 0"
+proof-
+  from assms have "\<langle>x,x\<rangle> \<ge> 0" 
+    using is_positive_semi_definite 
+    by auto
+  thus "\<parallel>x\<parallel> \<ge> 0" 
+    using norm_def 
+    by auto
+qed
+
+
+lemma norm_is_pos_on_nonzero_evs: (*"x \<in> V \<Longrightarrow> (\<parallel>x\<parallel> = 0 \<longleftrightarrow> x = \<zero>)"*)
+  assumes "x \<in> V"
+  shows"\<parallel>x\<parallel> = 0 \<longleftrightarrow> x = \<zero>"
+proof
+  from assms have "\<langle>x,x\<rangle> = 0" if "\<parallel>x\<parallel> = 0" 
+    using norm_def that
+    by auto
+  with assms show "x = \<zero>" if "\<parallel>x\<parallel> = 0" 
+    using is_definite[of x] that
+    by auto
+next
+  from assms have "\<langle>x,x\<rangle> = 0" if "x = \<zero>"
+    using inner_prod_of_zero that 
+    by auto
+  thus "\<parallel>x\<parallel> = 0" if "x = \<zero>"
+    unfolding norm_def that
+    by auto
+qed
+
+lemma norm_is_linear_with_abs_evs:(*" x \<in> V \<Longrightarrow> \<parallel>r \<cdot>\<^sub>\<real> x\<parallel> = \<bar>r\<bar> * \<parallel>x\<parallel>"*)
+  assumes "x \<in> V"
+  shows"\<parallel>r \<cdot>\<^sub>\<real> x\<parallel> = \<bar>r\<bar> * \<parallel>x\<parallel>"
+proof-
+  from assms have "\<langle>r \<cdot>\<^sub>\<real> x,r \<cdot>\<^sub>\<real> x\<rangle> = r^2 * \<langle>x,x\<rangle>"
+    using scale_is_linear is_symmetric scale_closed
+    by (auto simp:power2_eq_square)
+  thus "\<parallel>r \<cdot>\<^sub>\<real> x\<parallel> = \<bar>r\<bar> * \<parallel>x\<parallel>" 
+    unfolding norm_def 
+    using assms is_positive_semi_definite 
+          scale_closed 
+          NthRoot.real_sqrt_abs2 
+          NthRoot.real_sqrt_mult 
+    by auto
+qed
+
+(*lemma delta is important for lemma triangle_mul which plays the key role in 
+lemma norm_triangle_eq_holds_evs *)
+lemma delta:
+  fixes a b c ::real
+  assumes"\<And>t . a * t^2 + b * t + c \<ge> 0" and"a \<ge> 0"
+  shows"b^2 \<le> 4 * a * c"
+proof (cases "a = 0")
+  case True
+  with assms have lin_nonneg:
+  "\<And>t . b * t + c \<ge> 0" 
+    by auto
+  have "b \<noteq> 0 \<Longrightarrow> \<exists>t . b * t + c < 0"
+    by (metis eq_diff_eq 
+              le_add_same_cancel2 
+              mult.commute 
+              nonzero_eq_divide_eq 
+              not_le not_one_le_zero)
+  with lin_nonneg have "b = 0"
+    by (smt (z3))
+  with True show "b^2 \<le> 4 * a * c"
+    by auto
+next
+  case False
+  with assms(2) have inter1:
+    "\<And>t::real. a * (t + b / (2 * a))^2 = a * t^2 + b * t + b^2 / (4 * a)"
+    unfolding Power.comm_semiring_1_class.power2_sum 
+    using power2_eq_square[of a]
+    by (auto simp:field_simps)
+  from assms have inter2:
+    "\<And>t::real. a * t^2 + b*t + b^2/(4*a) \<ge> b^2 / (4 * a) - c" 
+    by (simp add: algebra_simps)
+  with inter1 have 
+    "\<And>t::real. a * (t + (b::real) / (2 * a))^2 \<ge> b^2 / (4 * a) - c"
+    by auto
+  hence "b^2 / (4 * a) - c \<le> 0"
+    by (metis diff_add_cancel mult_zero_right zero_eq_power2)
+  with assms(2) show  "b^2 \<le> 4 * a * c" 
+    by (smt (verit, best) 
+        False 
+        divide_cancel_right 
+        divide_right_mono 
+        nonzero_mult_div_cancel_left)
+qed
+
+    
+(*lemma triangle_mul plays the key role in lemma norm_triangle_eq_holds_evs *)
+lemma triangle_mul:
+  assumes "x \<in> V"" y \<in> V"
+  shows "\<langle>x,y\<rangle>^2 \<le>  \<langle>x,x\<rangle> * \<langle>y,y\<rangle>"
+proof-
+  from assms have "\<And>r::real. \<langle>x + r \<cdot>\<^sub>\<real> y ,x + r \<cdot>\<^sub>\<real> y \<rangle> \<ge> 0"
+    using is_positive_semi_definite scale_closed
+    by auto
+  with assms have 
+   "\<And>r::real. 0 \<le> \<langle>y,y\<rangle> * r^2 + 2 * \<langle>x,y\<rangle>*r + \<langle>x,x\<rangle>"
+    using scale_is_linear
+      and add_is_linear
+      and is_symmetric
+          scale_closed
+          composition_closed
+    by (simp add: power2_eq_square field_simps)
+  with assms show ?thesis
+    using delta[of "\<langle>y,y\<rangle>" "2*\<langle>x,y\<rangle>" "\<langle>x,x\<rangle>"]
+          is_positive_semi_definite[of y]
+    by (auto simp add: field_simps)
+qed
+
+lemma norm_triangle_eq_holds_evs:
+  assumes"x \<in> V""y \<in> V"
+  shows"\<parallel>x + y\<parallel> \<le> \<parallel>x\<parallel> + \<parallel>y\<parallel>"
+proof-
+  from assms have "\<langle>x,y\<rangle>^2 \<le>  \<langle>x,x\<rangle> * \<langle>y,y\<rangle>" 
+    by (simp add: triangle_mul)
+  hence ineq:"\<langle>x,y\<rangle> \<le>  sqrt(\<langle>x,x\<rangle>) * sqrt(\<langle>y,y\<rangle>)" 
+    by (metis real_le_rsqrt real_sqrt_mult) 
+  from assms have lhs:"\<langle>x + y,x + y\<rangle> = \<langle>x,x\<rangle> + \<langle>y,y\<rangle> + 2 * \<langle>x,y\<rangle>"
+    using add_is_linear is_symmetric 
+    by auto
+  from assms have nonnegx: "\<langle>x,x\<rangle> \<ge> 0"and nonnegy:"\<langle>y,y\<rangle> \<ge> 0"
+    using is_positive_semi_definite 
+    by auto
+  hence nonneg_sqrt:"sqrt \<langle>x,x\<rangle> + sqrt \<langle>y,y\<rangle> \<ge> 0" 
+    using Groups.ordered_comm_monoid_add_class.add_nonneg_nonneg
+          NthRoot.real_sqrt_ge_0_iff
+    by auto
+  from nonnegx nonnegy have rhs:"(sqrt \<langle>x,x\<rangle> + sqrt \<langle>y,y\<rangle>)^2 = \<langle>x,x\<rangle> + \<langle>y,y\<rangle> + 2 * sqrt \<langle>x,x\<rangle> * sqrt \<langle>y,y\<rangle>"
+    using NthRoot.real_sqrt_pow2_iff
+    by (auto simp:Power.comm_semiring_1_class.power2_sum)
+  from lhs rhs ineq have "\<langle>x + y,x + y\<rangle> \<le> (sqrt \<langle>x,x\<rangle> + sqrt \<langle>y,y\<rangle>)^2"
+    by auto
+  with nonneg_sqrt assms show "\<parallel>x + y\<parallel> \<le> \<parallel>x\<parallel> + \<parallel>y\<parallel>"
+    unfolding norm_def
+    using Power.linordered_semidom_class.power2_le_imp_le[of "sqrt \<langle>x + y,x + y\<rangle>" "sqrt \<langle>x,x\<rangle> +
+       sqrt \<langle>y,y\<rangle>"]
+          NthRoot.real_sqrt_pow2_iff[of "\<langle>x + y,x + y\<rangle>"]
+          is_positive_semi_definite[of "x + y"]
+          composition_closed[of x y]
+    by auto
+qed
+
+
+definition distance:: "'a \<Rightarrow> 'a \<Rightarrow> real" ("\<d>'(_,_')")
+  where "\<d>(u,v) \<equiv> sqrt (\<langle>minus u v , minus u v\<rangle>)"
+(* Why the notation for minus from Group_Further_Theory.thy does not work here ? *)
+(* prove that dist is a metric, hence prove that an euclidean space is a topological space *)
+lemma distance_nonneg_evs:
+  assumes "x \<in> V" and "y \<in> V"
+  shows"\<d>(x,y) \<ge> 0"
+  by (unfold distance_def minus_def,
+      simp add:assms is_positive_semi_definite)
+  
+lemma distance_nonzero_evs:
+  assumes "x \<in> V" and "y \<in> V"
+  shows" \<d>(x,y) = 0 \<longleftrightarrow> x = y"
+proof
+  have "minus x y = \<zero>" if "x = y"
+    by (simp add: assms(2) minus_def that)
+  thus "\<d>(x,y) = 0" if "x = y"
+    by (simp add: distance_def inner_prod_of_zero that)
+next
+  have "minus x y = \<zero>" if "\<d>(x,y) = 0"
+    using assms(1) assms(2) distance_def is_definite that
+    by (auto simp: composition_closed 
+                   invertible 
+                   invertible_inverse_closed 
+                   norm_is_pos_on_nonzero_evs 
+                   minus_def 
+                   norm_def) 
+   
+  thus "x = y" if "\<d>(x,y) = 0"
+    by (metis assms 
+              inverse_equality  
+              invertible 
+              invertibleE 
+              invertible_right_cancel 
+              minus_def 
+              that)
+    
+qed
+
+lemma distance_triangle_evs:
+  assumes"x \<in> V" " y \<in> V" "z \<in> V"
+  shows"\<d>(x,y) + \<d>(y,z) \<ge> \<d>(x,z)"
+proof-
+  from assms have "minus x y + minus y z = minus x z"
+    by (simp add: associative invertible_left_inverse2 minus_def)
+  thus "\<d>(x,y) + \<d>(y,z) \<ge> \<d>(x,z)"
+    unfolding distance_def
+    using norm_triangle_eq_holds_evs[of "minus x y" "minus y z"]
+    by (simp add: assms minus_def norm_def)
+qed
+  
+
+
+definition is_open_evs::"'a set \<Rightarrow> bool" where 
+"is_open_evs K \<equiv> (K \<subseteq> V) \<and> 
+(\<forall>k. k \<in> K \<longrightarrow> (\<exists>r::real . r > 0 \<longrightarrow>(\<forall>z. z \<in> V \<longrightarrow> \<d>(z,k) \<le> r \<longrightarrow> z \<in> K)))"
 
 end (* euclidean_vector_space *)
 
-sublocale euclidean_vector_space \<subseteq> topological_space sorry
+sublocale euclidean_vector_space \<subseteq> topological_space V "is_open_evs"
+proof(unfold_locales)
+  show"is_open_evs V" unfolding is_open_evs_def 
+    by blast
+  show"is_open_evs {}" unfolding is_open_evs_def 
+    by blast
+  show"\<And>U. is_open_evs U \<Longrightarrow> U \<subseteq> V"
+    unfolding is_open_evs_def 
+    by auto
+  show"\<And>S T. is_open_evs S \<Longrightarrow> is_open_evs T \<Longrightarrow> is_open_evs (S \<inter> T)"
+    unfolding is_open_evs_def 
+    by blast
+  show"\<And>F. (\<And>x. x \<in> F \<Longrightarrow> is_open_evs x) \<Longrightarrow> is_open_evs (\<Union>x\<in>F. x) "
+    unfolding is_open_evs_def 
+    by blast
+qed
 
-sublocale euclidean_vector_space \<subseteq> real_normed_vector_space sorry
-
+sublocale euclidean_vector_space \<subseteq> real_normed_vector_space V "(+)" "\<zero>" "(\<cdot>\<^sub>\<real>)" "norm"
+proof(unfold_locales)
+  show "\<And>x. x \<in> V \<Longrightarrow> 0 \<le> \<parallel>x\<parallel>"
+    by (simp add:is_positive_semi_definite norm_def)
+  show"\<And>x. x \<in> V \<Longrightarrow> (\<parallel>x\<parallel> = 0) = (x = \<zero>)"
+    by (simp add:norm_is_pos_on_nonzero_evs)
+  show"\<And>x r. x \<in> V \<Longrightarrow> \<parallel>r \<cdot>\<^sub>\<real> x\<parallel> =\<bar>r\<bar> * \<parallel>x\<parallel>"
+    by (simp add:norm_is_linear_with_abs_evs)
+  show"\<And>x y. x \<in> V \<Longrightarrow> y \<in> V \<Longrightarrow> \<parallel>x + y\<parallel> \<le> \<parallel>x\<parallel> + \<parallel>y\<parallel>"
+    by (simp add:norm_triangle_eq_holds_evs)
+qed
 (*
 definition has_derivative :: "('a::real_normed_vector \<Rightarrow> 'b::real_normed_vector) \<Rightarrow>
     ('a \<Rightarrow> 'b) \<Rightarrow> 'a filter \<Rightarrow> bool"  (infix "(has'_derivative)" 50)
