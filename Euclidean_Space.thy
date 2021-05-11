@@ -1,4 +1,4 @@
-theory Euclidean_Space_Theory
+theory Euclidean_Space
   imports Complex_Main 
           Group_Extras
           HOL.Filter
