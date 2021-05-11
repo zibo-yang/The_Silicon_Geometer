@@ -559,51 +559,6 @@ proof(unfold_locales)
 qed
 
 (*new*)
-locale has_derivative = 
-
-dom: real_normed_vector_space V add zero scale norm +
-
-codom: real_normed_vector_space V' add' zero' scale' norm' +
-
-map f V V' + map f' V V'
-
-for V and add(infixl "+" 70)and  zero("\<zero>") and scale(infixr "\<cdot>\<^sub>\<real>" 75) and norm("\<parallel>_\<parallel>") 
-and V' and add'(infixl "+''" 70)and zero'("\<zero>''") and scale'(infixr "\<cdot>\<^sub>\<real>''" 75) and norm'("\<parallel>_\<parallel>''") 
-and f and f'+
-
-fixes F:: "'a filter" 
-
-and codom_divide:: "'b \<Rightarrow> real \<Rightarrow> 'b"  (infixl "'/\<^sub>R" 75)
-
-and dom_minus::"'a \<Rightarrow> 'a \<Rightarrow> 'a" (infixl "-" 70)
-
-and codom_minus::"'b \<Rightarrow> 'b \<Rightarrow> 'b" (infixl "-''" 70)
-
-and dom_lim::"'a filter \<Rightarrow> ('a \<Rightarrow> 'a) \<Rightarrow> 'a"("Lim\<^sub>d")
-
-and codom_lim::"'a filter \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'b"("Lim\<^sub>c")
-
-assumes is_bounded_linear: "bounded_linear_map V add zero scale norm V' add' zero' scale' norm' f'"
-
-and dom_minus_def:"x - y \<equiv> dom.minus x y"
-
-and codom_minus_def:"a -' b \<equiv> codom.minus a b"
-
-and codom_divide_def:"a /\<^sub>R r \<equiv> codom.divide a r"
-
-(*In order to introduce the notation in the statement of this locale, the author uses the trick here
-to combine "dom_minus" and "dom_minus_def" so that any notations in the formula like "-" will not 
-cause the type errors when compiling*)
-
-and has_derivative_hd:
-
-"let k = Lim\<^sub>d F (\<lambda>x\<in>V. x) in
-
-Lim\<^sub>c F (\<lambda>y\<in>V. (f y -' f k -' f'(y - k)) /\<^sub>R  \<parallel>y - k\<parallel>) = zero'"
-
-(* unfinished *)
-
-(* To introduce abbreviation (f has_derivative f') F *)
 
 
 
